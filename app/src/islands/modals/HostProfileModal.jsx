@@ -8,6 +8,7 @@
 import { createPortal } from 'react-dom';
 import { X, User, MapPin, Linkedin, Phone, Mail, CreditCard, CheckCircle, XCircle } from 'lucide-react';
 import ExternalReviews from '../shared/ExternalReviews.jsx';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../lib/avatarUtils.js';
 
 export default function HostProfileModal({ host, listing, onClose }) {
   if (!host) return null;
@@ -68,13 +69,12 @@ export default function HostProfileModal({ host, listing, onClose }) {
           {/* Host Info Section */}
           <div className="hpm-host-section">
             {/* Host Photo */}
-            {photoUrl ? (
-              <img src={photoUrl} alt={displayName} className="hpm-host-photo" />
-            ) : (
-              <div className="hpm-host-photo-placeholder">
-                {(hostFirstName.charAt(0) || 'H').toUpperCase()}
-              </div>
-            )}
+            <img
+              src={photoUrl || getInitialsAvatarUrl(hostFirstName)}
+              alt={displayName}
+              className="hpm-host-photo"
+              onError={handleAvatarError}
+            />
 
             {/* Host Info and Verification */}
             <div className="hpm-host-info">

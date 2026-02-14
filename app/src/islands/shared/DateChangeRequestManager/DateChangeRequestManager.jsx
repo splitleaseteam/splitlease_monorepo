@@ -14,6 +14,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useModalManager } from '../../../hooks/useModalManager.js';
 import dateChangeRequestService from './dateChangeRequestService.js';
 import DateChangeRequestCalendar from './DateChangeRequestCalendar.jsx';
 import RequestTypeSelector from './RequestTypeSelector.jsx';
@@ -74,8 +75,7 @@ export default function DateChangeRequestManager({
 
   // Throttling state
   const [throttleStatus, setThrottleStatus] = useState(null);
-  const [showWarningPopup, setShowWarningPopup] = useState(false);
-  const [showBlockPopup, setShowBlockPopup] = useState(false);
+  const popups = useModalManager();
   const [otherParticipantName, setOtherParticipantName] = useState('');
 
   // Existing requests state
@@ -146,7 +146,7 @@ export default function DateChangeRequestManager({
 
       // If user is blocked, show the block popup immediately
       if (result.data?.isBlocked || result.data?.throttleLevel === 'hard_block') {
-        setShowBlockPopup(true);
+        popups.open('throttleBlock');
       }
     } catch (err) {
       console.error('[DateChangeRequestManager] Failed to fetch throttle status:', err);
@@ -237,13 +237,13 @@ export default function DateChangeRequestManager({
 
     // Check throttle status before proceeding
     if (throttleStatus?.throttleLevel === 'hard_block' || throttleStatus?.isBlocked) {
-      setShowBlockPopup(true);
+      popups.open('throttleBlock');
       return;
     }
 
     // Show soft warning if at 5+ requests and user hasn't dismissed warnings
     if (throttleStatus?.showWarning) {
-      setShowWarningPopup(true);
+      popups.open('throttleWarning');
       return;
     }
 
@@ -256,7 +256,7 @@ export default function DateChangeRequestManager({
    * @param {boolean} dontShowAgain - Whether user checked "Don't show again"
    */
   const handleContinueAfterWarning = async (dontShowAgain) => {
-    setShowWarningPopup(false);
+    popups.close('throttleWarning');
 
     // Save preference if checkbox was checked
     if (dontShowAgain) {
@@ -279,14 +279,14 @@ export default function DateChangeRequestManager({
    * Handle closing the warning popup (cancel)
    */
   const handleWarningCancel = () => {
-    setShowWarningPopup(false);
+    popups.close('throttleWarning');
   };
 
   /**
    * Handle closing the block popup
    */
   const handleBlockClose = () => {
-    setShowBlockPopup(false);
+    popups.close('throttleBlock');
     onClose(); // Close the entire modal since user is blocked
   };
 
@@ -729,7 +729,7 @@ export default function DateChangeRequestManager({
 
       {/* Throttling Warning Popup (Soft Warning at 5+ requests) */}
       <ThrottlingWarningPopup
-        isOpen={showWarningPopup}
+        isOpen={popups.isOpen('throttleWarning')}
         onClose={handleWarningCancel}
         onContinue={handleContinueAfterWarning}
         otherParticipantName={otherParticipantName}
@@ -737,7 +737,7 @@ export default function DateChangeRequestManager({
 
       {/* Throttling Block Popup (Hard Block at 10+ requests) */}
       <ThrottlingBlockPopup
-        isOpen={showBlockPopup}
+        isOpen={popups.isOpen('throttleBlock')}
         onClose={handleBlockClose}
         otherParticipantName={otherParticipantName}
       />

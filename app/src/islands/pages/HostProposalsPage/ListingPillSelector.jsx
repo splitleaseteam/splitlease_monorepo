@@ -7,6 +7,8 @@
  * Part of the Host Proposals V7 redesign.
  */
 
+import { getInitialsAvatarUrl } from '../../../lib/avatarUtils.js';
+
 /**
  * Get listing thumbnail URL with fallback
  * @param {Object} listing - The listing object
@@ -17,7 +19,7 @@ function getListingThumbnail(listing) {
   if (listing?.photo) return listing.photo;
   // Generate a placeholder based on listing name
   const name = listing?.title || listing?.name || 'Listing';
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E9E0F7&color=6D31C2&size=100`;
+  return getInitialsAvatarUrl(name);
 }
 
 /**

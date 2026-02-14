@@ -12,6 +12,7 @@
  */
 import { ChevronDown, CheckCircle } from 'lucide-react';
 import { isNewProposal, getStatusTagConfig, getCheckInOutFromDays } from './types.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../lib/avatarUtils.js';
 
 /**
  * Get guest avatar URL with fallback
@@ -24,7 +25,7 @@ function getGuestAvatar(guest) {
   if (guest?.photo) return guest.photo;
   if (guest?.picture_url) return guest.picture_url;
   const name = guest?.name || guest?.full_name || 'Guest';
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=E9E0F7&color=6D31C2&rounded=true&size=100`;
+  return getInitialsAvatarUrl(name);
 }
 
 /**
@@ -156,6 +157,7 @@ export function HostProposalCardHeader({ proposal, isExpanded, onToggle, content
         alt=""
         aria-hidden="true"
         loading="lazy"
+        onError={handleAvatarError}
       />
 
       <div className="hp7-proposal-info">

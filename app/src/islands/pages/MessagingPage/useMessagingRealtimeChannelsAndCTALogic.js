@@ -15,80 +15,30 @@
  * NO FALLBACK: Real data only, no mock data in production
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useReducer, useEffect, useCallback, useRef } from 'react';
 import { getUserId, getSessionId } from '../../../lib/secureStorage.js';
 import { supabase } from '../../../lib/supabase.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
+import { useModalManager } from '../../../hooks/useModalManager.js';
 import { useCTAHandler } from './useCTAHandler.js';
 import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
 import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
 import { clearProposalDraft } from '../../shared/CreateProposalFlow.jsx';
+import { messagingReducer, initialState } from './messagingReducer.js';
 
 export function useMessagingPageLogic() {
   const { user: authUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser({ redirectOnFail: '/?login=true' });
 
   // ============================================================================
-  // AUTH STATE
+  // STATE: useReducer for all non-modal state, useModalManager for modals
   // ============================================================================
-  const [authState, setAuthState] = useState({
-    isChecking: true,
-    shouldRedirect: false
-  });
-  const [user, setUser] = useState(null);
+  const [state, dispatch] = useReducer(messagingReducer, initialState);
+  const modals = useModalManager();
 
-  // ============================================================================
-  // DATA STATE
-  // ============================================================================
-  const [threads, setThreads] = useState([]);
-  const [selectedThread, setSelectedThread] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [threadInfo, setThreadInfo] = useState(null);
-
-  // ============================================================================
-  // UI STATE
-  // ============================================================================
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [error, setError] = useState(null);
-  const [messageInput, setMessageInput] = useState('');
-  const [isSending, setIsSending] = useState(false);
-
-  // ============================================================================
-  // RIGHT PANEL DATA STATE
-  // ============================================================================
-  const [proposalData, setProposalData] = useState(null);
-  const [listingData, setListingData] = useState(null);
-  const [isLoadingPanelData, setIsLoadingPanelData] = useState(false);
-
-  // ============================================================================
-  // REALTIME STATE
-  // ============================================================================
-  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
-  const [typingUserName, setTypingUserName] = useState(null);
+  // Refs (unchanged)
   const channelRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-
-  // ============================================================================
-  // CTA MODAL STATE
-  // ============================================================================
-  const [activeModal, setActiveModal] = useState(null);
-  const [modalContext, setModalContext] = useState(null);
-
-  // ============================================================================
-  // PROPOSAL MODAL STATE
-  // ============================================================================
-  const [proposalModalData, setProposalModalData] = useState(null);
-  const [zatConfig, setZatConfig] = useState(null);
-  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
-
-  // ============================================================================
-  // VIRTUAL MEETING MODAL STATE
-  // ============================================================================
-  const [showVMModal, setShowVMModal] = useState(false);
-  const [vmInitialView, setVMInitialView] = useState('');
-
-  // (initialLoadDone ref removed — threads.length === 0 guard is sufficient)
 
   // ============================================================================
   // CTA HANDLER HOOKS
@@ -101,7 +51,7 @@ export function useMessagingPageLogic() {
       console.log('[MessagingPage] Opening CreateProposalFlow modal');
 
       // Get listing data from threadInfo or context
-      const listingId = context?.listingId || threadInfo?.listing_id;
+      const listingId = context?.listingId || state.threadInfo?.listing_id;
 
       if (!listingId) {
         console.error('[MessagingPage] No listing ID available for proposal modal');
@@ -175,18 +125,20 @@ export function useMessagingPageLogic() {
         };
 
         // Set proposal modal data
-        setProposalModalData({
-          listing: transformedListing,
-          moveInDate: smartMoveInDate,
-          daysSelected: initialDays,
-          nightsSelected: initialDays.length > 0 ? initialDays.length - 1 : 0,
-          reservationSpan: 13, // Default to 13 weeks
-          priceBreakdown: null // Will be calculated by the modal
+        dispatch({
+          type: 'SET_PROPOSAL_MODAL_DATA',
+          payload: {
+            listing: transformedListing,
+            moveInDate: smartMoveInDate,
+            daysSelected: initialDays,
+            nightsSelected: initialDays.length > 0 ? initialDays.length - 1 : 0,
+            reservationSpan: 13, // Default to 13 weeks
+            priceBreakdown: null // Will be calculated by the modal
+          }
         });
 
-        // Set the active modal
-        setActiveModal(modalName);
-        setModalContext(context);
+        // Set the active modal via useModalManager
+        modals.open(modalName, context);
 
       } catch (err) {
         console.error('[MessagingPage] Error preparing proposal modal:', err);
@@ -196,28 +148,24 @@ export function useMessagingPageLogic() {
     }
 
     // Default handling for other modals
-    setActiveModal(modalName);
-    setModalContext(context);
-  }, [threadInfo]);
+    modals.open(modalName, context);
+  }, [state.threadInfo, modals]);
 
   const handleCloseModal = useCallback(() => {
-    setActiveModal(null);
-    setModalContext(null);
-    setProposalModalData(null); // Also clear proposal modal data
-  }, []);
+    modals.closeAll();
+    dispatch({ type: 'SET_PROPOSAL_MODAL_DATA', payload: null }); // Also clear proposal modal data
+  }, [modals]);
 
   // ============================================================================
   // VM MODAL HANDLERS
   // ============================================================================
   const handleOpenVMModal = useCallback((view = 'request') => {
-    setVMInitialView(view);
-    setShowVMModal(true);
-  }, []);
+    modals.open('vm', { initialView: view });
+  }, [modals]);
 
   const handleCloseVMModal = useCallback(() => {
-    setShowVMModal(false);
-    setVMInitialView('');
-  }, []);
+    modals.close('vm');
+  }, [modals]);
 
   const handleVMSuccess = useCallback(() => {
     // Reload page to get fresh data after VM action
@@ -225,9 +173,9 @@ export function useMessagingPageLogic() {
   }, []);
 
   const { handleCTAClick, getCTAButtonConfig } = useCTAHandler({
-    user,
-    selectedThread,
-    threadInfo,
+    user: state.user,
+    selectedThread: state.selectedThread,
+    threadInfo: state.threadInfo,
     onOpenModal: handleOpenModal,
   });
 
@@ -239,21 +187,24 @@ export function useMessagingPageLogic() {
     if (!isAuthenticated || !authUser) return;
 
     // Map hook user to local user state (preserving shape expected by rest of file)
-    setUser({
-      id: authUser.id,
-      email: authUser.email,
-      firstName: authUser.firstName,
-      lastName: authUser.fullName?.split(' ').slice(1).join(' ') || '',
-      profilePhoto: authUser.profilePhoto,
-      userType: authUser.userType || null
+    dispatch({
+      type: 'SET_USER',
+      payload: {
+        id: authUser.id,
+        email: authUser.email,
+        firstName: authUser.firstName,
+        lastName: authUser.fullName?.split(' ').slice(1).join(' ') || '',
+        profilePhoto: authUser.profilePhoto,
+        userType: authUser.userType || null
+      }
     });
-    setAuthState({ isChecking: false, shouldRedirect: false });
+    dispatch({ type: 'SET_AUTH_STATE', payload: { isChecking: false, shouldRedirect: false } });
 
     // Fetch threads after auth confirmed
     fetchThreads().catch(err => {
       console.error('[Messaging] Failed to fetch threads:', err);
-      setError('Failed to load conversations. Please refresh the page.');
-      setIsLoading(false);
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to load conversations. Please refresh the page.' });
+      dispatch({ type: 'SET_IS_LOADING', payload: false });
     });
   }, [authLoading, isAuthenticated, authUser]);
 
@@ -267,7 +218,7 @@ export function useMessagingPageLogic() {
     const loadZatConfig = async () => {
       try {
         const config = await fetchZatPriceConfiguration();
-        setZatConfig(config);
+        dispatch({ type: 'SET_ZAT_CONFIG', payload: config });
         console.log('[MessagingPage] ZAT config loaded');
       } catch (error) {
         console.warn('[MessagingPage] Failed to load ZAT config:', error);
@@ -280,43 +231,43 @@ export function useMessagingPageLogic() {
   // FETCH PANEL DATA WHEN THREAD INFO CHANGES
   // ============================================================================
   useEffect(() => {
-    if (threadInfo?.proposal_id || threadInfo?.listing_id) {
-      fetchPanelData(threadInfo.proposal_id, threadInfo.listing_id);
+    if (state.threadInfo?.proposal_id || state.threadInfo?.listing_id) {
+      fetchPanelData(state.threadInfo.proposal_id, state.threadInfo.listing_id);
     } else {
-      setProposalData(null);
-      setListingData(null);
+      dispatch({ type: 'SET_PROPOSAL_DATA', payload: null });
+      dispatch({ type: 'SET_LISTING_DATA', payload: null });
     }
-  }, [threadInfo?.proposal_id, threadInfo?.listing_id]);
+  }, [state.threadInfo?.proposal_id, state.threadInfo?.listing_id]);
 
   // ============================================================================
   // URL PARAM SYNC FOR THREAD SELECTION (runs once when threads load)
   // ============================================================================
   useEffect(() => {
-    if (threads.length === 0 || hasAutoSelectedThread.current) return;
+    if (state.threads.length === 0 || hasAutoSelectedThread.current) return;
 
     const params = new URLSearchParams(window.location.search);
     const threadId = params.get('thread');
 
     if (threadId) {
-      const thread = threads.find(t => t.id === threadId);
+      const thread = state.threads.find(t => t.id === threadId);
       if (thread) {
         hasAutoSelectedThread.current = true;
         selectThread(thread);
       }
-    } else if (threads.length > 0) {
+    } else if (state.threads.length > 0) {
       hasAutoSelectedThread.current = true;
-      selectThread(threads[0]);
+      selectThread(state.threads[0]);
     }
-  }, [threads]);
+  }, [state.threads]);
 
   // ============================================================================
   // REALTIME SUBSCRIPTION - Using Postgres Changes (more reliable than broadcast)
   // ============================================================================
   useEffect(() => {
-    if (!selectedThread || authState.isChecking || !user?.id) return;
+    if (!state.selectedThread || state.authState.isChecking || !state.user?.id) return;
 
-    const channelName = `messages-${selectedThread.id}`;
-    console.log('[Realtime] Subscribing to postgres_changes for thread:', selectedThread.id);
+    const channelName = `messages-${state.selectedThread.id}`;
+    console.log('[Realtime] Subscribing to postgres_changes for thread:', state.selectedThread.id);
 
     const channel = supabase.channel(channelName);
 
@@ -337,7 +288,7 @@ export function useMessagingPageLogic() {
         if (!newRow) return;
 
         // Client-side filter: only process messages for this thread
-        if (newRow.thread_id !== selectedThread.id) {
+        if (newRow.thread_id !== state.selectedThread.id) {
           console.log('[Realtime] Message is for different thread, ignoring');
           return;
         }
@@ -345,55 +296,47 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Message is for this thread, processing...');
 
         // Skip if this is our own message (already added optimistically)
-        const isOwnMessage = newRow.sender_user_id === user?.id;
+        const isOwnMessage = newRow.sender_user_id === state.user?.id;
 
-        // Add message to state (avoid duplicates)
-        setMessages(prev => {
-          if (prev.some(m => m.id === newRow.id)) return prev;
+        // Transform database row to UI format and add to state (dedup handled by reducer)
+        const transformedMessage = {
+          id: newRow.id,
+          message_body: newRow['message_body_text'],
+          sender_name: newRow['is_from_split_bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : state.selectedThread.contact_name || 'User'),
+          sender_avatar: isOwnMessage ? state.user?.profilePhoto : undefined,
+          sender_type: newRow['is_from_split_bot'] ? 'splitbot' :
+            (newRow.sender_user_id === newRow.host_user_id ? 'host' : 'guest'),
+          is_outgoing: isOwnMessage,
+          timestamp: new Date(newRow['original_created_at']).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+          }),
+          call_to_action: newRow['call_to_action_button_label'] ? {
+            type: newRow['call_to_action_button_label'],
+            message: 'View Details'
+          } : undefined,
+          split_bot_warning: newRow['split_bot_warning_text'],
+        };
 
-          // Transform database row to UI format
-          const transformedMessage = {
-            id: newRow.id,
-            message_body: newRow['message_body_text'],
-            sender_name: newRow['is_from_split_bot'] ? 'Split Bot' : (isOwnMessage ? 'You' : selectedThread.contact_name || 'User'),
-            sender_avatar: isOwnMessage ? user?.profilePhoto : undefined,
-            sender_type: newRow['is_from_split_bot'] ? 'splitbot' :
-              (newRow.sender_user_id === newRow.host_user_id ? 'host' : 'guest'),
-            is_outgoing: isOwnMessage,
-            timestamp: new Date(newRow['original_created_at']).toLocaleString('en-US', {
-              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-            }),
-            call_to_action: newRow['call_to_action_button_label'] ? {
-              type: newRow['call_to_action_button_label'],
-              message: 'View Details'
-            } : undefined,
-            split_bot_warning: newRow['split_bot_warning_text'],
-          };
-
-          return [...prev, transformedMessage];
-        });
+        dispatch({ type: 'ADD_MESSAGE', payload: transformedMessage });
 
         // Clear typing indicator when message received
         if (!isOwnMessage) {
-          setIsOtherUserTyping(false);
-          setTypingUserName(null);
+          dispatch({ type: 'SET_TYPING', payload: { isOtherUserTyping: false, typingUserName: null } });
         }
       }
     );
 
     // Listen for typing indicators via presence
     channel.on('presence', { event: 'sync' }, () => {
-      const state = channel.presenceState();
-      const typingUsers = Object.values(state)
+      const presenceState = channel.presenceState();
+      const typingUsers = Object.values(presenceState)
         .flat()
-        .filter(u => u.typing && u.user_id !== user?.id);
+        .filter(u => u.typing && u.user_id !== state.user?.id);
 
       if (typingUsers.length > 0) {
-        setIsOtherUserTyping(true);
-        setTypingUserName(typingUsers[0].user_name);
+        dispatch({ type: 'SET_TYPING', payload: { isOtherUserTyping: true, typingUserName: typingUsers[0].user_name } });
       } else {
-        setIsOtherUserTyping(false);
-        setTypingUserName(null);
+        dispatch({ type: 'SET_TYPING', payload: { isOtherUserTyping: false, typingUserName: null } });
       }
     });
 
@@ -403,8 +346,8 @@ export function useMessagingPageLogic() {
         console.log('[Realtime] Successfully subscribed to channel:', channelName);
         // Track presence for typing indicators
         await channel.track({
-          user_id: user?.id,
-          user_name: user?.firstName || 'User',
+          user_id: state.user?.id,
+          user_name: state.user?.firstName || 'User',
           typing: false,
           online_at: new Date().toISOString(),
         });
@@ -423,7 +366,7 @@ export function useMessagingPageLogic() {
       channel.unsubscribe();
       channelRef.current = null;
     };
-  }, [selectedThread?.id, authState.isChecking, user?.id]);
+  }, [state.selectedThread?.id, state.authState.isChecking, state.user?.id]);
 
   // ============================================================================
   // TYPING INDICATOR
@@ -433,12 +376,12 @@ export function useMessagingPageLogic() {
    * Track typing state via Presence
    */
   const trackTyping = useCallback(async (isTyping) => {
-    if (!channelRef.current || !user) return;
+    if (!channelRef.current || !state.user) return;
 
     try {
       await channelRef.current.track({
-        user_id: user.id,
-        user_name: user.firstName || 'User',
+        user_id: state.user.id,
+        user_name: state.user.firstName || 'User',
         typing: isTyping,
         typing_at: isTyping ? new Date().toISOString() : null,
         online_at: new Date().toISOString(),
@@ -446,7 +389,7 @@ export function useMessagingPageLogic() {
     } catch (err) {
       console.error('[Realtime] Failed to track typing:', err);
     }
-  }, [user]);
+  }, [state.user]);
 
   // ============================================================================
   // API CALLS
@@ -459,8 +402,8 @@ export function useMessagingPageLogic() {
   async function fetchThreads() {
     console.log('[fetchThreads] Starting thread fetch via Edge Function...');
     try {
-      setIsLoading(true);
-      setError(null);
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
+      dispatch({ type: 'SET_ERROR', payload: null });
 
       // Check for Supabase session (modern auth)
       const { data: sessionData } = await supabase.auth.getSession();
@@ -526,12 +469,12 @@ export function useMessagingPageLogic() {
       const fetchedThreads = data.data?.threads || [];
       console.log('[fetchThreads] Found', fetchedThreads.length, 'threads');
 
-      setThreads(fetchedThreads);
+      dispatch({ type: 'SET_THREADS', payload: fetchedThreads });
     } catch (err) {
       console.error('[fetchThreads] Error:', err);
-      setError(err.message || 'Failed to load conversations');
+      dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to load conversations' });
     } finally {
-      setIsLoading(false);
+      dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
   }
 
@@ -541,7 +484,7 @@ export function useMessagingPageLogic() {
    */
   async function fetchMessages(threadId) {
     try {
-      setIsLoadingMessages(true);
+      dispatch({ type: 'SET_IS_LOADING_MESSAGES', payload: true });
 
       // Check for Supabase session (modern auth)
       const { data: sessionData } = await supabase.auth.getSession();
@@ -595,8 +538,8 @@ export function useMessagingPageLogic() {
       const data = await response.json();
 
       if (data?.success) {
-        setMessages(data.data.messages || []);
-        setThreadInfo(data.data.thread_info || null);
+        dispatch({ type: 'SET_MESSAGES', payload: data.data.messages || [] });
+        dispatch({ type: 'SET_THREAD_INFO', payload: data.data.thread_info || null });
       } else {
         throw new Error(data?.error || 'Failed to fetch messages');
       }
@@ -604,7 +547,7 @@ export function useMessagingPageLogic() {
       console.error('Error fetching messages:', err);
       // Don't set global error, just log it - user can still see threads
     } finally {
-      setIsLoadingMessages(false);
+      dispatch({ type: 'SET_IS_LOADING_MESSAGES', payload: false });
     }
   }
 
@@ -614,10 +557,10 @@ export function useMessagingPageLogic() {
    * Supports both modern Supabase auth (JWT) and legacy auth (user_id in payload)
    */
   async function sendMessage() {
-    if (!messageInput.trim() || !selectedThread || isSending) return;
+    if (!state.messageInput.trim() || !state.selectedThread || state.isSending) return;
 
     try {
-      setIsSending(true);
+      dispatch({ type: 'SET_IS_SENDING', payload: true });
 
       // Clear typing indicator immediately
       trackTyping(false);
@@ -639,8 +582,8 @@ export function useMessagingPageLogic() {
 
       // Build payload - include user_id for legacy auth fallback
       const payload = {
-        thread_id: selectedThread.id,
-        message_body: messageInput.trim(),
+        thread_id: state.selectedThread.id,
+        message_body: state.messageInput.trim(),
       };
       if (!accessToken) {
         // No Supabase session - use legacy auth via user_id
@@ -674,7 +617,7 @@ export function useMessagingPageLogic() {
 
       if (data?.success) {
         // Clear input immediately
-        setMessageInput('');
+        dispatch({ type: 'SET_MESSAGE_INPUT', payload: '' });
 
         // Note: We no longer need to fetch messages or threads here!
         // The Realtime subscription will automatically add the new message
@@ -684,7 +627,7 @@ export function useMessagingPageLogic() {
         // (the Realtime broadcast might also arrive, but we'll dedupe)
         const optimisticMessage = {
           id: data.data.message_id,
-          message_body: messageInput.trim(),
+          message_body: state.messageInput.trim(),
           sender_name: 'You',
           sender_type: 'guest', // Will be corrected by Realtime if wrong
           is_outgoing: true,
@@ -693,20 +636,16 @@ export function useMessagingPageLogic() {
           }),
         };
 
-        setMessages(prev => {
-          // Avoid duplicates
-          if (prev.some(m => m.id === optimisticMessage.id)) return prev;
-          return [...prev, optimisticMessage];
-        });
+        dispatch({ type: 'ADD_MESSAGE', payload: optimisticMessage });
 
       } else {
         throw new Error(data?.error || 'Failed to send message');
       }
     } catch (err) {
       console.error('Error sending message:', err);
-      setError(err.message || 'Failed to send message');
+      dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to send message' });
     } finally {
-      setIsSending(false);
+      dispatch({ type: 'SET_IS_SENDING', payload: false });
     }
   }
 
@@ -720,13 +659,13 @@ export function useMessagingPageLogic() {
    */
   async function fetchPanelData(proposalId, listingId) {
     if (!proposalId && !listingId) {
-      setProposalData(null);
-      setListingData(null);
+      dispatch({ type: 'SET_PROPOSAL_DATA', payload: null });
+      dispatch({ type: 'SET_LISTING_DATA', payload: null });
       return;
     }
 
     try {
-      setIsLoadingPanelData(true);
+      dispatch({ type: 'SET_IS_LOADING_PANEL_DATA', payload: true });
 
       // Fetch proposal and listing data in parallel
       const [proposalResult, listingResult] = await Promise.all([
@@ -734,13 +673,13 @@ export function useMessagingPageLogic() {
         listingId ? fetchListingDetails(listingId) : Promise.resolve(null),
       ]);
 
-      setProposalData(proposalResult);
-      setListingData(listingResult);
+      dispatch({ type: 'SET_PROPOSAL_DATA', payload: proposalResult });
+      dispatch({ type: 'SET_LISTING_DATA', payload: listingResult });
     } catch (err) {
       console.error('[RightPanel] Error fetching panel data:', err);
       // Don't set error state - panel will show empty/gracefully degrade
     } finally {
-      setIsLoadingPanelData(false);
+      dispatch({ type: 'SET_IS_LOADING_PANEL_DATA', payload: false });
     }
   }
 
@@ -854,24 +793,24 @@ export function useMessagingPageLogic() {
       case 'accept':
         // Open proposal acceptance modal/flow
         handleOpenModal('accept_proposal', {
-          proposalId: threadInfo?.proposal_id,
-          proposalData,
+          proposalId: state.threadInfo?.proposal_id,
+          proposalData: state.proposalData,
         });
         break;
 
       case 'counter':
         // Open counter proposal modal
         handleOpenModal('counter_proposal', {
-          proposalId: threadInfo?.proposal_id,
-          proposalData,
+          proposalId: state.threadInfo?.proposal_id,
+          proposalData: state.proposalData,
         });
         break;
 
       case 'decline':
         // Open decline confirmation modal
         handleOpenModal('decline_proposal', {
-          proposalId: threadInfo?.proposal_id,
-          proposalData,
+          proposalId: state.threadInfo?.proposal_id,
+          proposalData: state.proposalData,
         });
         break;
 
@@ -879,8 +818,8 @@ export function useMessagingPageLogic() {
       case 'video':
         // Open video call scheduling modal
         handleOpenModal('schedule_video', {
-          threadId: selectedThread?.id,
-          contactName: threadInfo?.contact_name,
+          threadId: state.selectedThread?.id,
+          contactName: state.threadInfo?.contact_name,
         });
         break;
 
@@ -892,8 +831,8 @@ export function useMessagingPageLogic() {
       case 'schedule':
         // Open meeting scheduling modal
         handleOpenModal('schedule_meeting', {
-          threadId: selectedThread?.id,
-          contactName: threadInfo?.contact_name,
+          threadId: state.selectedThread?.id,
+          contactName: state.threadInfo?.contact_name,
         });
         break;
 
@@ -924,8 +863,8 @@ export function useMessagingPageLogic() {
 
       case 'view_listing':
         // Navigate to listing page
-        if (listingData?.id) {
-          window.location.href = `/listing?id=${listingData.id}`;
+        if (state.listingData?.id) {
+          window.location.href = `/listing?id=${state.listingData.id}`;
         }
         break;
 
@@ -944,7 +883,7 @@ export function useMessagingPageLogic() {
       default:
         console.warn('[MessagingPage] Unknown action:', actionType);
     }
-  }, [threadInfo, proposalData, listingData, selectedThread, handleOpenModal, handleOpenVMModal]);
+  }, [state.threadInfo, state.proposalData, state.listingData, state.selectedThread, handleOpenModal, handleOpenVMModal]);
 
   // ============================================================================
   // HANDLERS
@@ -957,20 +896,10 @@ export function useMessagingPageLogic() {
    * @param {boolean} [options.updateUrl=false] - Whether to update the URL
    */
   function selectThread(thread, { updateUrl = false } = {}) {
-    setSelectedThread(thread);
-    setMessages([]);
-    setThreadInfo(null);
-    setProposalData(null);
-    setListingData(null);
-    setIsOtherUserTyping(false);
-    setTypingUserName(null);
+    dispatch({ type: 'SELECT_THREAD', payload: thread });
 
     // Mark thread as read in local state (backend will mark messages as read)
-    setThreads(prevThreads =>
-      prevThreads.map(t =>
-        t.id === thread.id ? { ...t, unread_count: 0 } : t
-      )
-    );
+    dispatch({ type: 'MARK_THREAD_READ', payload: thread.id });
 
     if (updateUrl) {
       const params = new URLSearchParams(window.location.search);
@@ -993,7 +922,7 @@ export function useMessagingPageLogic() {
    * Called when a user clicks a suggestion chip in the empty state
    */
   const insertSuggestion = useCallback((suggestionText) => {
-    setMessageInput(suggestionText);
+    dispatch({ type: 'SET_MESSAGE_INPUT', payload: suggestionText });
     // Trigger typing indicator so recipient sees activity
     trackTyping(true);
   }, [trackTyping]);
@@ -1003,7 +932,7 @@ export function useMessagingPageLogic() {
    */
   const handleMessageInputChange = useCallback((value) => {
     if (value.length <= 1000) {
-      setMessageInput(value);
+      dispatch({ type: 'SET_MESSAGE_INPUT', payload: value });
 
       // Track typing
       trackTyping(true);
@@ -1023,14 +952,13 @@ export function useMessagingPageLogic() {
    */
   const handleSendMessage = useCallback(() => {
     sendMessage();
-  }, [messageInput, selectedThread, isSending]);
+  }, [state.messageInput, state.selectedThread, state.isSending]);
 
   /**
    * Handle retry after error
    */
   const handleRetry = useCallback(() => {
-    setError(null);
-    setIsLoading(true);
+    dispatch({ type: 'START_RETRY' });
     fetchThreads();
   }, []);
 
@@ -1044,7 +972,7 @@ export function useMessagingPageLogic() {
    */
   const handleProposalSubmit = async (proposalData) => {
     console.log('[MessagingPage] Proposal submission initiated:', proposalData);
-    setIsSubmittingProposal(true);
+    dispatch({ type: 'SET_IS_SUBMITTING_PROPOSAL', payload: true });
 
     try {
       const guestId = getSessionId();
@@ -1108,7 +1036,7 @@ export function useMessagingPageLogic() {
           : `${reservationSpanWeeks} weeks`;
 
       // Build payload (using 0-indexed days)
-      const listingId = proposalModalData?.listing?.id;
+      const listingId = state.proposalModalData?.listing?.id;
       const payload = {
         guestId: guestId,
         listingId: listingId,
@@ -1171,47 +1099,47 @@ export function useMessagingPageLogic() {
       console.error('[MessagingPage] Error submitting proposal:', error);
       // TODO: Show error toast/notification to user
     } finally {
-      setIsSubmittingProposal(false);
+      dispatch({ type: 'SET_IS_SUBMITTING_PROPOSAL', payload: false });
     }
   };
 
   // ============================================================================
-  // RETURN HOOK API
+  // RETURN HOOK API (backward-compatible aliases)
   // ============================================================================
   return {
     // Auth state
-    authState,
-    user,
+    authState: state.authState,
+    user: state.user,
 
     // Thread data
-    threads,
-    selectedThread,
-    messages,
-    threadInfo,
+    threads: state.threads,
+    selectedThread: state.selectedThread,
+    messages: state.messages,
+    threadInfo: state.threadInfo,
 
     // Right panel data
-    proposalData,
-    listingData,
-    isLoadingPanelData,
+    proposalData: state.proposalData,
+    listingData: state.listingData,
+    isLoadingPanelData: state.isLoadingPanelData,
 
     // UI state
-    isLoading,
-    isLoadingMessages,
-    error,
-    messageInput,
-    isSending,
+    isLoading: state.isLoading,
+    isLoadingMessages: state.isLoadingMessages,
+    error: state.error,
+    messageInput: state.messageInput,
+    isSending: state.isSending,
 
     // Realtime state
-    isOtherUserTyping,
-    typingUserName,
+    isOtherUserTyping: state.isOtherUserTyping,
+    typingUserName: state.typingUserName,
 
-    // CTA state
-    activeModal,
-    modalContext,
+    // CTA state (backward-compat: derive activeModal from useModalManager)
+    activeModal: modals.openModal,
+    modalContext: modals.getData(modals.openModal),
 
-    // VM modal state
-    showVMModal,
-    vmInitialView,
+    // VM modal state (backward-compat: derive from useModalManager)
+    showVMModal: modals.isOpen('vm'),
+    vmInitialView: modals.getData('vm')?.initialView ?? '',
 
     // Handlers
     handleThreadSelect,
@@ -1227,9 +1155,9 @@ export function useMessagingPageLogic() {
     handleCloseModal,
 
     // Proposal modal state
-    proposalModalData,
-    zatConfig,
-    isSubmittingProposal,
+    proposalModalData: state.proposalModalData,
+    zatConfig: state.zatConfig,
+    isSubmittingProposal: state.isSubmittingProposal,
     handleProposalSubmit,
 
     // VM modal handlers

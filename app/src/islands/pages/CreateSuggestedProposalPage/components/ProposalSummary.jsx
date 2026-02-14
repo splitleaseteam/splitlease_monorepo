@@ -4,7 +4,8 @@
 
 import { getDayName } from '../../../../lib/dayUtils.js';
 import { formatCurrency as _formatCurrency } from '../../../../lib/formatting/formatCurrency.js';
-import { getAddressString, getDefaultPhoto } from '../suggestedProposalService.js';
+import { getAddressString } from '../suggestedProposalService.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 
 const formatCurrency = (amount) => _formatCurrency(amount || 0, { showCents: true });
 
@@ -36,10 +37,10 @@ export default function ProposalSummary({
           <h4>Guest Information</h4>
           <div className="csp-summary-item">
             <img
-              src={selectedGuest.profile_photo_url || getDefaultPhoto()}
+              src={selectedGuest.profile_photo_url || getInitialsAvatarUrl(guestName)}
               alt={guestName}
               className="csp-summary-avatar"
-              onError={(e) => { e.target.src = getDefaultPhoto(); }}
+              onError={handleAvatarError}
             />
             <div>
               <p className="csp-summary-name">{guestName}</p>

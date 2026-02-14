@@ -9,6 +9,7 @@
  */
 
 import { getVirtualMeetingState, getVMStateInfo, VM_STATES } from '../../../../logic/rules/proposals/virtualMeetingRules.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 
 export default function ThreadHeader({
   info,
@@ -73,12 +74,10 @@ export default function ThreadHeader({
       <div className="thread-header__left">
         {/* Avatar */}
         <img
-          src={info.contact_avatar || '/assets/images/default-avatar.jpg'}
+          src={info.contact_avatar || getInitialsAvatarUrl(info.contact_name)}
           alt={info.contact_name || 'Contact'}
           className="thread-header__avatar"
-          onError={(e) => {
-            e.target.src = '/assets/images/default-avatar.jpg';
-          }}
+          onError={handleAvatarError}
         />
 
         {/* Info */}

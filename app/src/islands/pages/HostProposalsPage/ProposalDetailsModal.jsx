@@ -17,6 +17,7 @@ import { getStatusTagInfo, getNightsAsDayNames, getCheckInOutFromDays } from './
 import { formatCurrency, formatDate, formatDateTime } from './formatters.js';
 import { PROPOSAL_STATUSES, getStatusConfig, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
 import { getVMButtonLabel, getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../lib/avatarUtils.js';
 
 /**
  * Get host-appropriate status message based on proposal status
@@ -118,7 +119,7 @@ export default function ProposalDetailsModal({
   const guestLastName = guest.last_name || '';
   const guestBio = guest.bio || '';
   const guestAvatar = guest.avatar || guest.profile_photo_url;
-  const avatarUrl = guestAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(guestName)}&background=random&size=60`;
+  const avatarUrl = guestAvatar || getInitialsAvatarUrl(guestName);
 
   // Verification statuses
   const linkedinVerified = guest.work_verified || false;
@@ -539,6 +540,7 @@ export default function ProposalDetailsModal({
                     src={avatarUrl}
                     alt={guestName}
                     className="guest-avatar-large"
+                    onError={handleAvatarError}
                   />
                   <div className="guest-info">
                     <h4 className="guest-name">{guestName} {guestLastName}</h4>

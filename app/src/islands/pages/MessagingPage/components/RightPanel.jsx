@@ -11,17 +11,7 @@
  */
 
 import { useState } from 'react';
-
-/**
- * Get initials from a name string
- */
-function getInitials(name) {
-  if (!name) return '?';
-  const parts = name.trim().split(' ').filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 
 /**
  * Format a date string to a short format
@@ -136,13 +126,11 @@ export default function RightPanel({
       {!isLoading && (
         <div className="panel-profile">
           <div className="panel-profile__avatar">
-            {threadInfo?.contact_avatar ? (
-              <img src={threadInfo.contact_avatar} alt="" />
-            ) : (
-              <span className="panel-profile__avatar-initials">
-                {getInitials(threadInfo?.contact_name)}
-              </span>
-            )}
+            <img
+              src={threadInfo?.contact_avatar || getInitialsAvatarUrl(threadInfo?.contact_name)}
+              alt=""
+              onError={handleAvatarError}
+            />
           </div>
           <h3 className="panel-profile__name">
             {threadInfo?.contact_name || 'Unknown'}

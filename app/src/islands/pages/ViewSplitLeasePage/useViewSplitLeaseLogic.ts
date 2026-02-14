@@ -16,7 +16,10 @@
  * @security All user IDs derived from JWT via useAuthenticatedUser
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useReducer, useEffect, useCallback, useMemo, useRef } from 'react';
+// @ts-ignore - JS module without type declarations
+import { useModalManager } from '../../../hooks/useModalManager.js';
+import { viewSplitLeaseReducer, createInitialState } from './viewSplitLeaseReducer';
 import type { UseViewSplitLeaseLogicOptions } from '../types/bookingTypes.js';
 // @ts-ignore - JS module without type declarations
 import { useAuthenticatedUser } from '../../../../hooks/useAuthenticatedUser';
@@ -135,54 +138,18 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   } = useAuthenticatedUser();
   
   // ==========================================================================
-  // STATE: Core Data
+  // STATE: Reducer (core data + booking + proposal + user + UI)
   // ==========================================================================
-  
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [listing, setListing] = useState(null);
-  const [zatConfig, setZatConfig] = useState(null);
-  const [informationalTexts, setInformationalTexts] = useState({});
-  
+
+  const urlState = useMemo(() => getInitialStateFromUrl(), []);
+
+  const [state, dispatch] = useReducer(viewSplitLeaseReducer, urlState, createInitialState);
+
   // ==========================================================================
-  // STATE: Booking Widget
+  // STATE: Modals (centralized via useModalManager)
   // ==========================================================================
-  
-  const initialState = useMemo(() => getInitialStateFromUrl(), []);
-  
-  const [selectedDayObjects, setSelectedDayObjects] = useState(initialState.daysSelected);
-  const [moveInDate, setMoveInDate] = useState(initialState.moveInDate);
-  const [reservationSpan, setReservationSpan] = useState(initialState.reservationSpan);
-  const [isStrictModeEnabled, setIsStrictModeEnabled] = useState(false);
-  
-  // ==========================================================================
-  // STATE: Modals
-  // ==========================================================================
-  
-  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-  const [showContactHostModal, setShowContactHostModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [pendingProposalData, setPendingProposalData] = useState(null);
-  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successProposalId, setSuccessProposalId] = useState(null);
-  
-  // ==========================================================================
-  // STATE: User Data
-  // ==========================================================================
-  
-  const [loggedInUserData, setLoggedInUserData] = useState(null);
-  const [existingProposalForListing, setExistingProposalForListing] = useState(null);
-  const [isFavorited, setIsFavorited] = useState(false);
-  
-  // ==========================================================================
-  // STATE: UI
-  // ==========================================================================
-  
-  const [isMobile, setIsMobile] = useState(false);
-  const [shouldLoadMap, setShouldLoadMap] = useState(false);
+
+  const modals = useModalManager();
   
   // Refs
   const mapRef = useRef(null);
@@ -204,40 +171,40 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   // ==========================================================================
   
   const priceBreakdown = useMemo(() => {
-    if (!listing || !zatConfig || selectedDayObjects.length === 0) {
+    if (!state.listing || !state.zatConfig || state.selectedDayObjects.length === 0) {
       return null;
     }
-    
+
     try {
       return calculatePricingBreakdown(
-        selectedDayObjects,
-        listing,
-        reservationSpan,
-        zatConfig
+        state.selectedDayObjects,
+        state.listing,
+        state.reservationSpan,
+        state.zatConfig
       );
     } catch (error) {
       logger.error('[useViewSplitLeaseLogic] Price calculation error:', error);
       return null;
     }
-  }, [listing, zatConfig, selectedDayObjects, reservationSpan]);
+  }, [state.listing, state.zatConfig, state.selectedDayObjects, state.reservationSpan]);
   
   // ==========================================================================
   // COMPUTED: Validation
   // ==========================================================================
   
   const validationErrors = useMemo(() => {
-    if (!listing || selectedDayObjects.length === 0) {
+    if (!state.listing || state.selectedDayObjects.length === 0) {
       return { hasErrors: false, errors: [] };
     }
-    
-    return validateScheduleSelection(selectedDayObjects, listing, {
-      isStrictModeEnabled,
-      moveInDate,
-      reservationSpan
+
+    return validateScheduleSelection(state.selectedDayObjects, state.listing, {
+      isStrictModeEnabled: state.isStrictModeEnabled,
+      moveInDate: state.moveInDate,
+      reservationSpan: state.reservationSpan
     });
-  }, [listing, selectedDayObjects, isStrictModeEnabled, moveInDate, reservationSpan]);
-  
-  const isBookingValid = !validationErrors.hasErrors && priceBreakdown !== null && moveInDate !== null;
+  }, [state.listing, state.selectedDayObjects, state.isStrictModeEnabled, state.moveInDate, state.reservationSpan]);
+
+  const isBookingValid = !validationErrors.hasErrors && priceBreakdown !== null && state.moveInDate !== null;
   
   // ==========================================================================
   // COMPUTED: Formatted Price Display
@@ -249,9 +216,9 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   }, [priceBreakdown]);
   
   const formattedStartingPrice = useMemo(() => {
-    if (!listing || !listing.starting_nightly_price) return '$0.00';
-    return `$${parseFloat(listing.starting_nightly_price).toFixed(2)}`;
-  }, [listing]);
+    if (!state.listing || !state.listing.starting_nightly_price) return '$0.00';
+    return `$${parseFloat(state.listing.starting_nightly_price).toFixed(2)}`;
+  }, [state.listing]);
   
   // ==========================================================================
   // EFFECTS: Responsive Detection
@@ -259,11 +226,11 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 900px)');
-    setIsMobile(mediaQuery.matches);
-    
-    const handleResize = (e) => setIsMobile(e.matches);
+    dispatch({ type: 'SET_MOBILE', payload: mediaQuery.matches });
+
+    const handleResize = (e) => dispatch({ type: 'SET_MOBILE', payload: e.matches });
     mediaQuery.addEventListener('change', handleResize);
-    
+
     return () => mediaQuery.removeEventListener('change', handleResize);
   }, []);
   
@@ -290,10 +257,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
           fetchInformationalTexts()
         ]);
         
-        setListing(listingData);
-        setZatConfig(zatConfigData);
-        setInformationalTexts(infoTexts);
-        setIsLoading(false);
+        dispatch({ type: 'INIT_SUCCESS', payload: { listing: listingData, zatConfig: zatConfigData, informationalTexts: infoTexts } });
         
         logger.debug(`[useViewSplitLeaseLogic] Initialized in ${mode} mode:`, {
           listingId,
@@ -302,8 +266,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
         
       } catch (err) {
         logger.error('[useViewSplitLeaseLogic] Initialization error:', err);
-        setError(err.message);
-        setIsLoading(false);
+        dispatch({ type: 'INIT_ERROR', payload: err.message });
       }
     }
     
@@ -319,12 +282,10 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       if (authLoading) return;
       
       if (!isAuthenticated || !authUserId) {
-        setLoggedInUserData(null);
-        setIsFavorited(false);
-        setExistingProposalForListing(null);
+        dispatch({ type: 'CLEAR_USER_DATA' });
         return;
       }
-      
+
       try {
         // Fetch user profile data
         const { data: userRecord, error: userError } = await supabase
@@ -335,80 +296,90 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
 
         if (userError) throw userError;
 
-        // Set user data
+        // Build local variables for single dispatch
+        let userData = null;
+        let isFav = false;
+        let existingProposal = null;
+
         if (userRecord) {
-          setLoggedInUserData({
+          userData = {
             userId: authUserId,
             aboutMe: userRecord.bio_text || '',
             needForSpace: userRecord.stated_need_for_space_text || '',
             specialNeeds: userRecord.stated_special_needs_text || ''
-          });
+          };
 
           // Check if this listing is favorited (now stored on listing table)
-          if (listing) {
+          if (state.listing) {
             const { data: listingFavData } = await supabase
               .from('listing')
               .select('user_ids_who_favorited_json')
-              .eq('id', listing.id)
+              .eq('id', state.listing.id)
               .maybeSingle();
 
             const favoritedUserIds = listingFavData?.user_ids_who_favorited_json || [];
             if (Array.isArray(favoritedUserIds)) {
-              setIsFavorited(favoritedUserIds.includes(authUserId));
+              isFav = favoritedUserIds.includes(authUserId);
             }
           }
         }
 
         // Check for existing proposal
-        if (listing) {
+        if (state.listing) {
           const { data: proposals, error: proposalError } = await supabase
             .from('booking_proposal')
             .select('id')
             .eq('guest_user_id', authUserId)
-            .eq('listing_id', listing.id)
+            .eq('listing_id', state.listing.id)
             .limit(1);
-          
+
           if (!proposalError && proposals && proposals.length > 0) {
-            setExistingProposalForListing(proposals[0]);
+            existingProposal = proposals[0];
           }
         }
-        
+
+        dispatch({ type: 'SET_USER_DATA', payload: {
+          loggedInUserData: userData,
+          existingProposal: existingProposal,
+          isFavorited: isFav
+        } });
+
       } catch (error) {
         logger.error('[useViewSplitLeaseLogic] Auth sync error:', error);
       }
     }
-    
+
     syncAuthState();
-  }, [authLoading, isAuthenticated, authUserId, listing]);
+  }, [authLoading, isAuthenticated, authUserId, state.listing]);
   
   // ==========================================================================
   // EFFECTS: Smart Move-In Date Calculation
   // ==========================================================================
   
   useEffect(() => {
-    if (selectedDayObjects.length > 0 && !moveInDate) {
-      const dayNumbers = selectedDayObjects.map(d => d.dayOfWeek);
+    if (state.selectedDayObjects.length > 0 && !state.moveInDate) {
+      const dayNumbers = state.selectedDayObjects.map(d => d.dayOfWeek);
       const smartDate = calculateSmartMoveInDate(dayNumbers, minMoveInDate);
-      setMoveInDate(smartDate);
+      dispatch({ type: 'SET_MOVE_IN_DATE', payload: smartDate });
     }
-  }, [selectedDayObjects, moveInDate, minMoveInDate]);
+  }, [state.selectedDayObjects, state.moveInDate, minMoveInDate]);
   
   // ==========================================================================
   // HANDLERS: Schedule Changes
   // ==========================================================================
   
   const handleScheduleChange = useCallback((dayObjects) => {
-    setSelectedDayObjects(dayObjects);
+    dispatch({ type: 'UPDATE_SCHEDULE', payload: dayObjects });
     logger.debug('[useViewSplitLeaseLogic] Schedule changed:', dayObjects.map(d => d.name));
   }, []);
   
   const handleMoveInDateChange = useCallback((newDate) => {
-    setMoveInDate(newDate);
+    dispatch({ type: 'SET_MOVE_IN_DATE', payload: newDate });
     logger.debug('[useViewSplitLeaseLogic] Move-in date changed:', newDate);
   }, []);
   
   const handleReservationSpanChange = useCallback((newSpan) => {
-    setReservationSpan(newSpan);
+    dispatch({ type: 'SET_RESERVATION_SPAN', payload: newSpan });
     // Persist last selected reservation span to localStorage
     localStorage.setItem('sl_last_reservation_span', String(newSpan));
     console.log('[ViewSplitLease] 💾 Saved reservation span to localStorage:', newSpan);
@@ -425,49 +396,47 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
    */
   const handleOpenContactModal = useCallback(async () => {
     const isLoggedIn = await checkAuthStatus();
-    
+
     if (!isLoggedIn) {
-      setShowAuthModal(true);
+      modals.open('auth');
       logger.debug('[useViewSplitLeaseLogic] Contact blocked - user not authenticated');
       return;
     }
-    
-    setShowContactHostModal(true);
+
+    modals.open('contactHost');
     logger.debug('[useViewSplitLeaseLogic] Opening contact modal');
-  }, []);
-  
+  }, [modals]);
+
   const handleCloseContactModal = useCallback(() => {
-    setShowContactHostModal(false);
-  }, []);
-  
+    modals.close('contactHost');
+  }, [modals]);
+
   const handleOpenProposalModal = useCallback(() => {
     if (!isBookingValid) {
       logger.warn('[useViewSplitLeaseLogic] Cannot open proposal modal - booking invalid');
       return;
     }
-    
+
     // Reset submission state when opening modal to ensure fresh state
-    setIsSubmittingProposal(false);
-    setIsProposalModalOpen(true);
-  }, [isBookingValid]);
-  
+    dispatch({ type: 'PROPOSAL_SUBMIT_ERROR' });
+    modals.open('proposal');
+  }, [isBookingValid, modals]);
+
   const handleCloseProposalModal = useCallback(() => {
-    setIsProposalModalOpen(false);
-  }, []);
-  
+    modals.close('proposal');
+  }, [modals]);
+
   const handlePhotoClick = useCallback((index) => {
-    setCurrentPhotoIndex(index);
-    setShowPhotoModal(true);
-  }, []);
-  
+    modals.open('photo', { index });
+  }, [modals]);
+
   const handleClosePhotoModal = useCallback(() => {
-    setShowPhotoModal(false);
-  }, []);
-  
+    modals.close('photo');
+  }, [modals]);
+
   const handleCloseSuccessModal = useCallback(() => {
-    setShowSuccessModal(false);
-    setSuccessProposalId(null);
-  }, []);
+    modals.close('success');
+  }, [modals]);
   
   // ==========================================================================
   // HANDLERS: Proposal Submission (JWT-based)
@@ -478,17 +447,17 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
    * SECURITY: Uses authUserId from JWT, not session storage
    */
   const handleSubmitProposal = useCallback(async (proposalData) => {
-    setIsSubmittingProposal(true);
-    
+    dispatch({ type: 'START_PROPOSAL_SUBMIT' });
+
     try {
       // SECURITY: Validate JWT-derived user ID
       if (!authUserId) {
         throw new Error('Authentication required. Please log in again.');
       }
-      
+
       const result = await createProposal({
         guestId: authUserId,  // JWT-derived
-        listingId: listing.id,
+        listingId: state.listing.id,
         moveInDate: proposalData.moveInDate,
         daysSelectedObjects: proposalData.daysSelectedObjects,
         reservationSpanWeeks: proposalData.reservationSpan || 13,
@@ -505,63 +474,61 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
           moveInRangeText: proposalData.moveInRange || ''
         }
       });
-      
+
       if (!result.success) {
         throw new Error(result.error);
       }
-      
+
       // Success
-      setIsProposalModalOpen(false);
-      setPendingProposalData(null);
-      setExistingProposalForListing({ id: result.proposalId });
-      setSuccessProposalId(result.proposalId);
-      setShowSuccessModal(true);
-      
+      modals.close('proposal');
+      dispatch({ type: 'PROPOSAL_SUBMIT_SUCCESS', payload: { proposalId: result.proposalId } });
+      modals.open('success', { proposalId: result.proposalId });
+
       logger.debug('[useViewSplitLeaseLogic] Proposal created:', result.proposalId);
-      
+
       return { success: true, proposalId: result.proposalId };
-      
+
     } catch (error) {
       logger.error('[useViewSplitLeaseLogic] Proposal submission error:', error);
       throw error;
     } finally {
-      setIsSubmittingProposal(false);
+      dispatch({ type: 'PROPOSAL_SUBMIT_ERROR' });
     }
-  }, [authUserId, listing]);
+  }, [authUserId, state.listing]);
   
   /**
    * Handle auth success when coming from auth modal
    */
   const handleAuthSuccess = useCallback(async () => {
-    setShowAuthModal(false);
-    
+    modals.close('auth');
+
     // If there's pending proposal data, submit it
-    if (pendingProposalData) {
-      await handleSubmitProposal(pendingProposalData);
+    if (state.pendingProposalData) {
+      await handleSubmitProposal(state.pendingProposalData);
     }
-  }, [pendingProposalData, handleSubmitProposal]);
+  }, [modals, state.pendingProposalData, handleSubmitProposal]);
   
   // ==========================================================================
   // HANDLERS: Favorites
   // ==========================================================================
   
   const handleToggleFavorite = useCallback(async () => {
-    if (!authUserId || !listing) {
-      setShowAuthModal(true);
+    if (!authUserId || !state.listing) {
+      modals.open('auth');
       return;
     }
-    
+
     try {
-      const newFavoriteState = !isFavorited;
-      
+      const newFavoriteState = !state.isFavorited;
+
       // Optimistic update
-      setIsFavorited(newFavoriteState);
-      
+      dispatch({ type: 'TOGGLE_FAVORITE', payload: newFavoriteState });
+
       // Get current favorited user IDs from listing
       const { data: listingData, error: fetchError } = await supabase
         .from('listing')
         .select('user_ids_who_favorited_json')
-        .eq('id', listing.id)
+        .eq('id', state.listing.id)
         .maybeSingle();
 
       if (fetchError) throw fetchError;
@@ -575,25 +542,25 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       const { error: updateError } = await supabase
         .from('listing')
         .update({ user_ids_who_favorited_json: newFavoritedUsers })
-        .eq('id', listing.id);
-      
+        .eq('id', state.listing.id);
+
       if (updateError) throw updateError;
-      
+
       logger.debug('[useViewSplitLeaseLogic] Favorite toggled:', newFavoriteState);
-      
+
     } catch (error) {
       // Rollback on error
-      setIsFavorited(!isFavorited);
+      dispatch({ type: 'TOGGLE_FAVORITE', payload: !state.isFavorited });
       logger.error('[useViewSplitLeaseLogic] Failed to toggle favorite:', error);
     }
-  }, [authUserId, listing, isFavorited]);
+  }, [authUserId, state.listing, state.isFavorited]);
   
   // ==========================================================================
   // HANDLERS: Map
   // ==========================================================================
   
   const handleLoadMap = useCallback(() => {
-    setShouldLoadMap(true);
+    dispatch({ type: 'SET_SHOULD_LOAD_MAP' });
   }, []);
   
   // ==========================================================================
@@ -602,25 +569,25 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   
   return {
     // Loading & Data
-    isLoading,
-    error,
-    listing,
-    zatConfig,
-    informationalTexts,
-    
+    isLoading: state.isLoading,
+    error: state.error,
+    listing: state.listing,
+    zatConfig: state.zatConfig,
+    informationalTexts: state.informationalTexts,
+
     // Auth & User
     isAuthenticated,
     authUserId,
-    loggedInUserData,
-    isFavorited,
-    existingProposalForListing,
-    
+    loggedInUserData: state.loggedInUserData,
+    isFavorited: state.isFavorited,
+    existingProposalForListing: state.existingProposalForListing,
+
     // Booking State
-    selectedDayObjects,
-    moveInDate,
-    reservationSpan,
-    isStrictModeEnabled,
-    
+    selectedDayObjects: state.selectedDayObjects,
+    moveInDate: state.moveInDate,
+    reservationSpan: state.reservationSpan,
+    isStrictModeEnabled: state.isStrictModeEnabled,
+
     // Computed Values
     minMoveInDate,
     priceBreakdown,
@@ -628,30 +595,30 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
     isBookingValid,
     formattedPrice,
     formattedStartingPrice,
-    
-    // Modals
-    isProposalModalOpen,
-    showContactHostModal,
-    showAuthModal,
-    showPhotoModal,
-    showSuccessModal,
-    currentPhotoIndex,
-    successProposalId,
-    isSubmittingProposal,
-    
+
+    // Modals (backward-compat aliases — consumer reads these)
+    isProposalModalOpen: modals.isOpen('proposal'),
+    showContactHostModal: modals.isOpen('contactHost'),
+    showAuthModal: modals.isOpen('auth'),
+    showPhotoModal: modals.isOpen('photo'),
+    showSuccessModal: modals.isOpen('success'),
+    currentPhotoIndex: modals.getData('photo')?.index ?? 0,
+    successProposalId: modals.getData('success')?.proposalId ?? null,
+    isSubmittingProposal: state.isSubmittingProposal,
+
     // UI State
-    isMobile,
-    shouldLoadMap,
-    
+    isMobile: state.isMobile,
+    shouldLoadMap: state.shouldLoadMap,
+
     // Refs
     mapRef,
     hasAutoZoomedRef,
-    
+
     // Handlers: Schedule
     handleScheduleChange,
     handleMoveInDateChange,
     handleReservationSpanChange,
-    
+
     // Handlers: Modals
     handleOpenContactModal,
     handleCloseContactModal,
@@ -660,16 +627,14 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
     handlePhotoClick,
     handleClosePhotoModal,
     handleCloseSuccessModal,
-    
+
     // Handlers: Actions
     handleSubmitProposal,
     handleAuthSuccess,
     handleToggleFavorite,
     handleLoadMap,
-    
+
     // Setters (for UI-only state overrides)
-    setShowAuthModal,
-    setIsStrictModeEnabled,
-    setShouldLoadMap
+    setShowAuthModal: (val) => val ? modals.open('auth') : modals.close('auth'),
   };
 }

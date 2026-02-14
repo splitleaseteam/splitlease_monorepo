@@ -2,7 +2,7 @@
  * GuestSearch - Step 2: Search and select a guest
  */
 
-import { getDefaultPhoto } from '../suggestedProposalService.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 
 export default function GuestSearch({
   searchTerm,
@@ -70,10 +70,10 @@ export default function GuestSearch({
                   onClick={() => onSelect(guest)}
                 >
                   <img
-                    src={guest.profile_photo_url || getDefaultPhoto()}
+                    src={guest.profile_photo_url || getInitialsAvatarUrl(guest.first_name || 'Guest')}
                     alt={(guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || 'Guest'}
                     className="csp-thumbnail csp-user-thumbnail"
-                    onError={(e) => { e.target.src = getDefaultPhoto(); }}
+                    onError={handleAvatarError}
                   />
                   <div className="csp-search-result-info">
                     <h4>{(guest.first_name && guest.last_name ? `${guest.first_name} ${guest.last_name}` : null) || guest.first_name || 'Unknown'}</h4>
@@ -105,9 +105,9 @@ export default function GuestSearch({
 
           <div className="csp-user-avatar">
             <img
-              src={selectedGuest.profile_photo_url || getDefaultPhoto()}
+              src={selectedGuest.profile_photo_url || getInitialsAvatarUrl(guestName)}
               alt={guestName}
-              onError={(e) => { e.target.src = getDefaultPhoto(); }}
+              onError={handleAvatarError}
             />
           </div>
           <div className="csp-item-details">

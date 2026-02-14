@@ -9,7 +9,8 @@
  * @pattern Logic Hook (orchestration layer between Component and Logic Core).
  *
  * Architecture:
- * - React state management (hooks, effects)
+ * - useReducer for all non-modal state
+ * - useModalManager for modal open/close + per-modal data
  * - Calls Logic Core functions for calculations/validation
  * - Infrastructure layer (Supabase queries, data fetching)
  * - Returns pre-processed data to component
@@ -20,10 +21,12 @@
  * - Loading/error states
  * - Modal controls
  *
- * REFACTORED: Added fallback listings logic and transformListing export
+ * REFACTORED: useReducer + useModalManager (Phase 4/5 pattern)
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useReducer, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useModalManager } from '../../hooks/useModalManager.js'
+import { searchPageReducer, initialState } from './searchPageReducer.js'
 import { supabase } from '../../lib/supabase.js'
 import {
   PRICE_TIERS,
@@ -81,6 +84,22 @@ function extractPhotoIdsFromListings(listings) {
 }
 
 /**
+ * Create initial state with URL-parsed filter values.
+ * Used as the useReducer initializer to avoid a separate useState + useMemo.
+ */
+function createInitialState() {
+  const urlFilters = parseUrlToFilters()
+  return {
+    ...initialState,
+    selectedBoroughs: urlFilters.selectedBoroughs,
+    selectedNeighborhoods: urlFilters.selectedNeighborhoods,
+    weekPattern: urlFilters.weekPattern,
+    priceTier: urlFilters.priceTier,
+    sortBy: urlFilters.sortBy,
+  }
+}
+
+/**
  * Main SearchPage logic hook.
  *
  * @returns {object} Pre-calculated state and handlers for SearchPage component.
@@ -90,59 +109,11 @@ export function useSearchPageLogic() {
   // State Management
   // ============================================================================
 
-  // Loading & Error State
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  // Reducer-based state management (all non-modal state)
+  const [state, dispatch] = useReducer(searchPageReducer, null, createInitialState)
 
-  // Listings State
-  const [allActiveListings, setAllActiveListings] = useState([]) // ALL active (green pins)
-  const [allListings, setAllListings] = useState([]) // Filtered (purple pins)
-  const [displayedListings, setDisplayedListings] = useState([]) // Lazy-loaded subset
-  const [loadedCount, setLoadedCount] = useState(0)
-
-  // ============================================================================
-  // Fallback Listings State (when filters return no results)
-  // MOVED FROM SearchPage.jsx - consolidated into hook
-  // ============================================================================
-  const [fallbackListings, setFallbackListings] = useState([])
-  const [fallbackDisplayedListings, setFallbackDisplayedListings] = useState([])
-  const [fallbackLoadedCount, setFallbackLoadedCount] = useState(0)
-  const [isFallbackLoading, setIsFallbackLoading] = useState(false)
-  const [fallbackFetchFailed, setFallbackFetchFailed] = useState(false)
-
-  // Modal State
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
-  const [isAIResearchModalOpen, setIsAIResearchModalOpen] = useState(false)
-  const [selectedListing, setSelectedListing] = useState(null)
-  const [infoModalTriggerRef, setInfoModalTriggerRef] = useState(null)
-  const [informationalTexts, setInformationalTexts] = useState({})
-
-  // Geography State
-  const [boroughs, setBoroughs] = useState([])
-  const [neighborhoods, setNeighborhoods] = useState([])
-
-  // Parse URL parameters for initial filter state
-  const urlFilters = useMemo(() => parseUrlToFilters(), [])
-
-  // Filter State (initialized from URL if available)
-  const [selectedBoroughs, setSelectedBoroughs] = useState(urlFilters.selectedBoroughs)
-  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState(
-    urlFilters.selectedNeighborhoods
-  )
-  const [weekPattern, setWeekPattern] = useState(urlFilters.weekPattern)
-  const [priceTier, setPriceTier] = useState(urlFilters.priceTier)
-  const [sortBy, setSortBy] = useState(urlFilters.sortBy)
-  const [neighborhoodSearch, setNeighborhoodSearch] = useState('')
-
-  // UI State
-  const [filterPanelActive, setFilterPanelActive] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [mobileMapVisible, setMobileMapVisible] = useState(false)
-
-  // Listing Detail Drawer
-  const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false)
-  const [detailDrawerListing, setDetailDrawerListing] = useState(null)
+  // Centralized modal state (contact, info, AI research)
+  const modals = useModalManager({ allowMultiple: true })
 
   // Refs
   const mapRef = useRef(null)
@@ -150,6 +121,46 @@ export function useSearchPageLogic() {
   const lastFetchParamsRef = useRef(null)
   const isInitialMount = useRef(true)
   const allActivePopulatedRef = useRef(false)
+
+  // ============================================================================
+  // Backward-Compatible Setter Shims
+  // ============================================================================
+
+  const setSelectedBoroughs = useCallback((val) => {
+    dispatch({ type: 'SET_SELECTED_BOROUGHS', payload: val })
+  }, [])
+
+  const setSelectedNeighborhoods = useCallback((val) => {
+    dispatch({ type: 'SET_SELECTED_NEIGHBORHOODS', payload: val })
+  }, [])
+
+  const setWeekPattern = useCallback((val) => {
+    dispatch({ type: 'SET_WEEK_PATTERN', payload: val })
+  }, [])
+
+  const setPriceTier = useCallback((val) => {
+    dispatch({ type: 'SET_PRICE_TIER', payload: val })
+  }, [])
+
+  const setSortBy = useCallback((val) => {
+    dispatch({ type: 'SET_SORT_BY', payload: val })
+  }, [])
+
+  const setNeighborhoodSearch = useCallback((val) => {
+    dispatch({ type: 'SET_NEIGHBORHOOD_SEARCH', payload: val })
+  }, [])
+
+  const setFilterPanelActive = useCallback((val) => {
+    dispatch({ type: 'SET_FILTER_PANEL_ACTIVE', payload: val })
+  }, [])
+
+  const setMenuOpen = useCallback((val) => {
+    dispatch({ type: 'SET_MENU_OPEN', payload: val })
+  }, [])
+
+  const setMobileMapVisible = useCallback((val) => {
+    dispatch({ type: 'SET_MOBILE_MAP_VISIBLE', payload: val })
+  }, [])
 
   // ============================================================================
   // Logic Core Integration - Filter Validation
@@ -161,11 +172,11 @@ export function useSearchPageLogic() {
    */
   const filterValidation = useMemo(() => {
     return {
-      isPriceTierValid: isValidPriceTier({ priceTier }),
-      isWeekPatternValid: isValidWeekPattern({ weekPattern }),
-      isSortOptionValid: isValidSortOption({ sortBy })
+      isPriceTierValid: isValidPriceTier({ priceTier: state.priceTier }),
+      isWeekPatternValid: isValidWeekPattern({ weekPattern: state.weekPattern }),
+      isSortOptionValid: isValidSortOption({ sortBy: state.sortBy })
     }
-  }, [priceTier, weekPattern, sortBy])
+  }, [state.priceTier, state.weekPattern, state.sortBy])
 
   // ============================================================================
   // Data Fetching - Infrastructure Layer
@@ -318,10 +329,10 @@ export function useSearchPageLogic() {
    */
   const fetchListings = useCallback(async () => {
     // Wait for boroughs to load (needed for ID lookup when filtering)
-    if (boroughs.length === 0) return
+    if (state.boroughs.length === 0) return
 
     // Performance optimization: Prevent duplicate fetches
-    const fetchParams = `${selectedBoroughs.join(',')}-${selectedNeighborhoods.join(',')}-${weekPattern}-${priceTier}-${sortBy}`
+    const fetchParams = `${state.selectedBoroughs.join(',')}-${state.selectedNeighborhoods.join(',')}-${state.weekPattern}-${state.priceTier}-${state.sortBy}`
 
     if (fetchInProgressRef.current) {
       logger.debug('Skipping duplicate fetch - already in progress')
@@ -336,8 +347,8 @@ export function useSearchPageLogic() {
     fetchInProgressRef.current = true
     lastFetchParamsRef.current = fetchParams
 
-    setIsLoading(true)
-    setError(null)
+    dispatch({ type: 'SET_IS_LOADING', payload: true })
+    dispatch({ type: 'SET_ERROR', payload: null })
 
     try {
       // Build Supabase query
@@ -350,9 +361,9 @@ export function useSearchPageLogic() {
         .or('address_with_lat_lng_json.not.is.null,map_pin_offset_address_json.not.is.null')
 
       // Apply borough filter only when boroughs are selected (empty = show all)
-      if (selectedBoroughs.length > 0) {
-        const selectedBoroughIds = selectedBoroughs
-          .map(value => boroughs.find(b => b.value === value)?.id)
+      if (state.selectedBoroughs.length > 0) {
+        const selectedBoroughIds = state.selectedBoroughs
+          .map(value => state.boroughs.find(b => b.value === value)?.id)
           .filter(Boolean)
         if (selectedBoroughIds.length > 0) {
           query = query.in('borough', selectedBoroughIds)
@@ -360,16 +371,16 @@ export function useSearchPageLogic() {
       }
 
       // Apply week pattern filter
-      if (weekPattern !== 'every-week') {
-        const weekPatternText = WEEK_PATTERNS[weekPattern]
+      if (state.weekPattern !== 'every-week') {
+        const weekPatternText = WEEK_PATTERNS[state.weekPattern]
         if (weekPatternText) {
           query = query.eq('weeks_offered_schedule_text', weekPatternText)
         }
       }
 
       // Apply price filter
-      if (priceTier !== 'all') {
-        const priceRange = PRICE_TIERS[priceTier]
+      if (state.priceTier !== 'all') {
+        const priceRange = PRICE_TIERS[state.priceTier]
         if (priceRange) {
           query = query
             .gte('standardized_min_nightly_price_for_search_filter', priceRange.min)
@@ -378,12 +389,12 @@ export function useSearchPageLogic() {
       }
 
       // Apply neighborhood filter
-      if (selectedNeighborhoods.length > 0) {
-        query = query.in('primary_neighborhood_reference_id', selectedNeighborhoods)
+      if (state.selectedNeighborhoods.length > 0) {
+        query = query.in('primary_neighborhood_reference_id', state.selectedNeighborhoods)
       }
 
       // Apply sorting
-      const sortConfig = SORT_OPTIONS[sortBy] || SORT_OPTIONS.recommended
+      const sortConfig = SORT_OPTIONS[state.sortBy] || SORT_OPTIONS.recommended
       query = query.order(sortConfig.field, { ascending: sortConfig.ascending })
 
       const { data, error } = await query
@@ -447,13 +458,12 @@ export function useSearchPageLogic() {
         return listing.images && listing.images.length > 0
       })
 
-      setAllListings(listingsWithPhotos)
-      setLoadedCount(0)
+      dispatch({ type: 'SET_LISTINGS_AND_RESET_COUNT', payload: listingsWithPhotos })
 
       // Derive green-pin map listings from first fetch (eliminates separate fetchAllActiveListings query)
       if (!allActivePopulatedRef.current) {
         const mapListings = listingsWithPhotos.filter(l => l.isActive && !l.isUsabilityTest)
-        setAllActiveListings(mapListings)
+        dispatch({ type: 'SET_ALL_ACTIVE_LISTINGS', payload: mapListings })
         allActivePopulatedRef.current = true
         logger.debug('Derived', mapListings.length, 'active map listings from fetchListings (skipped separate query)')
       }
@@ -461,20 +471,21 @@ export function useSearchPageLogic() {
       logger.debug('SearchPage: State updated with', listingsWithPhotos.length, 'listings')
     } catch (err) {
       logger.error('Failed to fetch listings:', err)
-      setError(
-        'We had trouble loading listings. Please try refreshing the page or adjusting your filters.'
-      )
+      dispatch({
+        type: 'SET_ERROR',
+        payload: 'We had trouble loading listings. Please try refreshing the page or adjusting your filters.'
+      })
     } finally {
-      setIsLoading(false)
+      dispatch({ type: 'SET_IS_LOADING', payload: false })
       fetchInProgressRef.current = false
     }
   }, [
-    boroughs,
-    selectedBoroughs,
-    selectedNeighborhoods,
-    weekPattern,
-    priceTier,
-    sortBy,
+    state.boroughs,
+    state.selectedBoroughs,
+    state.selectedNeighborhoods,
+    state.weekPattern,
+    state.priceTier,
+    state.sortBy,
     fetchPricingListMap,
     transformListing
   ])
@@ -488,7 +499,7 @@ export function useSearchPageLogic() {
    * Infrastructure layer - Supabase query with minimal filtering.
    */
   const fetchFallbackListings = useCallback(async () => {
-    setIsFallbackLoading(true)
+    dispatch({ type: 'SET_IS_FALLBACK_LOADING', payload: true })
 
     try {
       // Build query with ONLY basic constraints - no borough, neighborhood, price, or week pattern filters
@@ -591,16 +602,14 @@ export function useSearchPageLogic() {
 
       logger.debug('Fallback listings ready:', listingsWithPhotos.length)
 
-      setFallbackListings(listingsWithPhotos)
-      setFallbackLoadedCount(0)
+      dispatch({ type: 'SET_FALLBACK_LISTINGS_AND_RESET_COUNT', payload: listingsWithPhotos })
     } catch (err) {
       logger.error('Failed to fetch fallback listings:', err)
       // Don't set error state - this is a fallback, so we just show nothing
-      setFallbackListings([])
       // Mark that fetch failed to prevent infinite retry loop
-      setFallbackFetchFailed(true)
+      dispatch({ type: 'FALLBACK_FETCH_ERROR' })
     } finally {
-      setIsFallbackLoading(false)
+      dispatch({ type: 'SET_IS_FALLBACK_LOADING', payload: false })
     }
   }, [fetchPricingListMap, transformListing])
 
@@ -623,7 +632,7 @@ export function useSearchPageLogic() {
   useEffect(() => {
     const loadInformationalTexts = async () => {
       const texts = await fetchInformationalTexts()
-      setInformationalTexts(texts)
+      dispatch({ type: 'SET_INFORMATIONAL_TEXTS', payload: texts })
     }
     loadInformationalTexts()
   }, [])
@@ -651,16 +660,16 @@ export function useSearchPageLogic() {
               .replace(/\s+/g, '-')
           }))
 
-        setBoroughs(boroughList)
+        dispatch({ type: 'SET_BOROUGHS', payload: boroughList })
 
         // Validate boroughs from URL exist (remove invalid ones)
-        if (selectedBoroughs.length > 0) {
-          const validBoroughs = selectedBoroughs.filter(value =>
+        if (state.selectedBoroughs.length > 0) {
+          const validBoroughs = state.selectedBoroughs.filter(value =>
             boroughList.some(b => b.value === value)
           )
-          if (validBoroughs.length !== selectedBoroughs.length) {
+          if (validBoroughs.length !== state.selectedBoroughs.length) {
             logger.warn('Some boroughs from URL not found, filtering to valid ones')
-            setSelectedBoroughs(validBoroughs)
+            dispatch({ type: 'SET_SELECTED_BOROUGHS', payload: validBoroughs })
           }
         }
         // Empty selectedBoroughs is valid - means "all boroughs"
@@ -675,7 +684,7 @@ export function useSearchPageLogic() {
   // Load neighborhoods when selected boroughs change
   useEffect(() => {
     const loadNeighborhoods = async () => {
-      if (boroughs.length === 0) return
+      if (state.boroughs.length === 0) return
 
       try {
         let query = supabase
@@ -685,9 +694,9 @@ export function useSearchPageLogic() {
 
         // If boroughs are selected, filter neighborhoods to those boroughs
         // If no boroughs selected (all boroughs), load all neighborhoods
-        if (selectedBoroughs.length > 0) {
-          const selectedBoroughIds = selectedBoroughs
-            .map(value => boroughs.find(b => b.value === value)?.id)
+        if (state.selectedBoroughs.length > 0) {
+          const selectedBoroughIds = state.selectedBoroughs
+            .map(value => state.boroughs.find(b => b.value === value)?.id)
             .filter(Boolean)
           if (selectedBoroughIds.length > 0) {
             query = query.in('geo_borough', selectedBoroughIds)
@@ -706,14 +715,14 @@ export function useSearchPageLogic() {
             boroughId: n.geo_borough
           }))
 
-        setNeighborhoods(neighborhoodList)
+        dispatch({ type: 'SET_NEIGHBORHOODS', payload: neighborhoodList })
 
         // Clear neighborhood selections that are no longer valid for the selected boroughs
-        if (selectedNeighborhoods.length > 0) {
+        if (state.selectedNeighborhoods.length > 0) {
           const validNeighborhoodIds = new Set(neighborhoodList.map(n => n.id))
-          const stillValidNeighborhoods = selectedNeighborhoods.filter(id => validNeighborhoodIds.has(id))
-          if (stillValidNeighborhoods.length !== selectedNeighborhoods.length) {
-            setSelectedNeighborhoods(stillValidNeighborhoods)
+          const stillValidNeighborhoods = state.selectedNeighborhoods.filter(id => validNeighborhoodIds.has(id))
+          if (stillValidNeighborhoods.length !== state.selectedNeighborhoods.length) {
+            dispatch({ type: 'SET_SELECTED_NEIGHBORHOODS', payload: stillValidNeighborhoods })
           }
         }
       } catch (err) {
@@ -722,7 +731,7 @@ export function useSearchPageLogic() {
     }
 
     loadNeighborhoods()
-  }, [selectedBoroughs, boroughs])
+  }, [state.selectedBoroughs, state.boroughs])
 
   // Fetch listings when filters change
   useEffect(() => {
@@ -731,15 +740,15 @@ export function useSearchPageLogic() {
 
   // Lazy load listings
   useEffect(() => {
-    if (allListings.length === 0) {
-      setDisplayedListings([])
+    if (state.allListings.length === 0) {
+      dispatch({ type: 'SET_DISPLAYED_LISTINGS', payload: [] })
       return
     }
 
     const initialCount = LISTING_CONFIG.INITIAL_LOAD_COUNT
-    setDisplayedListings(allListings.slice(0, initialCount))
-    setLoadedCount(initialCount)
-  }, [allListings])
+    dispatch({ type: 'SET_DISPLAYED_LISTINGS', payload: state.allListings.slice(0, initialCount) })
+    dispatch({ type: 'SET_LOADED_COUNT', payload: initialCount })
+  }, [state.allListings])
 
   // ============================================================================
   // Fallback Listings Effects (MOVED FROM SearchPage.jsx)
@@ -748,31 +757,29 @@ export function useSearchPageLogic() {
   // Fetch fallback listings when filtered results are empty
   useEffect(() => {
     // Don't retry if fetch already failed (prevents infinite loop)
-    if (!isLoading && allListings.length === 0 && fallbackListings.length === 0 && !isFallbackLoading && !fallbackFetchFailed) {
+    if (!state.isLoading && state.allListings.length === 0 && state.fallbackListings.length === 0 && !state.isFallbackLoading && !state.fallbackFetchFailed) {
       fetchFallbackListings()
     }
-  }, [isLoading, allListings.length, fallbackListings.length, isFallbackLoading, fallbackFetchFailed, fetchFallbackListings])
+  }, [state.isLoading, state.allListings.length, state.fallbackListings.length, state.isFallbackLoading, state.fallbackFetchFailed, fetchFallbackListings])
 
   // Clear fallback listings when filtered results are found
   useEffect(() => {
-    if (allListings.length > 0 && fallbackListings.length > 0) {
-      setFallbackListings([])
-      setFallbackDisplayedListings([])
-      setFallbackLoadedCount(0)
+    if (state.allListings.length > 0 && state.fallbackListings.length > 0) {
+      dispatch({ type: 'CLEAR_FALLBACK' })
     }
-  }, [allListings.length, fallbackListings.length])
+  }, [state.allListings.length, state.fallbackListings.length])
 
   // Lazy load fallback listings
   useEffect(() => {
-    if (fallbackListings.length === 0) {
-      setFallbackDisplayedListings([])
+    if (state.fallbackListings.length === 0) {
+      dispatch({ type: 'SET_FALLBACK_DISPLAYED_LISTINGS', payload: [] })
       return
     }
 
     const initialCount = LISTING_CONFIG.INITIAL_LOAD_COUNT
-    setFallbackDisplayedListings(fallbackListings.slice(0, initialCount))
-    setFallbackLoadedCount(initialCount)
-  }, [fallbackListings])
+    dispatch({ type: 'SET_FALLBACK_DISPLAYED_LISTINGS', payload: state.fallbackListings.slice(0, initialCount) })
+    dispatch({ type: 'SET_FALLBACK_LOADED_COUNT', payload: initialCount })
+  }, [state.fallbackListings])
 
   // Sync filter state to URL parameters
   useEffect(() => {
@@ -783,26 +790,21 @@ export function useSearchPageLogic() {
     }
 
     const filters = {
-      selectedBoroughs,
-      weekPattern,
-      priceTier,
-      sortBy,
-      selectedNeighborhoods
+      selectedBoroughs: state.selectedBoroughs,
+      weekPattern: state.weekPattern,
+      priceTier: state.priceTier,
+      sortBy: state.sortBy,
+      selectedNeighborhoods: state.selectedNeighborhoods
     }
 
     updateUrlParams(filters, false)
-  }, [selectedBoroughs, weekPattern, priceTier, sortBy, selectedNeighborhoods])
+  }, [state.selectedBoroughs, state.weekPattern, state.priceTier, state.sortBy, state.selectedNeighborhoods])
 
   // Watch for browser back/forward navigation
   useEffect(() => {
     const cleanup = watchUrlChanges((newFilters) => {
       logger.debug('URL changed via browser navigation, updating filters:', newFilters)
-
-      setSelectedBoroughs(newFilters.selectedBoroughs)
-      setWeekPattern(newFilters.weekPattern)
-      setPriceTier(newFilters.priceTier)
-      setSortBy(newFilters.sortBy)
-      setSelectedNeighborhoods(newFilters.selectedNeighborhoods)
+      dispatch({ type: 'SET_ALL_FILTERS', payload: newFilters })
     })
 
     return cleanup
@@ -814,58 +816,51 @@ export function useSearchPageLogic() {
 
   const handleLoadMore = useCallback(() => {
     const batchSize = LISTING_CONFIG.LOAD_BATCH_SIZE
-    const nextCount = Math.min(loadedCount + batchSize, allListings.length)
-    setDisplayedListings(allListings.slice(0, nextCount))
-    setLoadedCount(nextCount)
-  }, [loadedCount, allListings])
+    const nextCount = Math.min(state.loadedCount + batchSize, state.allListings.length)
+    dispatch({
+      type: 'LOAD_MORE_LISTINGS',
+      payload: { nextCount, listings: state.allListings.slice(0, nextCount) }
+    })
+  }, [state.loadedCount, state.allListings])
 
   // Fallback listings load more handler
   const handleFallbackLoadMore = useCallback(() => {
     const batchSize = LISTING_CONFIG.LOAD_BATCH_SIZE
-    const nextCount = Math.min(fallbackLoadedCount + batchSize, fallbackListings.length)
-    setFallbackDisplayedListings(fallbackListings.slice(0, nextCount))
-    setFallbackLoadedCount(nextCount)
-  }, [fallbackLoadedCount, fallbackListings])
+    const nextCount = Math.min(state.fallbackLoadedCount + batchSize, state.fallbackListings.length)
+    dispatch({
+      type: 'LOAD_MORE_FALLBACK',
+      payload: { nextCount, listings: state.fallbackListings.slice(0, nextCount) }
+    })
+  }, [state.fallbackLoadedCount, state.fallbackListings])
 
   const handleResetFilters = useCallback(() => {
-    setSelectedBoroughs([]) // Empty = all boroughs
-    setSelectedNeighborhoods([])
-    setWeekPattern('every-week')
-    setPriceTier('all')
-    setSortBy('recommended')
-    setNeighborhoodSearch('')
+    dispatch({ type: 'RESET_FILTERS' })
   }, [])
 
-  // Modal handlers
+  // Modal handlers (using useModalManager)
   const handleOpenContactModal = useCallback((listing) => {
-    setSelectedListing(listing)
-    setIsContactModalOpen(true)
-  }, [])
+    modals.open('contact', { listing })
+  }, [modals])
 
   const handleCloseContactModal = useCallback(() => {
-    setIsContactModalOpen(false)
-    setSelectedListing(null)
-  }, [])
+    modals.close('contact')
+  }, [modals])
 
   const handleOpenInfoModal = useCallback((listing, triggerRef) => {
-    setSelectedListing(listing)
-    setInfoModalTriggerRef(triggerRef)
-    setIsInfoModalOpen(true)
-  }, [])
+    modals.open('info', { listing, triggerRef })
+  }, [modals])
 
   const handleCloseInfoModal = useCallback(() => {
-    setIsInfoModalOpen(false)
-    setSelectedListing(null)
-    setInfoModalTriggerRef(null)
-  }, [])
+    modals.close('info')
+  }, [modals])
 
   const handleOpenAIResearchModal = useCallback(() => {
-    setIsAIResearchModalOpen(true)
-  }, [])
+    modals.open('aiResearch')
+  }, [modals])
 
   const handleCloseAIResearchModal = useCallback(() => {
-    setIsAIResearchModalOpen(false)
-  }, [])
+    modals.close('aiResearch')
+  }, [modals])
 
   // Drawer handlers (with history state for back-button support)
   const drawerHistoryPushedRef = useRef(false)
@@ -877,16 +872,15 @@ export function useSearchPageLogic() {
       clearTimeout(drawerCloseTimerRef.current)
       drawerCloseTimerRef.current = null
     }
-    setDetailDrawerListing(listing)
-    setIsDetailDrawerOpen(true)
+    dispatch({ type: 'OPEN_DETAIL_DRAWER', payload: listing })
     window.history.pushState({ drawer: true }, '')
     drawerHistoryPushedRef.current = true
   }, [])
 
   const handleCloseDetailDrawer = useCallback(() => {
-    setIsDetailDrawerOpen(false)
+    dispatch({ type: 'CLOSE_DETAIL_DRAWER' })
     drawerCloseTimerRef.current = setTimeout(() => {
-      setDetailDrawerListing(null)
+      dispatch({ type: 'CLEAR_DETAIL_DRAWER_LISTING' })
       drawerCloseTimerRef.current = null
     }, 300)
     if (drawerHistoryPushedRef.current) {
@@ -900,9 +894,9 @@ export function useSearchPageLogic() {
     const handlePopState = () => {
       if (drawerHistoryPushedRef.current) {
         drawerHistoryPushedRef.current = false
-        setIsDetailDrawerOpen(false)
+        dispatch({ type: 'CLOSE_DETAIL_DRAWER' })
         drawerCloseTimerRef.current = setTimeout(() => {
-          setDetailDrawerListing(null)
+          dispatch({ type: 'CLEAR_DETAIL_DRAWER_LISTING' })
           drawerCloseTimerRef.current = null
         }, 300)
       }
@@ -915,20 +909,20 @@ export function useSearchPageLogic() {
   // Computed Values
   // ============================================================================
 
-  const hasMore = loadedCount < allListings.length
-  const hasFallbackMore = fallbackLoadedCount < fallbackListings.length
+  const hasMore = state.loadedCount < state.allListings.length
+  const hasFallbackMore = state.fallbackLoadedCount < state.fallbackListings.length
 
   const filteredNeighborhoods = useMemo(() => {
-    const filtered = neighborhoods.filter((n) => {
-      const sanitizedSearch = sanitizeNeighborhoodSearch(neighborhoodSearch)
+    const filtered = state.neighborhoods.filter((n) => {
+      const sanitizedSearch = sanitizeNeighborhoodSearch(state.neighborhoodSearch)
       return n.name.toLowerCase().includes(sanitizedSearch.toLowerCase())
     })
     return filtered
-  }, [neighborhoods, neighborhoodSearch])
+  }, [state.neighborhoods, state.neighborhoodSearch])
 
   // Price percentiles for "Great Price" / "Good Value" badges (drawer only)
   const pricePercentiles = useMemo(() => {
-    const prices = allActiveListings
+    const prices = state.allActiveListings
       .map(l => l.price?.starting)
       .filter(p => typeof p === 'number' && p > 0)
       .sort((a, b) => a - b)
@@ -936,7 +930,14 @@ export function useSearchPageLogic() {
     const p25 = prices[Math.floor(prices.length * 0.25)]
     const p50 = prices[Math.floor(prices.length * 0.50)]
     return { p25, p50 }
-  }, [allActiveListings])
+  }, [state.allActiveListings])
+
+  // Derive modal state from useModalManager for backward-compatible return
+  const isContactModalOpen = modals.isOpen('contact')
+  const isInfoModalOpen = modals.isOpen('info')
+  const isAIResearchModalOpen = modals.isOpen('aiResearch')
+  const selectedListing = modals.getData('contact')?.listing ?? modals.getData('info')?.listing ?? null
+  const infoModalTriggerRef = modals.getData('info')?.triggerRef ?? null
 
   // ============================================================================
   // Return Pre-Calculated State and Handlers
@@ -944,41 +945,41 @@ export function useSearchPageLogic() {
 
   return {
     // Loading & Error State
-    isLoading,
-    error,
+    isLoading: state.isLoading,
+    error: state.error,
 
     // Listings Data
-    allActiveListings,
-    allListings,
-    displayedListings,
+    allActiveListings: state.allActiveListings,
+    allListings: state.allListings,
+    displayedListings: state.displayedListings,
     hasMore,
 
     // Fallback Listings (when filters return no results)
-    fallbackListings,
-    fallbackDisplayedListings,
-    isFallbackLoading,
+    fallbackListings: state.fallbackListings,
+    fallbackDisplayedListings: state.fallbackDisplayedListings,
+    isFallbackLoading: state.isFallbackLoading,
     hasFallbackMore,
     handleFallbackLoadMore,
 
     // Geography Data
-    boroughs,
+    boroughs: state.boroughs,
     neighborhoods: filteredNeighborhoods,
 
     // Filter State
-    selectedBoroughs,
-    selectedNeighborhoods,
-    weekPattern,
-    priceTier,
-    sortBy,
-    neighborhoodSearch,
+    selectedBoroughs: state.selectedBoroughs,
+    selectedNeighborhoods: state.selectedNeighborhoods,
+    weekPattern: state.weekPattern,
+    priceTier: state.priceTier,
+    sortBy: state.sortBy,
+    neighborhoodSearch: state.neighborhoodSearch,
 
     // Filter Validation (Logic Core)
     filterValidation,
 
     // UI State
-    filterPanelActive,
-    menuOpen,
-    mobileMapVisible,
+    filterPanelActive: state.filterPanelActive,
+    menuOpen: state.menuOpen,
+    mobileMapVisible: state.mobileMapVisible,
 
     // Modal State
     isContactModalOpen,
@@ -986,7 +987,7 @@ export function useSearchPageLogic() {
     isAIResearchModalOpen,
     selectedListing,
     infoModalTriggerRef,
-    informationalTexts,
+    informationalTexts: state.informationalTexts,
 
     // Refs
     mapRef,
@@ -1018,8 +1019,8 @@ export function useSearchPageLogic() {
     handleCloseAIResearchModal,
 
     // Drawer State & Handlers
-    isDetailDrawerOpen,
-    detailDrawerListing,
+    isDetailDrawerOpen: state.isDetailDrawerOpen,
+    detailDrawerListing: state.detailDrawerListing,
     handleOpenDetailDrawer,
     handleCloseDetailDrawer,
 

@@ -8,6 +8,7 @@
 
 import { useRef } from 'react';
 import { Camera, Check } from 'lucide-react';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../../lib/avatarUtils.js';
 
 export default function AvatarWithBadge({
   imageUrl,
@@ -16,13 +17,6 @@ export default function AvatarWithBadge({
   isVerified = false,
   onChange
 }) {
-  // Get initial letter for fallback avatar
-  const getInitial = () => {
-    if (firstName && typeof firstName === 'string' && firstName.trim().length > 0) {
-      return firstName.trim().charAt(0).toUpperCase();
-    }
-    return '?';
-  };
   const inputRef = useRef(null);
 
   const handleBadgeClick = (e) => {
@@ -47,12 +41,10 @@ export default function AvatarWithBadge({
     <div className="profile-avatar-wrapper">
       {/* Avatar Image */}
       <img
-        src={imageUrl || '/assets/images/default-avatar.jpg'}
+        src={imageUrl || getInitialsAvatarUrl(firstName)}
         alt="Profile photo"
         className="profile-avatar-image"
-        onError={(e) => {
-          e.target.src = '/assets/images/default-avatar.jpg';
-        }}
+        onError={handleAvatarError}
       />
 
       {/* Badge */}

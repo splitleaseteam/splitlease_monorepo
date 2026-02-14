@@ -10,6 +10,7 @@
  */
 
 import PropTypes from 'prop-types';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 
 // ============================================================================
 // SUB-COMPONENTS
@@ -103,22 +104,16 @@ export default function CoTenantProfileCard({
     );
   }
 
-  // Generate initials for avatar fallback
-  const initials = `${resolvedCoTenant.firstName?.[0] || ''}${resolvedCoTenant.lastName?.[0] || ''}`.toUpperCase();
-
   return (
     <div className="cotenant-profile-card">
       {/* Avatar and Name */}
       <div className="cotenant-profile-card__header">
         <div className="cotenant-profile-card__avatar">
-          {resolvedCoTenant.avatarUrl ? (
-            <img
-              src={resolvedCoTenant.avatarUrl}
-              alt={`${resolvedCoTenant.firstName}'s profile`}
-            />
-          ) : (
-            <span className="cotenant-profile-card__initials">{initials}</span>
-          )}
+          <img
+            src={resolvedCoTenant.avatarUrl || getInitialsAvatarUrl(`${resolvedCoTenant.firstName || ''} ${resolvedCoTenant.lastName || ''}`)}
+            alt={`${resolvedCoTenant.firstName}'s profile`}
+            onError={handleAvatarError}
+          />
         </div>
         <div className="cotenant-profile-card__info">
           <span className="cotenant-profile-card__name">

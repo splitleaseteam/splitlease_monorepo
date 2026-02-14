@@ -8,6 +8,7 @@
 
 import { createPortal } from 'react-dom';
 import { X, User, Linkedin, Phone, Mail, CreditCard, CheckCircle } from 'lucide-react';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../lib/avatarUtils.js';
 
 export default function GuestProfileModal({ guest, onClose }) {
   if (!guest) {
@@ -25,7 +26,7 @@ export default function GuestProfileModal({ guest, onClose }) {
 
   // Get photo URL
   const photoUrl = guest.profilePhoto || guest.avatar || guest.profile_photo_url;
-  const avatarUrl = photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=E9E0F7&color=6D31C2&rounded=true&size=200`;
+  const avatarUrl = photoUrl || getInitialsAvatarUrl(displayName);
 
   // Get bio
   const bio = guest.bio || guest.Bio || '';
@@ -94,6 +95,7 @@ export default function GuestProfileModal({ guest, onClose }) {
               src={avatarUrl}
               alt={displayName}
               className="gpm-guest-photo"
+              onError={handleAvatarError}
             />
 
             {/* Guest Info and Verification */}

@@ -7,16 +7,22 @@
  * - Public View: User viewing someone else's profile (read-only)
  *
  * ARCHITECTURE: Hollow Component Pattern
- * - Manages all React state (useState, useEffect, useCallback, useMemo)
+ * - Manages all React state (useReducer, useEffect, useCallback, useMemo)
  * - Component using this hook is "hollow" (presentation only)
+ *
+ * STATE MANAGEMENT:
+ * - Non-modal state: useReducer (accountProfileReducer)
+ * - Modal state: useModalManager (profileModals) — unchanged from Phase 3
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useReducer, useEffect, useCallback, useMemo } from 'react';
+import { useModalManager } from '../../../hooks/useModalManager.js';
 import { supabase } from '../../../lib/supabase.js';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
 import { checkUrlForAuthError, clearAuthErrorFromUrl } from '../../../lib/auth/index.js';
 import { isHost } from '../../../logic/rules/users/isHost.js';
 import { submitIdentityVerification } from '../../../lib/api/identityVerificationService.js';
+import { accountProfileReducer, initialState } from './accountProfileReducer.js';
 
 // ============================================================================
 // CONSTANTS
@@ -293,68 +299,11 @@ export function useAccountProfilePageLogic() {
   // STATE
   // ============================================================================
 
-  // Core state
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
+  // Non-modal state via useReducer
+  const [state, dispatch] = useReducer(accountProfileReducer, initialState);
 
-  // User identity
-  const [loggedInUserId, setLoggedInUserId] = useState(null);
-  const [profileUserId, setProfileUserId] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Profile data from database
-  const [profileData, setProfileData] = useState(null);
-
-  // Form state (for editor view)
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    jobTitle: '',
-    dateOfBirth: '', // ISO date string (YYYY-MM-DD)
-    bio: '',
-    needForSpace: '',
-    specialNeeds: '',
-    selectedDays: [], // 0-indexed day indices
-    transportationTypes: [], // Array of transport method values (multi-select)
-    goodGuestReasons: [], // Array of IDs
-    storageItems: [] // Array of IDs
-  });
-
-  // Form validation
-  const [formErrors, setFormErrors] = useState({});
-  const [isDirty, setIsDirty] = useState(false);
-
-  // Reference data
-  const [goodGuestReasonsList, setGoodGuestReasonsList] = useState([]);
-  const [storageItemsList, setStorageItemsList] = useState([]);
-  const [transportationOptions] = useState([
-    { value: '', label: 'Select transportation...' },
-    { value: 'car', label: 'Car' },
-    { value: 'public_transit', label: 'Public Transit' },
-    { value: 'plane', label: 'Plane' }
-  ]);
-
-  // UI state
-  const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [showPhoneEditModal, setShowPhoneEditModal] = useState(false);
-  const [showIdentityVerificationModal, setShowIdentityVerificationModal] = useState(false);
-
-  // Host listings state
-  const [hostListings, setHostListings] = useState([]);
-  const [loadingListings, setLoadingListings] = useState(false);
-
-  // Rental application wizard state (guest-only)
-  const [showRentalWizardModal, setShowRentalWizardModal] = useState(false);
-  const [rentalApplicationStatus, setRentalApplicationStatus] = useState('not_started'); // 'not_started' | 'in_progress' | 'submitted'
-  const [rentalApplicationProgress, setRentalApplicationProgress] = useState(0);
-
-  // Preview mode state - when true, shows public view even for own profile
-  const [previewMode, setPreviewMode] = useState(false);
-
-  // Email verification state
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
+  // UI state — modals centralized via useModalManager
+  const profileModals = useModalManager({ allowMultiple: true });
 
   // ============================================================================
   // COMPUTED VALUES
@@ -364,8 +313,8 @@ export function useAccountProfilePageLogic() {
    * Determine if user is the owner of this profile (even in preview mode)
    */
   const isOwnProfile = useMemo(() => {
-    return isAuthenticated && loggedInUserId && profileUserId && loggedInUserId === profileUserId;
-  }, [isAuthenticated, loggedInUserId, profileUserId]);
+    return state.isAuthenticated && state.loggedInUserId && state.profileUserId && state.loggedInUserId === state.profileUserId;
+  }, [state.isAuthenticated, state.loggedInUserId, state.profileUserId]);
 
   /**
    * Determine if current user is viewing their own profile (editor view)
@@ -374,31 +323,31 @@ export function useAccountProfilePageLogic() {
    */
   const isEditorView = useMemo(() => {
     // If preview mode is active, show public view even for own profile
-    if (previewMode) return false;
+    if (state.previewMode) return false;
     return isOwnProfile;
-  }, [isOwnProfile, previewMode]);
+  }, [isOwnProfile, state.previewMode]);
 
   /**
    * Determine if profile belongs to a host user
    */
   const isHostUser = useMemo(() => {
-    const userType = profileData?.current_user_role;
+    const userType = state.profileData?.current_user_role;
     return isHost({ userType });
-  }, [profileData]);
+  }, [state.profileData]);
 
   /**
    * Extract verifications from profile data
    */
   const verifications = useMemo(() => {
-    if (!profileData) return { email: false, phone: false, govId: false, linkedin: false };
+    if (!state.profileData) return { email: false, phone: false, govId: false, linkedin: false };
 
     return {
-      email: profileData.is_email_confirmed === true,
-      phone: profileData.is_phone_verified === true,
-      govId: profileData.is_user_verified === true,
-      linkedin: !!profileData.linkedin_profile_id
+      email: state.profileData.is_email_confirmed === true,
+      phone: state.profileData.is_phone_verified === true,
+      govId: state.profileData.is_user_verified === true,
+      linkedin: !!state.profileData.linkedin_profile_id
     };
-  }, [profileData]);
+  }, [state.profileData]);
 
   /**
    * Extract role-specific milestones
@@ -408,10 +357,10 @@ export function useAccountProfilePageLogic() {
   const milestones = useMemo(() => {
     return {
       isHost: isHostUser,
-      firstListingCreated: hostListings.length > 0,
-      rentalAppSubmitted: !!profileData?.rental_application_form_id
+      firstListingCreated: state.hostListings.length > 0,
+      rentalAppSubmitted: !!state.profileData?.rental_application_form_id
     };
-  }, [isHostUser, hostListings, profileData]);
+  }, [isHostUser, state.hostListings, state.profileData]);
 
   /**
    * Calculate profile strength (0-100)
@@ -419,17 +368,17 @@ export function useAccountProfilePageLogic() {
    */
   const profileStrength = useMemo(() => {
     const profileInfo = {
-      profilePhoto: profileData?.profile_photo_url,
-      bio: formData.bio || profileData?.bio_text,
-      firstName: formData.firstName || profileData?.first_name,
-      lastName: formData.lastName || profileData?.last_name,
-      jobTitle: formData.jobTitle || profileData?._jobTitle,
-      goodGuestReasons: formData.goodGuestReasons,
-      storageItems: formData.storageItems,
-      transportationTypes: formData.transportationTypes || []
+      profilePhoto: state.profileData?.profile_photo_url,
+      bio: state.formData.bio || state.profileData?.bio_text,
+      firstName: state.formData.firstName || state.profileData?.first_name,
+      lastName: state.formData.lastName || state.profileData?.last_name,
+      jobTitle: state.formData.jobTitle || state.profileData?._jobTitle,
+      goodGuestReasons: state.formData.goodGuestReasons,
+      storageItems: state.formData.storageItems,
+      transportationTypes: state.formData.transportationTypes || []
     };
     return calculateProfileStrength(profileInfo, verifications, milestones);
-  }, [profileData, formData, verifications, milestones]);
+  }, [state.profileData, state.formData, verifications, milestones]);
 
   /**
    * Generate next action suggestions
@@ -437,24 +386,24 @@ export function useAccountProfilePageLogic() {
    */
   const nextActions = useMemo(() => {
     const profileInfo = {
-      profilePhoto: profileData?.profile_photo_url,
-      bio: formData.bio || profileData?.bio_text,
-      firstName: formData.firstName || profileData?.first_name,
-      lastName: formData.lastName || profileData?.last_name,
-      jobTitle: formData.jobTitle || profileData?._jobTitle,
-      goodGuestReasons: formData.goodGuestReasons,
-      storageItems: formData.storageItems,
-      transportationTypes: formData.transportationTypes || []
+      profilePhoto: state.profileData?.profile_photo_url,
+      bio: state.formData.bio || state.profileData?.bio_text,
+      firstName: state.formData.firstName || state.profileData?.first_name,
+      lastName: state.formData.lastName || state.profileData?.last_name,
+      jobTitle: state.formData.jobTitle || state.profileData?._jobTitle,
+      goodGuestReasons: state.formData.goodGuestReasons,
+      storageItems: state.formData.storageItems,
+      transportationTypes: state.formData.transportationTypes || []
     };
     return generateNextActions(profileInfo, verifications, milestones);
-  }, [profileData, formData, verifications, milestones]);
+  }, [state.profileData, state.formData, verifications, milestones]);
 
   /**
    * Display job title for sidebar
    */
   const displayJobTitle = useMemo(() => {
-    return formData.jobTitle || profileData?._jobTitle || '';
-  }, [formData.jobTitle, profileData]);
+    return state.formData.jobTitle || state.profileData?._jobTitle || '';
+  }, [state.formData.jobTitle, state.profileData]);
 
   /**
    * Determine if Date of Birth field should be shown.
@@ -463,8 +412,8 @@ export function useAccountProfilePageLogic() {
    * Once the user saves a DOB, this field will be hidden on subsequent visits.
    */
   const showDateOfBirthField = useMemo(() => {
-    return !profileData?.date_of_birth;
-  }, [profileData]);
+    return !state.profileData?.date_of_birth;
+  }, [state.profileData]);
 
   // ============================================================================
   // DATA FETCHING
@@ -484,7 +433,7 @@ export function useAccountProfilePageLogic() {
       if (reasonsError) {
         console.error('Error fetching good guest reasons:', reasonsError);
       } else {
-        setGoodGuestReasonsList(reasons || []);
+        dispatch({ type: 'SET_GOOD_GUEST_REASONS_LIST', payload: reasons || [] });
       }
 
       // Fetch storage items
@@ -499,7 +448,7 @@ export function useAccountProfilePageLogic() {
         // Filter out deprecated storage options
         const excludedItems = ['ID / Wallet / Money', 'Luggage', 'Portable Massager', 'Protein', 'Sound System', 'TV'];
         const filteredStorage = (storage || []).filter(item => !excludedItems.includes(item.name));
-        setStorageItemsList(filteredStorage);
+        dispatch({ type: 'SET_STORAGE_ITEMS_LIST', payload: filteredStorage });
       }
     } catch (err) {
       console.error('Error fetching reference data:', err);
@@ -548,7 +497,7 @@ export function useAccountProfilePageLogic() {
         }
       }
 
-      setProfileData({ ...userData, _jobTitle: jobTitle, _employmentStatus: employmentStatus, _rentalAppId: rentalAppId });
+      dispatch({ type: 'SET_PROFILE_DATA', payload: { ...userData, _jobTitle: jobTitle, _employmentStatus: employmentStatus, _rentalAppId: rentalAppId } });
 
       // Initialize form data from profile
       // Database columns use Bubble.io naming conventions
@@ -579,18 +528,21 @@ export function useAccountProfilePageLogic() {
         transportationTypes = rawTransport.filter(val => validValues.includes(val));
       }
 
-      setFormData({
-        firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
-        jobTitle,
-        dateOfBirth,
-        bio: userData.bio_text || '',
-        needForSpace: userData.stated_need_for_space_text || '',
-        specialNeeds: userData.stated_special_needs_text || '',
-        selectedDays: dayNamesToIndices(userData.recent_days_selected_json || []),
-        transportationTypes,
-        goodGuestReasons: [],
-        storageItems: []
+      dispatch({
+        type: 'SET_FORM_DATA',
+        payload: {
+          firstName: userData.first_name || '',
+          lastName: userData.last_name || '',
+          jobTitle,
+          dateOfBirth,
+          bio: userData.bio_text || '',
+          needForSpace: userData.stated_need_for_space_text || '',
+          specialNeeds: userData.stated_special_needs_text || '',
+          selectedDays: dayNamesToIndices(userData.recent_days_selected_json || []),
+          transportationTypes,
+          goodGuestReasons: [],
+          storageItems: []
+        }
       });
 
       return userData;
@@ -606,7 +558,7 @@ export function useAccountProfilePageLogic() {
    */
   const fetchHostListings = useCallback(async (userId) => {
     if (!userId) return;
-    setLoadingListings(true);
+    dispatch({ type: 'SET_LOADING_LISTINGS', payload: true });
     try {
       // Use RPC function to fetch listings (handles host_user_id lookups)
       const { data, error } = await supabase
@@ -640,13 +592,13 @@ export function useAccountProfilePageLogic() {
           };
         });
 
-      setHostListings(mappedListings);
+      dispatch({ type: 'SET_HOST_LISTINGS', payload: mappedListings });
     } catch (err) {
       console.error('[AccountProfile] Error fetching host listings:', err);
       // Non-blocking - just log and continue with empty listings
-      setHostListings([]);
+      dispatch({ type: 'SET_HOST_LISTINGS', payload: [] });
     } finally {
-      setLoadingListings(false);
+      dispatch({ type: 'SET_LOADING_LISTINGS', payload: false });
     }
   }, []);
 
@@ -685,11 +637,11 @@ export function useAccountProfilePageLogic() {
         }
 
         // Use auth state from the useAuthenticatedUser hook
-        setIsAuthenticated(hookIsAuthenticated);
+        dispatch({ type: 'SET_IS_AUTHENTICATED', payload: hookIsAuthenticated });
 
         // Get logged-in user ID from the hook (Bubble _id)
         const validatedUserId = authUserId || null;
-        setLoggedInUserId(validatedUserId);
+        dispatch({ type: 'SET_LOGGED_IN_USER_ID', payload: validatedUserId });
 
         // Extract profile user ID from URL, or fall back to logged-in user's ID
         // This allows users to view their own profile at /account-profile without a userId param
@@ -701,7 +653,7 @@ export function useAccountProfilePageLogic() {
           throw new Error('Please log in to view your profile, or provide a user ID in the URL');
         }
 
-        setProfileUserId(targetUserId);
+        dispatch({ type: 'SET_PROFILE_USER_ID', payload: targetUserId });
 
         // Fetch reference data
         await fetchReferenceData();
@@ -717,11 +669,11 @@ export function useAccountProfilePageLogic() {
           }
         }
 
-        setLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
       } catch (err) {
         console.error('Error initializing profile page:', err);
-        setError(err.message);
-        setLoading(false);
+        dispatch({ type: 'SET_ERROR', payload: err.message });
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     }
 
@@ -743,9 +695,8 @@ export function useAccountProfilePageLogic() {
     if (!isEditorView || isHostUser) return;
 
     // Check if already submitted in database
-    if (profileData?.rental_application_form_id) {
-      setRentalApplicationStatus('submitted');
-      setRentalApplicationProgress(100);
+    if (state.profileData?.rental_application_form_id) {
+      dispatch({ type: 'SET_RENTAL_APPLICATION', payload: { status: 'submitted', progress: 100 } });
       return;
     }
 
@@ -782,8 +733,7 @@ export function useAccountProfilePageLogic() {
         const progress = Math.min(100, Math.round((filled / total) * 100));
 
         if (progress > 0) {
-          setRentalApplicationStatus('in_progress');
-          setRentalApplicationProgress(progress);
+          dispatch({ type: 'SET_RENTAL_APPLICATION', payload: { status: 'in_progress', progress } });
           return;
         }
       }
@@ -792,9 +742,8 @@ export function useAccountProfilePageLogic() {
     }
 
     // Default: not started
-    setRentalApplicationStatus('not_started');
-    setRentalApplicationProgress(0);
-  }, [isEditorView, isHostUser, profileData]);
+    dispatch({ type: 'SET_RENTAL_APPLICATION', payload: { status: 'not_started', progress: 0 } });
+  }, [isEditorView, isHostUser, state.profileData]);
 
   // ============================================================================
   // EMAIL VERIFICATION CALLBACK
@@ -810,7 +759,7 @@ export function useAccountProfilePageLogic() {
       const verifiedType = params.get('verified');
 
       // Only process if it's an email verification callback and user is authenticated
-      if (verifiedType !== 'email' || !isAuthenticated || !profileUserId) {
+      if (verifiedType !== 'email' || !state.isAuthenticated || !state.profileUserId) {
         return;
       }
 
@@ -824,7 +773,7 @@ export function useAccountProfilePageLogic() {
         const { error: updateError } = await supabase
           .from('user')
           .update({ is_email_confirmed: true })
-          .eq('id', profileUserId);
+          .eq('id', state.profileUserId);
 
         if (updateError) {
           console.error('[email-verification] Error updating verification status:', updateError);
@@ -835,7 +784,7 @@ export function useAccountProfilePageLogic() {
         }
 
         // Refresh profile data to reflect new verification status
-        await fetchProfileData(profileUserId);
+        await fetchProfileData(state.profileUserId);
 
         // Show success toast
         if (window.showToast) {
@@ -851,10 +800,10 @@ export function useAccountProfilePageLogic() {
     };
 
     // Run when authentication state and profile data are available
-    if (isAuthenticated && profileUserId) {
+    if (state.isAuthenticated && state.profileUserId) {
       handleEmailVerificationCallback();
     }
-  }, [isAuthenticated, profileUserId, fetchProfileData]);
+  }, [state.isAuthenticated, state.profileUserId, fetchProfileData]);
 
   // ============================================================================
   // RENTAL APPLICATION URL NAVIGATION (Guest-only)
@@ -867,7 +816,7 @@ export function useAccountProfilePageLogic() {
    */
   useEffect(() => {
     // Only process for guests viewing their own profile after loading completes
-    if (loading || !isEditorView || isHostUser) return;
+    if (state.loading || !isEditorView || isHostUser) return;
 
     const params = new URLSearchParams(window.location.search);
     const section = params.get('section');
@@ -892,10 +841,10 @@ export function useAccountProfilePageLogic() {
 
       // Auto-open the wizard modal if requested
       if (openRentalApp === 'true') {
-        setShowRentalWizardModal(true);
+        profileModals.open('rentalWizard');
       }
     }, 100);
-  }, [loading, isEditorView, isHostUser]);
+  }, [state.loading, isEditorView, isHostUser]);
 
   // ============================================================================
   // FORM HANDLERS
@@ -905,36 +854,27 @@ export function useAccountProfilePageLogic() {
    * Handle field change
    */
   const handleFieldChange = useCallback((field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    setIsDirty(true);
+    dispatch({ type: 'UPDATE_FORM_FIELD', payload: { field, value } });
+    dispatch({ type: 'SET_IS_DIRTY', payload: true });
 
     // Clear error for this field
-    if (formErrors[field]) {
-      setFormErrors(prev => {
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
+    if (state.formErrors[field]) {
+      dispatch({ type: 'CLEAR_FORM_ERROR', payload: field });
     }
-  }, [formErrors]);
+  }, [state.formErrors]);
 
   /**
    * Handle day selection toggle
    */
   const handleDayToggle = useCallback((dayIndex) => {
-    setFormData(prev => {
-      const currentDays = prev.selectedDays;
-      const newDays = currentDays.includes(dayIndex)
-        ? currentDays.filter(d => d !== dayIndex)
-        : [...currentDays, dayIndex].sort((a, b) => a - b);
+    const currentDays = state.formData.selectedDays;
+    const newDays = currentDays.includes(dayIndex)
+      ? currentDays.filter(d => d !== dayIndex)
+      : [...currentDays, dayIndex].sort((a, b) => a - b);
 
-      return { ...prev, selectedDays: newDays };
-    });
-    setIsDirty(true);
-  }, []);
+    dispatch({ type: 'UPDATE_FORM_FIELD', payload: { field: 'selectedDays', value: newDays } });
+    dispatch({ type: 'SET_IS_DIRTY', payload: true });
+  }, [state.formData.selectedDays]);
 
   /**
    * Handle chip selection toggle (for reasons and storage items)
@@ -945,26 +885,23 @@ export function useAccountProfilePageLogic() {
    */
   const handleChipToggle = useCallback(async (field, id) => {
     // Determine if we're adding or removing
-    const currentItems = formData[field];
+    const currentItems = state.formData[field];
     const isRemoving = currentItems.includes(id);
     const newItems = isRemoving
       ? currentItems.filter(i => i !== id)
       : [...currentItems, id];
 
     // Update local state immediately for responsive UI
-    setFormData(prev => ({
-      ...prev,
-      [field]: newItems
-    }));
-    setIsDirty(true);
+    dispatch({ type: 'UPDATE_FORM_FIELD', payload: { field, value: newItems } });
+    dispatch({ type: 'SET_IS_DIRTY', payload: true });
 
     // Get the item name for the toast notification
     let itemName = '';
     if (field === 'goodGuestReasons') {
-      const reason = goodGuestReasonsList.find(r => r.id === id);
+      const reason = state.goodGuestReasonsList.find(r => r.id === id);
       itemName = reason?.name || 'Reason';
     } else if (field === 'storageItems') {
-      const item = storageItemsList.find(i => i.id === id);
+      const item = state.storageItemsList.find(i => i.id === id);
       itemName = item?.name || 'Item';
     }
 
@@ -976,22 +913,20 @@ export function useAccountProfilePageLogic() {
         duration: 2000
       });
     }
-  }, [formData, goodGuestReasonsList, storageItemsList, profileUserId]);
+  }, [state.formData, state.goodGuestReasonsList, state.storageItemsList, state.profileUserId]);
 
   /**
    * Handle transportation method toggle (multi-select)
    */
   const handleTransportToggle = useCallback((transportValue) => {
-    setFormData(prev => {
-      const currentTypes = prev.transportationTypes;
-      const newTypes = currentTypes.includes(transportValue)
-        ? currentTypes.filter(t => t !== transportValue)
-        : [...currentTypes, transportValue];
+    const currentTypes = state.formData.transportationTypes;
+    const newTypes = currentTypes.includes(transportValue)
+      ? currentTypes.filter(t => t !== transportValue)
+      : [...currentTypes, transportValue];
 
-      return { ...prev, transportationTypes: newTypes };
-    });
-    setIsDirty(true);
-  }, []);
+    dispatch({ type: 'UPDATE_FORM_FIELD', payload: { field: 'transportationTypes', value: newTypes } });
+    dispatch({ type: 'SET_IS_DIRTY', payload: true });
+  }, [state.formData.transportationTypes]);
 
   /**
    * Validate form before save
@@ -999,21 +934,21 @@ export function useAccountProfilePageLogic() {
   const validateForm = useCallback(() => {
     const errors = {};
 
-    if (!formData.firstName.trim()) {
+    if (!state.formData.firstName.trim()) {
       errors.firstName = 'First name is required';
     }
 
     // Add more validations as needed
 
-    setFormErrors(errors);
+    dispatch({ type: 'SET_FORM_ERRORS', payload: errors });
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  }, [state.formData]);
 
   /**
    * Save profile changes
    */
   const handleSave = useCallback(async () => {
-    if (!isEditorView || !profileUserId) {
+    if (!isEditorView || !state.profileUserId) {
       console.error('Cannot save: not in editor view or no user ID');
       return { success: false, error: 'Cannot save changes' };
     }
@@ -1025,18 +960,18 @@ export function useAccountProfilePageLogic() {
       return { success: false, error: 'Please fix validation errors' };
     }
 
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', payload: true });
 
     try {
       // Build the full name from first and last name
-      const firstName = formData.firstName.trim();
-      const lastName = formData.lastName.trim();
+      const firstName = state.formData.firstName.trim();
+      const lastName = state.formData.lastName.trim();
       const fullName = [firstName, lastName].filter(Boolean).join(' ') || null;
 
       // Convert date of birth from YYYY-MM-DD to ISO timestamp for database
       // Only include if value exists to avoid overwriting with null
-      const dateOfBirthISO = formData.dateOfBirth
-        ? new Date(formData.dateOfBirth + 'T00:00:00Z').toISOString()
+      const dateOfBirthISO = state.formData.dateOfBirth
+        ? new Date(state.formData.dateOfBirth + 'T00:00:00Z').toISOString()
         : null;
 
       // Database columns use Bubble.io naming conventions
@@ -1045,12 +980,12 @@ export function useAccountProfilePageLogic() {
         first_name: firstName,
         last_name: lastName,
         date_of_birth: dateOfBirthISO,
-        bio_text: formData.bio.trim(),
-        stated_need_for_space_text: formData.needForSpace.trim(),
-        stated_special_needs_text: formData.specialNeeds.trim(),
-        recent_days_selected_json: indicesToDayNames(formData.selectedDays),
-        'transportation medium': formData.transportationTypes.length > 0
-          ? JSON.stringify(formData.transportationTypes)
+        bio_text: state.formData.bio.trim(),
+        stated_need_for_space_text: state.formData.needForSpace.trim(),
+        stated_special_needs_text: state.formData.specialNeeds.trim(),
+        recent_days_selected_json: indicesToDayNames(state.formData.selectedDays),
+        'transportation medium': state.formData.transportationTypes.length > 0
+          ? JSON.stringify(state.formData.transportationTypes)
           : null, // Store as JSON string
         updated_at: new Date().toISOString()
       };
@@ -1058,7 +993,7 @@ export function useAccountProfilePageLogic() {
       const { error: updateError } = await supabase
         .from('user')
         .update(updateData)
-        .eq('id', profileUserId);
+        .eq('id', state.profileUserId);
 
       if (updateError) {
         console.error('[handleSave] Update error:', updateError);
@@ -1066,11 +1001,11 @@ export function useAccountProfilePageLogic() {
       }
 
       // Save job title to rental application table (if user has one)
-      const rentalAppId = profileData?._rentalAppId;
-      if (rentalAppId && formData.jobTitle !== undefined) {
+      const rentalAppId = state.profileData?._rentalAppId;
+      if (rentalAppId && state.formData.jobTitle !== undefined) {
         const { error: rentalAppError } = await supabase
           .from('rentalapplication')
-          .update({ job_title: formData.jobTitle.trim() })
+          .update({ job_title: state.formData.jobTitle.trim() })
           .eq('id', rentalAppId);
 
         if (rentalAppError) {
@@ -1080,9 +1015,9 @@ export function useAccountProfilePageLogic() {
       }
 
       // Refresh profile data
-      await fetchProfileData(profileUserId);
-      setIsDirty(false);
-      setSaving(false);
+      await fetchProfileData(state.profileUserId);
+      dispatch({ type: 'SET_IS_DIRTY', payload: false });
+      dispatch({ type: 'SET_SAVING', payload: false });
 
       // Show success toast
       if (window.showToast) {
@@ -1092,7 +1027,7 @@ export function useAccountProfilePageLogic() {
       return { success: true };
     } catch (err) {
       console.error('Error saving profile:', err);
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', payload: false });
 
       // Show error toast
       if (window.showToast) {
@@ -1101,13 +1036,13 @@ export function useAccountProfilePageLogic() {
 
       return { success: false, error: err.message };
     }
-  }, [isEditorView, profileUserId, formData, validateForm, fetchProfileData]);
+  }, [isEditorView, state.profileUserId, state.formData, state.profileData, validateForm, fetchProfileData]);
 
   /**
    * Toggle preview mode to show public view of own profile
    */
   const handlePreviewProfile = useCallback(() => {
-    setPreviewMode(prev => !prev);
+    dispatch({ type: 'TOGGLE_PREVIEW_MODE' });
   }, []);
 
   // ============================================================================
@@ -1116,10 +1051,10 @@ export function useAccountProfilePageLogic() {
 
   const handleVerifyEmail = useCallback(async () => {
     // Prevent duplicate requests
-    if (isVerifyingEmail) return;
+    if (state.isVerifyingEmail) return;
 
     // Get user's email from profile data
-    const userEmail = profileData?.email;
+    const userEmail = state.profileData?.email;
     if (!userEmail) {
       console.error('[handleVerifyEmail] No email found in profile data');
       if (window.showToast) {
@@ -1128,7 +1063,7 @@ export function useAccountProfilePageLogic() {
       return;
     }
 
-    setIsVerifyingEmail(true);
+    dispatch({ type: 'SET_IS_VERIFYING_EMAIL', payload: true });
 
     try {
       // Step 1: Fetch BCC email addresses from os_slack_channels
@@ -1145,7 +1080,7 @@ export function useAccountProfilePageLogic() {
       }
 
       // Step 2: Generate magic link with redirect to account profile + verification param
-      const redirectTo = `${window.location.origin}/account-profile/${profileUserId}?verified=email`;
+      const redirectTo = `${window.location.origin}/account-profile/${state.profileUserId}?verified=email`;
 
       const { data: magicLinkData, error: magicLinkError } = await supabase.functions.invoke('auth-user', {
         body: {
@@ -1162,12 +1097,12 @@ export function useAccountProfilePageLogic() {
         if (window.showToast) {
           window.showToast({ title: 'Error', content: 'Failed to generate verification link. Please try again.', type: 'error' });
         }
-        setIsVerifyingEmail(false);
+        dispatch({ type: 'SET_IS_VERIFYING_EMAIL', payload: false });
         return;
       }
 
       const magicLink = magicLinkData.data.action_link;
-      const firstName = profileData?.first_name || 'there';
+      const firstName = state.profileData?.first_name || 'there';
 
       // Step 3: Send verification email using send-email edge function
       const bodyText = `Hi ${firstName}. Please click the link below to verify your email address on Split Lease. This helps us ensure your account is secure and builds trust with other members of our community.`;
@@ -1206,7 +1141,7 @@ export function useAccountProfilePageLogic() {
           window.showToast({ title: 'Error', content: 'Failed to send verification email. Please try again.', type: 'error' });
         }
       } else {
-        setVerificationEmailSent(true);
+        dispatch({ type: 'SET_VERIFICATION_EMAIL_SENT', payload: true });
         if (window.showToast) {
           window.showToast({ title: 'Email Sent', content: 'Verification email sent! Check your inbox and click the link to verify.', type: 'success' });
         }
@@ -1219,16 +1154,16 @@ export function useAccountProfilePageLogic() {
       }
     }
 
-    setIsVerifyingEmail(false);
-  }, [isVerifyingEmail, profileData, profileUserId]);
+    dispatch({ type: 'SET_IS_VERIFYING_EMAIL', payload: false });
+  }, [state.isVerifyingEmail, state.profileData, state.profileUserId]);
 
   const handleVerifyPhone = useCallback(() => {
-    setShowPhoneEditModal(true);
+    profileModals.open('phoneEdit');
   }, []);
 
   const handleVerifyGovId = useCallback(() => {
     // Open identity verification modal
-    setShowIdentityVerificationModal(true);
+    profileModals.open('identityVerification');
   }, []);
 
   /**
@@ -1239,7 +1174,7 @@ export function useAccountProfilePageLogic() {
     try {
       // Submit verification using the service
       await submitIdentityVerification({
-        userId: profileUserId,
+        userId: state.profileUserId,
         documentType: verificationData.documentType,
         selfieFile: verificationData.selfieFile,
         frontIdFile: verificationData.frontIdFile,
@@ -1248,7 +1183,7 @@ export function useAccountProfilePageLogic() {
       });
 
       // Refresh profile data to reflect new verification status
-      await fetchProfileData(profileUserId);
+      await fetchProfileData(state.profileUserId);
 
       // The success toast is shown by the modal's logic hook
     } catch (error) {
@@ -1256,13 +1191,13 @@ export function useAccountProfilePageLogic() {
       // Re-throw so the modal can show the error toast
       throw error;
     }
-  }, [profileUserId, fetchProfileData]);
+  }, [state.profileUserId, fetchProfileData]);
 
   /**
    * Handle closing the identity verification modal
    */
   const handleCloseIdentityVerificationModal = useCallback(() => {
-    setShowIdentityVerificationModal(false);
+    profileModals.close('identityVerification');
   }, []);
 
   const handleConnectLinkedIn = useCallback(() => {
@@ -1270,7 +1205,7 @@ export function useAccountProfilePageLogic() {
   }, []);
 
   const handleEditPhone = useCallback(() => {
-    setShowPhoneEditModal(true);
+    profileModals.open('phoneEdit');
   }, []);
 
   // ============================================================================
@@ -1278,15 +1213,15 @@ export function useAccountProfilePageLogic() {
   // ============================================================================
 
   const handleOpenNotificationSettings = useCallback(() => {
-    setShowNotificationModal(true);
+    profileModals.open('notification');
   }, []);
 
   const handleCloseNotificationModal = useCallback(() => {
-    setShowNotificationModal(false);
+    profileModals.close('notification');
   }, []);
 
   const handleClosePhoneEditModal = useCallback(() => {
-    setShowPhoneEditModal(false);
+    profileModals.close('phoneEdit');
   }, []);
 
   const handleChangePassword = useCallback(() => {
@@ -1302,11 +1237,11 @@ export function useAccountProfilePageLogic() {
     switch (actionId) {
       case 'govId':
         // Open identity verification modal
-        setShowIdentityVerificationModal(true);
+        profileModals.open('identityVerification');
         break;
       case 'phone':
         // Open phone verification modal
-        setShowPhoneEditModal(true);
+        profileModals.open('phoneEdit');
         break;
       case 'email':
         // Trigger email verification
@@ -1317,7 +1252,7 @@ export function useAccountProfilePageLogic() {
         break;
       case 'rentalApp':
         // Open rental application wizard (guest-only)
-        setShowRentalWizardModal(true);
+        profileModals.open('rentalWizard');
         break;
       case 'firstListing':
         // Navigate to create listing page (host-only)
@@ -1342,23 +1277,22 @@ export function useAccountProfilePageLogic() {
   // ============================================================================
 
   const handleOpenRentalWizard = useCallback(() => {
-    setShowRentalWizardModal(true);
+    profileModals.open('rentalWizard');
   }, []);
 
   const handleCloseRentalWizard = useCallback(() => {
-    setShowRentalWizardModal(false);
+    profileModals.close('rentalWizard');
   }, []);
 
   const handleRentalWizardSuccess = useCallback(() => {
     // On successful submission, update status and close modal
-    setRentalApplicationStatus('submitted');
-    setRentalApplicationProgress(100);
-    setShowRentalWizardModal(false);
+    dispatch({ type: 'SET_RENTAL_APPLICATION', payload: { status: 'submitted', progress: 100 } });
+    profileModals.close('rentalWizard');
     // Refresh profile data to reflect the submitted application
-    if (profileUserId) {
-      fetchProfileData(profileUserId);
+    if (state.profileUserId) {
+      fetchProfileData(state.profileUserId);
     }
-  }, [profileUserId, fetchProfileData]);
+  }, [state.profileUserId, fetchProfileData]);
 
   // ============================================================================
   // PHOTO HANDLERS
@@ -1369,7 +1303,7 @@ export function useAccountProfilePageLogic() {
   }, []);
 
   const handleAvatarChange = useCallback(async (file) => {
-    if (!file || !profileUserId) {
+    if (!file || !state.profileUserId) {
       console.error('Cannot upload avatar: no file or user ID');
       return;
     }
@@ -1388,7 +1322,7 @@ export function useAccountProfilePageLogic() {
       return;
     }
 
-    setSaving(true);
+    dispatch({ type: 'SET_SAVING', payload: true });
 
     try {
       // Get the Supabase Auth session to get the auth user ID for storage path
@@ -1397,12 +1331,12 @@ export function useAccountProfilePageLogic() {
         throw new Error('Not authenticated. Please log in again.');
       }
 
-      const authUserId = session.user.id;
+      const authUserIdForStorage = session.user.id;
 
       // Generate unique filename with timestamp to avoid cache issues
       const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `avatar_${Date.now()}.${fileExtension}`;
-      const filePath = `${authUserId}/${fileName}`;
+      const filePath = `${authUserIdForStorage}/${fileName}`;
 
       // Upload the file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -1435,25 +1369,22 @@ export function useAccountProfilePageLogic() {
           profile_photo_url: publicUrl,
           updated_at: new Date().toISOString()
         })
-        .eq('id', profileUserId);
+        .eq('id', state.profileUserId);
 
       if (updateError) {
         throw updateError;
       }
 
       // Update local state
-      setProfileData(prev => ({
-        ...prev,
-        profile_photo_url: publicUrl
-      }));
+      dispatch({ type: 'MERGE_PROFILE_DATA', payload: { profile_photo_url: publicUrl } });
 
     } catch (err) {
-      console.error('âŒ Error uploading avatar:', err);
-      setError(err.message || 'Failed to upload profile photo');
+      console.error('Error uploading avatar:', err);
+      dispatch({ type: 'SET_ERROR', payload: err.message || 'Failed to upload profile photo' });
     } finally {
-      setSaving(false);
+      dispatch({ type: 'SET_SAVING', payload: false });
     }
-  }, [profileUserId]);
+  }, [state.profileUserId]);
 
   // ============================================================================
   // HOST LISTING HANDLERS
@@ -1493,17 +1424,17 @@ export function useAccountProfilePageLogic() {
 
   return {
     // Core state
-    loading,
-    saving,
-    error,
+    loading: state.loading,
+    saving: state.saving,
+    error: state.error,
 
     // View mode
     isEditorView,
-    previewMode,
+    previewMode: state.previewMode,
 
     // Profile data
-    profileData,
-    profileUserId,
+    profileData: state.profileData,
+    profileUserId: state.profileUserId,
 
     // Computed display values
     displayJobTitle,
@@ -1513,14 +1444,14 @@ export function useAccountProfilePageLogic() {
     showDateOfBirthField,
 
     // Form state
-    formData,
-    formErrors,
-    isDirty,
+    formData: state.formData,
+    formErrors: state.formErrors,
+    isDirty: state.isDirty,
 
     // Reference data
-    goodGuestReasonsList,
-    storageItemsList,
-    transportationOptions,
+    goodGuestReasonsList: state.goodGuestReasonsList,
+    storageItemsList: state.storageItemsList,
+    transportationOptions: state.transportationOptions,
 
     // Form handlers
     handleFieldChange,
@@ -1548,32 +1479,32 @@ export function useAccountProfilePageLogic() {
     handleCoverPhotoChange,
     handleAvatarChange,
 
-    // Modal state
-    showNotificationModal,
+    // Modal state (backward-compat aliases)
+    showNotificationModal: profileModals.isOpen('notification'),
     handleCloseNotificationModal,
-    showPhoneEditModal,
+    showPhoneEditModal: profileModals.isOpen('phoneEdit'),
     handleClosePhoneEditModal,
-    showIdentityVerificationModal,
+    showIdentityVerificationModal: profileModals.isOpen('identityVerification'),
     handleIdentityVerificationSubmit,
     handleCloseIdentityVerificationModal,
 
     // Host profile
     isHostUser,
-    hostListings,
-    loadingListings,
+    hostListings: state.hostListings,
+    loadingListings: state.loadingListings,
     handleListingClick,
     handleCreateListing,
 
     // Rental application (guest-only)
-    rentalApplicationStatus,
-    rentalApplicationProgress,
-    showRentalWizardModal,
+    rentalApplicationStatus: state.rentalApplicationStatus,
+    rentalApplicationProgress: state.rentalApplicationProgress,
+    showRentalWizardModal: profileModals.isOpen('rentalWizard'),
     handleOpenRentalWizard,
     handleCloseRentalWizard,
     handleRentalWizardSuccess,
 
     // Email verification state
-    isVerifyingEmail,
-    verificationEmailSent
+    isVerifyingEmail: state.isVerifyingEmail,
+    verificationEmailSent: state.verificationEmailSent
   };
 }

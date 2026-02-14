@@ -67,16 +67,18 @@ UI components delegate ALL logic to custom hooks (`useXxxPageLogic`). See `app/s
 ### Modal Component Pattern
 [DESCRIPTION]: Overlay dialog with standardized structure and interaction model
 [STRUCTURE]: Header (title + close button) + Body (content) + Footer (action buttons)
-[CONTROL]: Parent component controls isOpen state, passes callbacks for user actions
+[CONTROL]: Parent uses `useModalManager` hook to manage open/close state and data payloads
 [CALLBACKS]: onClose (cancel/dismiss), onConfirm (primary action), other action-specific callbacks
 [BACKDROP]: Click outside or ESC key triggers onClose
+[STATE_HOOK]: `hooks/useModalManager.js` — `open(name, data)`, `close(name)`, `isOpen(name)`, `getData(name)`
 [EXAMPLE_FILES]: ProposalDetailsModal, MapModal, VirtualMeetingModal, EndProposalModal
 
 ```jsx
+const modals = useModalManager();
 <ProposalDetailsModal
-  isOpen={showModal}
-  proposal={selectedProposal}
-  onClose={() => setShowModal(false)}
+  isOpen={modals.isOpen('proposalDetails')}
+  proposal={modals.getData('proposalDetails')?.proposal}
+  onClose={() => modals.close('proposalDetails')}
   onAccept={(proposal) => handleAccept(proposal)}
   onCancel={(proposalId) => handleCancel(proposalId)}
 />

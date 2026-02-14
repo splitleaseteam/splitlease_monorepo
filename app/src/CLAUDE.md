@@ -8,7 +8,7 @@
 
 [PATTERN]: Islands Architecture - Each JSX entry point creates independent React root
 [FLOW]: HTML file → JSX entry point → Page component → Business logic hook
-[STATE_MANAGEMENT]: Local state (useState), URL parameters, localStorage
+[STATE_MANAGEMENT]: useReducer (page hooks), useModalManager (modal state), URL parameters, localStorage
 [API_STRATEGY]: Supabase Edge Functions (direct database access)
 [ROUTING]: Route registry in routes.config.js
 [ENTRY_POINTS]: 83 total (see routes.config.js for full list)
@@ -100,6 +100,47 @@ export function useViewSplitLeasePageLogic() {
   return { /* exported API */ };
 }
 ```
+
+### useReducer Pattern (Page Hooks)
+[DESCRIPTION]: Page-level hooks use useReducer with domain-sliced state instead of useState sprawl
+[REDUCER_FILE]: Co-located `*Reducer.js` or `*Reducer.ts` next to the hook
+[TESTS]: Pure function reducer tests in `__tests__/*Reducer.test.{js,ts}`
+[PATTERN]: Reducer exports `initialState` + named reducer function; hook uses `useReducer(reducer, initialState)`
+
+```javascript
+// favoriteListingsReducer.js — pure function, trivially testable
+export const initialState = { listings: [], isLoading: true, error: null };
+export function favoriteListingsReducer(state, action) {
+  switch (action.type) {
+    case 'INIT_START': return { ...state, isLoading: true, error: null };
+    case 'SET_LISTINGS': return { ...state, listings: action.payload };
+    default: return state;
+  }
+}
+
+// useFavoriteListingsPageLogic.js
+const [state, dispatch] = useReducer(favoriteListingsReducer, initialState);
+dispatch({ type: 'SET_LISTINGS', payload: listings });
+```
+
+[ADOPTED_BY]: useViewSplitLeaseLogic, useFavoriteListingsPageLogic, useSearchPageLogic, useMessagingRealtimeChannelsAndCTALogic, useCreateSuggestedProposalLogic, useGuestRelationshipsDashboardLogic, useSelfListingV2Logic, useAccountProfilePageLogic, Header.jsx
+
+### useModalManager Pattern
+[DESCRIPTION]: Centralized modal state via `hooks/useModalManager.js` — replaces per-modal useState pairs
+[HOOK_FILE]: `hooks/useModalManager.js`
+[API]: `open(name, data)`, `close(name)`, `isOpen(name)`, `getData(name)`, `closeAll()`, `toggle(name, data)`
+[OPTION]: `allowMultiple: true` to keep multiple modals open simultaneously
+
+```javascript
+import { useModalManager } from 'hooks/useModalManager.js';
+const modals = useModalManager();
+modals.open('photo', { index: 0, photos });
+modals.isOpen('photo');        // true
+modals.getData('photo').index; // 0
+modals.close('photo');
+```
+
+[ADOPTED_BY]: useViewSplitLeaseLogic, useFavoriteListingsPageLogic, useSearchPageLogic, useMessagingRealtimeChannelsAndCTALogic, useCreateSuggestedProposalLogic, useSelfListingV2Logic, useAccountProfilePageLogic, Header.jsx, DateChangeRequestManager.jsx
 
 ### Secure Storage Pattern
 [DESCRIPTION]: Encrypt sensitive data in localStorage

@@ -423,13 +423,13 @@ if (error) {
 
 ### Modal Management
 ```jsx
-const [isModalOpen, setIsModalOpen] = useState(false);
-const [selectedItem, setSelectedItem] = useState(null);
-
-const handleOpen = (item) => {
-  setSelectedItem(item);
-  setIsModalOpen(true);
-};
+// Preferred: useModalManager (consolidates modal booleans + data payloads)
+import { useModalManager } from 'hooks/useModalManager.js';
+const modals = useModalManager();
+modals.open('photo', { index: 0, photos });  // open with data
+modals.isOpen('photo');                       // check if open
+modals.getData('photo');                      // { index: 0, photos }
+modals.close('photo');                        // close
 ```
 
 ### URL Parameter Sync

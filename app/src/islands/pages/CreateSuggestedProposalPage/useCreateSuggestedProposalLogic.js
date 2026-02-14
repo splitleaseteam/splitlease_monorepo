@@ -1,16 +1,22 @@
-﻿/**
+/**
  * useCreateSuggestedProposalLogic
  *
  * All business logic for the Create Suggested Proposal page.
  * Follows the Four-Layer Logic Architecture.
  *
  * Day Indexing: Uses 0-indexed format (0=Sunday through 6=Saturday)
+ *
+ * State management: useReducer + useModalManager
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { PROPOSAL_STATUSES } from '../../../logic/constants/proposalStatuses.js';
+import { useReducer, useEffect, useCallback, useMemo } from 'react';
 import { DAY_NAMES } from '../../../lib/dayUtils.js';
 import { calculateCheckInCheckOut } from '../../../lib/scheduleSelector/nightCalculations.js';
+import { useModalManager } from '../../../hooks/useModalManager.js';
+import {
+  createSuggestedProposalReducer,
+  initialState,
+} from './createSuggestedProposalReducer.js';
 import {
   searchListings,
   getDefaultListings,
@@ -25,8 +31,6 @@ import {
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-
-const DEFAULT_STATUS = PROPOSAL_STATUSES.SUGGESTED_PROPOSAL_PENDING_CONFIRMATION.key;
 
 const RESERVATION_SPAN_OPTIONS = [
   { value: '6', label: '6 weeks' },
@@ -69,15 +73,6 @@ function mapWeeksToReservationSpan(weeks) {
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-/**
- * Get tomorrow's date as YYYY-MM-DD string
- */
-function getTomorrowDateString() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow.toISOString().split('T')[0];
-}
 
 /**
  * Debounce function
@@ -150,56 +145,19 @@ export function useCreateSuggestedProposalLogic() {
   // STATE
   // -------------------------------------------------------------------------
 
-  // Step navigation
-  const [currentStep, setCurrentStep] = useState(1);
-
-  // Step 1 - Listing
-  const [listingSearchTerm, setListingSearchTerm] = useState('');
-  const [listingSearchResults, setListingSearchResults] = useState([]);
-  const [selectedListing, setSelectedListing] = useState(null);
-  const [listingPhotos, setListingPhotos] = useState([]);
-  const [isSearchingListings, setIsSearchingListings] = useState(false);
-
-  // Step 2 - Guest
-  const [guestSearchTerm, setGuestSearchTerm] = useState('');
-  const [guestSearchResults, setGuestSearchResults] = useState([]);
-  const [selectedGuest, setSelectedGuest] = useState(null);
-  const [existingProposalsCount, setExistingProposalsCount] = useState(0);
-  const [isGuestConfirmed, setIsGuestConfirmed] = useState(false);
-  const [isSearchingGuests, setIsSearchingGuests] = useState(false);
-
-  // Step 3 - Guest Info
-  const [aboutMe, setAboutMe] = useState('');
-  const [needForSpace, setNeedForSpace] = useState('');
-  const [specialNeeds, setSpecialNeeds] = useState('');
-
-  // Step 3 - Configuration
-  const [proposalStatus, setProposalStatus] = useState(DEFAULT_STATUS);
-  const [moveInDate, setMoveInDate] = useState(getTomorrowDateString());
-  const [moveInRange, setMoveInRange] = useState(14);
-  const [strictMoveIn, setStrictMoveIn] = useState(false);
-  const [selectedDays, setSelectedDays] = useState([]); // 0-indexed integers
-  const [reservationSpan, setReservationSpan] = useState('');
-  const [customWeeks, setCustomWeeks] = useState(null);
-
-  // UI State
-  const [isCreating, setIsCreating] = useState(false);
-  const [isConfirmationStep, setIsConfirmationStep] = useState(false);
-  const [validationErrors, setValidationErrors] = useState([]);
-  const [createdProposal, setCreatedProposal] = useState(null);
-  const [createdThread, setCreatedThread] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [state, dispatch] = useReducer(createSuggestedProposalReducer, initialState);
+  const modals = useModalManager();
 
   // -------------------------------------------------------------------------
   // COMPUTED VALUES
   // -------------------------------------------------------------------------
 
-  const nightsPerWeek = selectedDays.length;
-  const nightsCount = Math.max(0, selectedDays.length - 1);
+  const nightsPerWeek = state.selectedDays.length;
+  const nightsCount = Math.max(0, state.selectedDays.length - 1);
 
   // Calculate check-in/check-out using the same logic as ViewSplitLeasePage
   const { checkInDayIndex, checkOutDayIndex, checkInDayName, checkOutDayName, nightsSelected } = useMemo(() => {
-    if (selectedDays.length === 0) {
+    if (state.selectedDays.length === 0) {
       return {
         checkInDayIndex: null,
         checkOutDayIndex: null,
@@ -210,7 +168,7 @@ export function useCreateSuggestedProposalLogic() {
     }
 
     // Convert day indices to day objects for calculateCheckInCheckOut
-    const dayObjects = selectedDays.map(dayIndex => ({
+    const dayObjects = state.selectedDays.map(dayIndex => ({
       dayOfWeek: dayIndex,
       name: DAY_NAMES[dayIndex]
     }));
@@ -221,8 +179,8 @@ export function useCreateSuggestedProposalLogic() {
     // (checkout day is when you leave, not a night you stay)
     const checkOutDay = checkOut?.dayOfWeek ?? null;
     const nights = checkOutDay !== null
-      ? selectedDays.filter(day => day !== checkOutDay)
-      : selectedDays.slice(0, -1); // fallback: all but last
+      ? state.selectedDays.filter(day => day !== checkOutDay)
+      : state.selectedDays.slice(0, -1); // fallback: all but last
 
     return {
       checkInDayIndex: checkIn?.dayOfWeek ?? null,
@@ -231,18 +189,18 @@ export function useCreateSuggestedProposalLogic() {
       checkOutDayName: checkOut?.name ?? null,
       nightsSelected: nights
     };
-  }, [selectedDays]);
+  }, [state.selectedDays]);
 
   const reservationWeeks = useMemo(() => {
-    if (reservationSpan === 'custom') {
-      return parseInt(customWeeks) || 0;
+    if (state.reservationSpan === 'custom') {
+      return parseInt(state.customWeeks) || 0;
     }
-    return parseInt(reservationSpan) || 0;
-  }, [reservationSpan, customWeeks]);
+    return parseInt(state.reservationSpan) || 0;
+  }, [state.reservationSpan, state.customWeeks]);
 
   const pricing = useMemo(() => {
-    return calculatePricing(selectedListing, nightsPerWeek, reservationWeeks);
-  }, [selectedListing, nightsPerWeek, reservationWeeks]);
+    return calculatePricing(state.selectedListing, nightsPerWeek, reservationWeeks);
+  }, [state.selectedListing, nightsPerWeek, reservationWeeks]);
 
   // -------------------------------------------------------------------------
   // VALIDATION
@@ -251,45 +209,45 @@ export function useCreateSuggestedProposalLogic() {
   useEffect(() => {
     const errors = [];
 
-    if (currentStep >= 1 && !selectedListing) {
+    if (state.currentStep >= 1 && !state.selectedListing) {
       errors.push('Please select a listing');
     }
 
-    if (currentStep >= 2 && (!selectedGuest || !isGuestConfirmed)) {
+    if (state.currentStep >= 2 && (!state.selectedGuest || !state.isGuestConfirmed)) {
       errors.push('Please select and confirm a guest');
     }
 
-    if (currentStep >= 3) {
-      if (!reservationSpan && !moveInDate) {
+    if (state.currentStep >= 3) {
+      if (!state.reservationSpan && !state.moveInDate) {
         errors.push('Fill out reservation span OR move-in date to proceed');
       }
 
-      if (selectedDays.length < 3) {
+      if (state.selectedDays.length < 3) {
         errors.push('Please select at least 3 days');
       }
 
-      if (reservationSpan === 'custom') {
-        const weeks = parseInt(customWeeks);
+      if (state.reservationSpan === 'custom') {
+        const weeks = parseInt(state.customWeeks);
         if (!weeks || weeks < 6 || weeks > 52) {
           errors.push('Number of weeks must be between 6 and 52');
         }
       }
 
-      if (pricing && pricing.grandTotal <= 0 && reservationSpan) {
+      if (pricing && pricing.grandTotal <= 0 && state.reservationSpan) {
         errors.push('Price calculation is invalid');
       }
     }
 
-    setValidationErrors(errors);
+    dispatch({ type: 'SET_VALIDATION_ERRORS', payload: errors });
   }, [
-    currentStep,
-    selectedListing,
-    selectedGuest,
-    isGuestConfirmed,
-    reservationSpan,
-    moveInDate,
-    selectedDays,
-    customWeeks,
+    state.currentStep,
+    state.selectedListing,
+    state.selectedGuest,
+    state.isGuestConfirmed,
+    state.reservationSpan,
+    state.moveInDate,
+    state.selectedDays,
+    state.customWeeks,
     pricing
   ]);
 
@@ -300,16 +258,16 @@ export function useCreateSuggestedProposalLogic() {
   // Load default listings on mount
   useEffect(() => {
     const loadDefaults = async () => {
-      setIsSearchingListings(true);
+      dispatch({ type: 'SET_IS_SEARCHING_LISTINGS', payload: true });
       try {
         const { data, error } = await getDefaultListings();
         if (error) {
           console.error('[CreateSuggestedProposal] Default listings error:', error);
         } else {
-          setListingSearchResults(data || []);
+          dispatch({ type: 'SET_LISTING_SEARCH_RESULTS', payload: data || [] });
         }
       } finally {
-        setIsSearchingListings(false);
+        dispatch({ type: 'SET_IS_SEARCHING_LISTINGS', payload: false });
       }
     };
     loadDefaults();
@@ -317,29 +275,29 @@ export function useCreateSuggestedProposalLogic() {
 
   const debouncedListingSearch = useCallback(
     debounce(async (term) => {
-      setIsSearchingListings(true);
+      dispatch({ type: 'SET_IS_SEARCHING_LISTINGS', payload: true });
       try {
         // Empty search = show defaults with valid pricing
         if (term.length === 0) {
           const { data, error } = await getDefaultListings();
           if (error) {
             console.error('[CreateSuggestedProposal] Default listings error:', error);
-            setListingSearchResults([]);
+            dispatch({ type: 'SET_LISTING_SEARCH_RESULTS', payload: [] });
           } else {
-            setListingSearchResults(data || []);
+            dispatch({ type: 'SET_LISTING_SEARCH_RESULTS', payload: data || [] });
           }
         } else {
           // Search by term
           const { data, error } = await searchListings(term);
           if (error) {
             console.error('[CreateSuggestedProposal] Listing search error:', error);
-            setListingSearchResults([]);
+            dispatch({ type: 'SET_LISTING_SEARCH_RESULTS', payload: [] });
           } else {
-            setListingSearchResults(data || []);
+            dispatch({ type: 'SET_LISTING_SEARCH_RESULTS', payload: data || [] });
           }
         }
       } finally {
-        setIsSearchingListings(false);
+        dispatch({ type: 'SET_IS_SEARCHING_LISTINGS', payload: false });
       }
     }, 300),
     []
@@ -347,51 +305,42 @@ export function useCreateSuggestedProposalLogic() {
 
   const handleListingSearchChange = useCallback((e) => {
     const term = e.target.value;
-    setListingSearchTerm(term);
+    dispatch({ type: 'SET_LISTING_SEARCH_TERM', payload: term });
     debouncedListingSearch(term);
   }, [debouncedListingSearch]);
 
   // Handler for when listing search box receives focus
   const handleListingSearchFocus = useCallback(async () => {
-    if (listingSearchResults.length === 0 && !selectedListing) {
-      setIsSearchingListings(true);
+    if (state.listingSearchResults.length === 0 && !state.selectedListing) {
+      dispatch({ type: 'SET_IS_SEARCHING_LISTINGS', payload: true });
       try {
         const { data, error } = await getDefaultListings();
         if (!error) {
-          setListingSearchResults(data || []);
+          dispatch({ type: 'SET_LISTING_SEARCH_RESULTS', payload: data || [] });
         }
       } finally {
-        setIsSearchingListings(false);
+        dispatch({ type: 'SET_IS_SEARCHING_LISTINGS', payload: false });
       }
     }
-  }, [listingSearchResults.length, selectedListing]);
+  }, [state.listingSearchResults.length, state.selectedListing]);
 
   const handleListingSelect = useCallback(async (listing) => {
-    setSelectedListing(listing);
-    setListingSearchTerm('');
-    setListingSearchResults([]);
+    dispatch({ type: 'SELECT_LISTING', payload: listing });
 
     // Fetch photos
     const { data: photos } = await getListingPhotos(listing.id);
-    setListingPhotos(photos || []);
+    dispatch({ type: 'SET_LISTING_PHOTOS', payload: photos || [] });
 
     // Move to step 2
-    setCurrentStep(2);
+    dispatch({ type: 'SET_CURRENT_STEP', payload: 2 });
   }, []);
 
   const handleListingClear = useCallback(() => {
-    setSelectedListing(null);
-    setListingPhotos([]);
-    setCurrentStep(1);
-    // Also reset guest selection
-    setSelectedGuest(null);
-    setIsGuestConfirmed(false);
-    setExistingProposalsCount(0);
+    dispatch({ type: 'CLEAR_LISTING' });
   }, []);
 
   const handleClearListingSearch = useCallback(() => {
-    setListingSearchTerm('');
-    setListingSearchResults([]);
+    dispatch({ type: 'CLEAR_LISTING_SEARCH' });
   }, []);
 
   // -------------------------------------------------------------------------
@@ -400,49 +349,49 @@ export function useCreateSuggestedProposalLogic() {
 
   // Load default guests when step 2 becomes active
   useEffect(() => {
-    if (currentStep === 2 && guestSearchResults.length === 0 && !selectedGuest) {
+    if (state.currentStep === 2 && state.guestSearchResults.length === 0 && !state.selectedGuest) {
       const loadDefaults = async () => {
-        setIsSearchingGuests(true);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: true });
         try {
           const { data, error } = await getDefaultGuests();
           if (error) {
             console.error('[CreateSuggestedProposal] Default guests error:', error);
           } else {
-            setGuestSearchResults(data || []);
+            dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: data || [] });
           }
         } finally {
-          setIsSearchingGuests(false);
+          dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: false });
         }
       };
       loadDefaults();
     }
-  }, [currentStep, guestSearchResults.length, selectedGuest]);
+  }, [state.currentStep, state.guestSearchResults.length, state.selectedGuest]);
 
   const debouncedGuestSearch = useCallback(
     debounce(async (term) => {
-      setIsSearchingGuests(true);
+      dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: true });
       try {
         // Empty search = show default guest list
         if (term.length === 0) {
           const { data, error } = await getDefaultGuests();
           if (error) {
             console.error('[CreateSuggestedProposal] Default guests error:', error);
-            setGuestSearchResults([]);
+            dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: [] });
           } else {
-            setGuestSearchResults(data || []);
+            dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: data || [] });
           }
         } else {
           // Search by term (already filtered to guests only)
           const { data, error } = await searchGuests(term);
           if (error) {
             console.error('[CreateSuggestedProposal] Guest search error:', error);
-            setGuestSearchResults([]);
+            dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: [] });
           } else {
-            setGuestSearchResults(data || []);
+            dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: data || [] });
           }
         }
       } finally {
-        setIsSearchingGuests(false);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: false });
       }
     }, 300),
     []
@@ -450,39 +399,36 @@ export function useCreateSuggestedProposalLogic() {
 
   const handleGuestSearchChange = useCallback((e) => {
     const term = e.target.value;
-    setGuestSearchTerm(term);
+    dispatch({ type: 'SET_GUEST_SEARCH_TERM', payload: term });
     debouncedGuestSearch(term);
   }, [debouncedGuestSearch]);
 
   // Handler for when guest search box receives focus
   const handleGuestSearchFocus = useCallback(async () => {
-    if (guestSearchResults.length === 0 && !selectedGuest) {
-      setIsSearchingGuests(true);
+    if (state.guestSearchResults.length === 0 && !state.selectedGuest) {
+      dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: true });
       try {
         const { data, error } = await getDefaultGuests();
         if (!error) {
-          setGuestSearchResults(data || []);
+          dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: data || [] });
         }
       } finally {
-        setIsSearchingGuests(false);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: false });
       }
     }
-  }, [guestSearchResults.length, selectedGuest]);
+  }, [state.guestSearchResults.length, state.selectedGuest]);
 
   const handleGuestSelect = useCallback(async (guest) => {
     console.log('[PREFILL DEBUG] handleGuestSelect called with full guest object:', guest);
     console.log('[PREFILL DEBUG] Guest id:', guest.id);
     console.log('[PREFILL DEBUG] Guest email:', guest.email);
 
-    setSelectedGuest(guest);
-    setGuestSearchTerm('');
-    setGuestSearchResults([]);
-    setIsGuestConfirmed(false);
+    dispatch({ type: 'SELECT_GUEST', payload: guest });
 
     // Check for existing proposals on THIS listing (for warning display)
-    if (selectedListing) {
-      const { data: listingProposals } = await getUserProposalsForListing(guest.id, selectedListing.id);
-      setExistingProposalsCount(listingProposals?.length || 0);
+    if (state.selectedListing) {
+      const { data: listingProposals } = await getUserProposalsForListing(guest.id, state.selectedListing.id);
+      dispatch({ type: 'SET_EXISTING_PROPOSALS_COUNT', payload: listingProposals?.length || 0 });
     }
 
     // Prefill from guest's most recent proposal across ALL listings
@@ -493,19 +439,21 @@ export function useCreateSuggestedProposalLogic() {
     if (mostRecentProposal) {
       console.log('[PREFILL DEBUG] Prefilling from proposal:', mostRecentProposal.id);
 
+      const prefillData = {};
+
       // Prefill days selected (0-indexed, no conversion needed)
       const daysSelected = mostRecentProposal.guest_selected_days_numbers_json;
       if (Array.isArray(daysSelected) && daysSelected.length > 0) {
-        setSelectedDays(daysSelected);
+        prefillData.selectedDays = daysSelected;
       }
 
       // Prefill reservation span
       const weeksValue = mostRecentProposal.reservation_span_in_weeks;
       if (weeksValue && weeksValue > 0) {
         const { reservationSpan: spanValue, customWeeks: customValue } = mapWeeksToReservationSpan(weeksValue);
-        setReservationSpan(spanValue);
+        prefillData.reservationSpan = spanValue;
         if (customValue !== null) {
-          setCustomWeeks(customValue);
+          prefillData.customWeeks = customValue;
         }
       }
 
@@ -517,45 +465,43 @@ export function useCreateSuggestedProposalLogic() {
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(0, 0, 0, 0);
 
-        // Use proposal date if in future, otherwise use tomorrow
+        // Use proposal date if in future, otherwise leave default (tomorrow) in place
         if (proposalDate >= tomorrow) {
-          setMoveInDate(proposalDate.toISOString().split('T')[0]);
+          prefillData.moveInDate = proposalDate.toISOString().split('T')[0];
         }
-        // If past date, leave default (tomorrow) in place
+      }
+
+      if (Object.keys(prefillData).length > 0) {
+        dispatch({ type: 'PREFILL_FROM_PROPOSAL', payload: prefillData });
       }
     }
 
     // Pre-fill guest profile fields if available
+    const guestInfo = {};
     if (guest.bio_text) {
-      setAboutMe(guest.bio_text);
+      guestInfo.aboutMe = guest.bio_text;
     }
     if (guest.stated_need_for_space_text) {
-      setNeedForSpace(guest.stated_need_for_space_text);
+      guestInfo.needForSpace = guest.stated_need_for_space_text;
     }
     if (guest.stated_special_needs_text) {
-      setSpecialNeeds(guest.stated_special_needs_text);
+      guestInfo.specialNeeds = guest.stated_special_needs_text;
     }
-  }, [selectedListing]);
+    if (Object.keys(guestInfo).length > 0) {
+      dispatch({ type: 'SET_GUEST_INFO', payload: guestInfo });
+    }
+  }, [state.selectedListing]);
 
   const handleGuestConfirm = useCallback(() => {
-    setIsGuestConfirmed(true);
-    setCurrentStep(3);
+    dispatch({ type: 'CONFIRM_GUEST' });
   }, []);
 
   const handleGuestClear = useCallback(() => {
-    setSelectedGuest(null);
-    setIsGuestConfirmed(false);
-    setExistingProposalsCount(0);
-    setCurrentStep(2);
-    // Reset step 3 fields
-    setAboutMe('');
-    setNeedForSpace('');
-    setSpecialNeeds('');
+    dispatch({ type: 'CLEAR_GUEST' });
   }, []);
 
   const handleClearGuestSearch = useCallback(() => {
-    setGuestSearchTerm('');
-    setGuestSearchResults([]);
+    dispatch({ type: 'CLEAR_GUEST_SEARCH' });
   }, []);
 
   // -------------------------------------------------------------------------
@@ -563,15 +509,15 @@ export function useCreateSuggestedProposalLogic() {
   // -------------------------------------------------------------------------
 
   const handleAboutMeChange = useCallback((e) => {
-    setAboutMe(e.target.value);
+    dispatch({ type: 'SET_ABOUT_ME', payload: e.target.value });
   }, []);
 
   const handleNeedForSpaceChange = useCallback((e) => {
-    setNeedForSpace(e.target.value);
+    dispatch({ type: 'SET_NEED_FOR_SPACE', payload: e.target.value });
   }, []);
 
   const handleSpecialNeedsChange = useCallback((e) => {
-    setSpecialNeeds(e.target.value);
+    dispatch({ type: 'SET_SPECIAL_NEEDS', payload: e.target.value });
   }, []);
 
   /**
@@ -579,15 +525,7 @@ export function useCreateSuggestedProposalLogic() {
    * Updates all three guest info fields from AI extraction
    */
   const handleTranscriptionParsed = useCallback((parsedData) => {
-    if (parsedData.aboutMe) {
-      setAboutMe(parsedData.aboutMe);
-    }
-    if (parsedData.needForSpace) {
-      setNeedForSpace(parsedData.needForSpace);
-    }
-    if (parsedData.specialNeeds) {
-      setSpecialNeeds(parsedData.specialNeeds);
-    }
+    dispatch({ type: 'SET_GUEST_INFO', payload: parsedData });
   }, []);
 
   // -------------------------------------------------------------------------
@@ -595,45 +533,35 @@ export function useCreateSuggestedProposalLogic() {
   // -------------------------------------------------------------------------
 
   const handleStatusChange = useCallback((e) => {
-    setProposalStatus(e.target.value);
+    dispatch({ type: 'SET_PROPOSAL_STATUS', payload: e.target.value });
   }, []);
 
   const handleMoveInDateChange = useCallback((e) => {
-    setMoveInDate(e.target.value);
+    dispatch({ type: 'SET_MOVE_IN_DATE', payload: e.target.value });
   }, []);
 
   const handleMoveInRangeChange = useCallback((e) => {
-    setMoveInRange(parseInt(e.target.value));
+    dispatch({ type: 'SET_MOVE_IN_RANGE', payload: parseInt(e.target.value) });
   }, []);
 
   const handleStrictMoveInChange = useCallback((e) => {
-    setStrictMoveIn(e.target.checked);
+    dispatch({ type: 'SET_STRICT_MOVE_IN', payload: e.target.checked });
   }, []);
 
   const handleDayToggle = useCallback((dayIndex) => {
-    setSelectedDays(prev => {
-      if (prev.includes(dayIndex)) {
-        return prev.filter(d => d !== dayIndex);
-      } else {
-        return [...prev, dayIndex].sort((a, b) => a - b);
-      }
-    });
+    dispatch({ type: 'TOGGLE_DAY', payload: dayIndex });
   }, []);
 
   const handleSelectFullTime = useCallback(() => {
-    // Select all days (0-6)
-    setSelectedDays([0, 1, 2, 3, 4, 5, 6]);
+    dispatch({ type: 'SELECT_ALL_DAYS' });
   }, []);
 
   const handleReservationSpanChange = useCallback((e) => {
-    setReservationSpan(e.target.value);
-    if (e.target.value !== 'custom') {
-      setCustomWeeks(null);
-    }
+    dispatch({ type: 'SET_RESERVATION_SPAN', payload: e.target.value });
   }, []);
 
   const handleCustomWeeksChange = useCallback((e) => {
-    setCustomWeeks(e.target.value);
+    dispatch({ type: 'SET_CUSTOM_WEEKS', payload: e.target.value });
   }, []);
 
   // -------------------------------------------------------------------------
@@ -641,43 +569,39 @@ export function useCreateSuggestedProposalLogic() {
   // -------------------------------------------------------------------------
 
   const handleGoBack = useCallback(() => {
-    if (isGuestConfirmed) {
-      setIsGuestConfirmed(false);
-      setCurrentStep(2);
-    }
-    setIsConfirmationStep(false);
-  }, [isGuestConfirmed]);
+    dispatch({ type: 'GO_BACK' });
+  }, []);
 
   // -------------------------------------------------------------------------
   // SUBMISSION
   // -------------------------------------------------------------------------
 
   const handleFirstCreateClick = useCallback(() => {
-    if (validationErrors.length > 0) return;
-    setIsConfirmationStep(true);
-  }, [validationErrors]);
+    if (state.validationErrors.length > 0) return;
+    dispatch({ type: 'SET_IS_CONFIRMATION_STEP', payload: true });
+  }, [state.validationErrors]);
 
   const handleCancelConfirmation = useCallback(() => {
-    setIsConfirmationStep(false);
+    dispatch({ type: 'SET_IS_CONFIRMATION_STEP', payload: false });
   }, []);
 
   const handleConfirmProposal = useCallback(async () => {
-    if (validationErrors.length > 0 || isCreating) return;
+    if (state.validationErrors.length > 0 || state.isCreating) return;
 
-    setIsCreating(true);
+    dispatch({ type: 'SET_IS_CREATING', payload: true });
 
     try {
-      const moveInDateObj = new Date(moveInDate);
+      const moveInDateObj = new Date(state.moveInDate);
       const moveInEndObj = new Date(moveInDateObj);
-      moveInEndObj.setDate(moveInEndObj.getDate() + moveInRange);
+      moveInEndObj.setDate(moveInEndObj.getDate() + state.moveInRange);
 
       const proposalData = {
         // References (required by edge function)
-        listingId: selectedListing.id,
-        guestId: selectedGuest.id,
+        listingId: state.selectedListing.id,
+        guestId: state.selectedGuest.id,
 
         // Schedule (0-indexed: 0=Sunday, 6=Saturday)
-        daysSelected: selectedDays,
+        daysSelected: state.selectedDays,
         nightsSelected,
         checkIn: checkInDayIndex,        // Edge function expects 'checkIn', not 'checkInDayIndex'
         checkOut: checkOutDayIndex,      // Edge function expects 'checkOut', not 'checkOutDayIndex'
@@ -688,7 +612,7 @@ export function useCreateSuggestedProposalLogic() {
 
         // Reservation (edge function expects 'SpanWeeks')
         reservationSpanWeeks: reservationWeeks,
-        reservationSpan: reservationSpan === 'custom' ? `${customWeeks} weeks` : `${reservationSpan} weeks`,
+        reservationSpan: state.reservationSpan === 'custom' ? `${state.customWeeks} weeks` : `${state.reservationSpan} weeks`,
 
         // Pricing
         nightlyPrice: pricing?.nightlyPrice || 0,
@@ -699,9 +623,9 @@ export function useCreateSuggestedProposalLogic() {
         fourWeekRent: pricing?.fourWeekRent || 0,
 
         // Optional Guest Info
-        aboutMe,
-        needForSpace,
-        specialNeeds
+        aboutMe: state.aboutMe,
+        needForSpace: state.needForSpace,
+        specialNeeds: state.specialNeeds
       };
 
       const { data, error } = await createSuggestedProposal(proposalData);
@@ -712,36 +636,41 @@ export function useCreateSuggestedProposalLogic() {
 
       // Edge function returns { proposalId, threadId, status, ... }
       // Store the IDs in objects with _id property for SuccessModal compatibility
-      setCreatedProposal({ _id: data.proposalId });
-      setCreatedThread({ _id: data.threadId });
-      setShowSuccessModal(true);
-      setIsConfirmationStep(false);
+      dispatch({
+        type: 'PROPOSAL_CREATED',
+        payload: {
+          proposal: { _id: data.proposalId },
+          thread: { _id: data.threadId },
+        },
+      });
+      modals.open('success');
 
     } catch (error) {
       console.error('[CreateSuggestedProposal] Creation error:', error);
-      setValidationErrors([`Failed to create proposal: ${error.message}`]);
+      dispatch({ type: 'SET_VALIDATION_ERRORS', payload: [`Failed to create proposal: ${error.message}`] });
     } finally {
-      setIsCreating(false);
+      dispatch({ type: 'SET_IS_CREATING', payload: false });
     }
   }, [
-    validationErrors,
-    isCreating,
-    selectedListing,
-    selectedGuest,
-    proposalStatus,
-    moveInDate,
-    moveInRange,
-    selectedDays,
+    state.validationErrors,
+    state.isCreating,
+    state.selectedListing,
+    state.selectedGuest,
+    state.proposalStatus,
+    state.moveInDate,
+    state.moveInRange,
+    state.selectedDays,
     nightsSelected,
     checkInDayIndex,
     checkOutDayIndex,
-    reservationSpan,
-    customWeeks,
+    state.reservationSpan,
+    state.customWeeks,
     reservationWeeks,
     pricing,
-    aboutMe,
-    needForSpace,
-    specialNeeds
+    state.aboutMe,
+    state.needForSpace,
+    state.specialNeeds,
+    modals
   ]);
 
   // -------------------------------------------------------------------------
@@ -749,73 +678,50 @@ export function useCreateSuggestedProposalLogic() {
   // -------------------------------------------------------------------------
 
   const handleCreateAnother = useCallback(() => {
-    // Reset all state
-    setCurrentStep(1);
-    setListingSearchTerm('');
-    setListingSearchResults([]);
-    setSelectedListing(null);
-    setListingPhotos([]);
-    setGuestSearchTerm('');
-    setGuestSearchResults([]);
-    setSelectedGuest(null);
-    setExistingProposalsCount(0);
-    setIsGuestConfirmed(false);
-    setAboutMe('');
-    setNeedForSpace('');
-    setSpecialNeeds('');
-    setProposalStatus(DEFAULT_STATUS);
-    setMoveInDate(getTomorrowDateString());
-    setMoveInRange(14);
-    setStrictMoveIn(false);
-    setSelectedDays([]);
-    setReservationSpan('');
-    setCustomWeeks(null);
-    setIsConfirmationStep(false);
-    setCreatedProposal(null);
-    setCreatedThread(null);
-    setShowSuccessModal(false);
-  }, []);
+    dispatch({ type: 'RESET_ALL' });
+    modals.close('success');
+  }, [modals]);
 
   const handleCloseSuccessModal = useCallback(() => {
-    setShowSuccessModal(false);
-  }, []);
+    modals.close('success');
+  }, [modals]);
 
   // -------------------------------------------------------------------------
-  // RETURN
+  // RETURN (backward-compatible shape)
   // -------------------------------------------------------------------------
 
   return {
     // Step state
-    currentStep,
+    currentStep: state.currentStep,
 
     // Step 1 - Listing
-    listingSearchTerm,
-    listingSearchResults,
-    selectedListing,
-    listingPhotos,
-    isSearchingListings,
+    listingSearchTerm: state.listingSearchTerm,
+    listingSearchResults: state.listingSearchResults,
+    selectedListing: state.selectedListing,
+    listingPhotos: state.listingPhotos,
+    isSearchingListings: state.isSearchingListings,
 
     // Step 2 - Guest
-    guestSearchTerm,
-    guestSearchResults,
-    selectedGuest,
-    existingProposalsCount,
-    isGuestConfirmed,
-    isSearchingGuests,
+    guestSearchTerm: state.guestSearchTerm,
+    guestSearchResults: state.guestSearchResults,
+    selectedGuest: state.selectedGuest,
+    existingProposalsCount: state.existingProposalsCount,
+    isGuestConfirmed: state.isGuestConfirmed,
+    isSearchingGuests: state.isSearchingGuests,
 
     // Step 3 - Guest Info
-    aboutMe,
-    needForSpace,
-    specialNeeds,
+    aboutMe: state.aboutMe,
+    needForSpace: state.needForSpace,
+    specialNeeds: state.specialNeeds,
 
     // Step 3 - Configuration
-    proposalStatus,
-    moveInDate,
-    moveInRange,
-    strictMoveIn,
-    selectedDays,
-    reservationSpan,
-    customWeeks,
+    proposalStatus: state.proposalStatus,
+    moveInDate: state.moveInDate,
+    moveInRange: state.moveInRange,
+    strictMoveIn: state.strictMoveIn,
+    selectedDays: state.selectedDays,
+    reservationSpan: state.reservationSpan,
+    customWeeks: state.customWeeks,
 
     // Computed (from selected days)
     checkInDayIndex,
@@ -826,12 +732,12 @@ export function useCreateSuggestedProposalLogic() {
     pricing,
 
     // UI State
-    isCreating,
-    isConfirmationStep,
-    validationErrors,
-    createdProposal,
-    createdThread,
-    showSuccessModal,
+    isCreating: state.isCreating,
+    isConfirmationStep: state.isConfirmationStep,
+    validationErrors: state.validationErrors,
+    createdProposal: state.createdProposal,
+    createdThread: state.createdThread,
+    showSuccessModal: modals.isOpen('success'),
 
     // Constants for components
     RESERVATION_SPAN_OPTIONS,

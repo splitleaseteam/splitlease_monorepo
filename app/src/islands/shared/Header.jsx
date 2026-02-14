@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useMemo } from 'react';
+import { useModalManager } from '../../hooks/useModalManager.js';
 import { redirectToLogin, loginUser, logoutUser, validateTokenAndFetchUser, isProtectedPage, getAuthToken, getFirstName, getAvatarUrl, checkUrlForAuthError, getUserId } from '../../lib/auth/index.js';
 import { SEARCH_URL, HOST_OVERVIEW_URL } from '../../lib/constants.js';
 import { getUserType as getStoredUserType, getAuthState } from '../../lib/secureStorage.js';
@@ -12,19 +13,9 @@ import SuggestedProposalPopup from './SuggestedProposals/SuggestedProposalPopup.
 import HeaderSuggestedProposalTrigger from './SuggestedProposals/HeaderSuggestedProposalTrigger.jsx';
 import { fetchPendingConfirmationCount, fetchPendingConfirmationProposals, markProposalInterested, dismissProposal } from './SuggestedProposals/suggestedProposalService.js';
 import { logger } from '../../lib/logger.js';
+import { headerReducer, initialState } from './headerReducer.js';
 
 export default function Header({ autoShowLogin = false }) {
-  const [mobileMenuActive, setMobileMenuActive] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [headerVisible, setHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  // Auth Modal State (using new SignUpLoginModal)
-  const [showAuthModal, setShowAuthModal] = useState(autoShowLogin);
-  const [authModalInitialView, setAuthModalInitialView] = useState('initial'); // 'initial', 'login', 'signup'
-  const [prefillEmail, setPrefillEmail] = useState(null); // Email to prefill in signup form (from OAuth user not found)
-  const [defaultUserType, setDefaultUserType] = useState(null); // 'host' or 'guest' for pre-selecting user type
-
   // User Authentication State
   // CRITICAL: Initialize with cached data synchronously to prevent flickering
   // If we have cached firstName, we're likely logged in - show optimistic UI immediately
@@ -34,41 +25,40 @@ export default function Header({ autoShowLogin = false }) {
   const cachedUserId = getUserId(); // Get cached userId for suggested proposals check
   const hasCachedAuth = !!(cachedFirstName && getAuthState());
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    // Return optimistic user data if we have cached auth
-    if (hasCachedAuth) {
-      return {
-        userId: cachedUserId, // Include userId for pending proposals check
-        firstName: cachedFirstName,
-        profilePhoto: cachedAvatarUrl,
-        userType: cachedUserType,
-        _isOptimistic: true
-      };
+  // Compute initial state with cached auth data (runs once)
+  const computedInitialState = useMemo(() => ({
+    ...initialState,
+    currentUser: hasCachedAuth ? {
+      userId: cachedUserId,
+      firstName: cachedFirstName,
+      profilePhoto: cachedAvatarUrl,
+      userType: cachedUserType,
+      _isOptimistic: true,
+    } : null,
+    authChecked: hasCachedAuth,
+    userType: cachedUserType,
+  }), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [state, dispatch] = useReducer(headerReducer, computedInitialState);
+
+  // Modal state management (auth, listProperty, suggestedProposal, notInterested)
+  const headerModals = useModalManager({ allowMultiple: true });
+
+  // Initialize auth modal from prop
+  useEffect(() => {
+    if (autoShowLogin) {
+      headerModals.open('auth', { initialView: 'initial' });
     }
-    return null;
-  });
-  const [authChecked, setAuthChecked] = useState(hasCachedAuth); // If we have cache, consider it checked
-  const [userType, setUserType] = useState(cachedUserType);
-
-  // CreateDuplicateListingModal State
-  const [showListPropertyModal, setShowListPropertyModal] = useState(false);
-
-  // Suggested Proposal Popup State
-  const [pendingProposalCount, setPendingProposalCount] = useState(0);
-  const [showSuggestedPopup, setShowSuggestedPopup] = useState(false);
-  const [pendingProposals, setPendingProposals] = useState([]);
-  const [currentProposalIndex, setCurrentProposalIndex] = useState(0);
-  const [isProcessingProposal, setIsProcessingProposal] = useState(false);
-  const [isNotInterestedModalOpen, setIsNotInterestedModalOpen] = useState(false);
+  }, []);
 
   // Dynamic menu data hooks for Host and Guest dropdowns
-  const userId = currentUser?.userId || currentUser?.id || '';
-  const isAuthenticated = !!currentUser;
+  const userId = state.currentUser?.userId || state.currentUser?.id || '';
+  const isAuthenticated = !!state.currentUser;
   const { state: hostMenuState } = useHostMenuData(userId, isAuthenticated);
   const { state: guestMenuState } = useGuestMenuData(userId, isAuthenticated);
 
   // Background validation: Validate cached auth state and update with real data
-  // The optimistic UI is already set synchronously in useState initializer above
+  // The optimistic UI is already set synchronously in the computed initial state above
   useEffect(() => {
     const token = getAuthToken();
 
@@ -106,8 +96,7 @@ export default function Header({ autoShowLogin = false }) {
       // If no auth at all, ensure we show logged-out state
       if (!token && !hasSupabaseSession && !hasCachedAuth) {
         logger.debug('[Header] No auth state - confirming logged-out UI');
-        setAuthChecked(true);
-        setCurrentUser(null);
+        dispatch({ type: 'CLEAR_AUTH' });
         return;
       }
 
@@ -121,8 +110,7 @@ export default function Header({ autoShowLogin = false }) {
 
         if (userData) {
           // Token is valid - update with real user data
-          setCurrentUser(userData);
-          setUserType(getStoredUserType());
+          dispatch({ type: 'SET_AUTH_STATE', payload: { currentUser: userData, userType: getStoredUserType(), authChecked: true } });
           logger.debug('[Header] Background validation successful:', userData.firstName);
         } else {
           // Validation failed but session may still be valid
@@ -135,15 +123,15 @@ export default function Header({ autoShowLogin = false }) {
             // Set basic user info from session if available
             if (session?.user) {
               const bubbleUserId = session.user.user_metadata?.user_id || getUserId() || session.user.id;
-              setCurrentUser({
+              dispatch({ type: 'SET_CURRENT_USER', payload: {
                 userId: bubbleUserId, // Include userId for pending proposals check
                 firstName: session.user.user_metadata?.first_name || session.user.email?.split('@')[0] || 'User',
                 email: session.user.email,
-                _isFromSession: true
-              });
+                _isFromSession: true,
+              } });
             }
           } else {
-            setCurrentUser(null);
+            dispatch({ type: 'SET_CURRENT_USER', payload: null });
             logger.debug('[Header] Background validation failed - clearing auth UI');
 
             // If on a protected page and token validation failed:
@@ -171,12 +159,12 @@ export default function Header({ autoShowLogin = false }) {
         logger.error('Auth validation error:', error);
         // Don't clear user if we have a session - just log the error
         if (!hasSupabaseSession) {
-          setCurrentUser(null);
+          dispatch({ type: 'SET_CURRENT_USER', payload: null });
         }
       }
 
       // Mark validation as complete
-      setAuthChecked(true);
+      dispatch({ type: 'SET_AUTH_CHECKED', payload: true });
     };
 
     // Run validation after page load to not block rendering
@@ -215,20 +203,18 @@ export default function Header({ autoShowLogin = false }) {
             // even if user profile fetch fails (network error, user not in DB, etc.)
             const userData = await validateTokenAndFetchUser({ clearOnFailure: false });
             if (userData) {
-              setCurrentUser(userData);
-              setUserType(getStoredUserType());
-              setAuthChecked(true);
+              dispatch({ type: 'SET_AUTH_STATE', payload: { currentUser: userData, userType: getStoredUserType(), authChecked: true } });
               logger.debug('[Header] UI updated for:', userData.firstName);
             } else {
               // Validation failed but we have a valid session - set basic info from session
               logger.debug('[Header] User profile fetch failed, using session data');
               if (session?.user) {
-                setCurrentUser({
+                dispatch({ type: 'SET_CURRENT_USER', payload: {
                   firstName: session.user.user_metadata?.first_name || session.user.email?.split('@')[0] || 'User',
                   email: session.user.email,
-                  _isFromSession: true
-                });
-                setAuthChecked(true);
+                  _isFromSession: true,
+                } });
+                dispatch({ type: 'SET_AUTH_CHECKED', payload: true });
               }
             }
           } catch (error) {
@@ -272,9 +258,7 @@ export default function Header({ autoShowLogin = false }) {
     const handleUserNotFound = (event) => {
       logger.debug('[Header] OAuth user not found:', event.detail.email);
       // Open signup modal with email prefilled
-      setPrefillEmail(event.detail.email);
-      setAuthModalInitialView('signup');
-      setShowAuthModal(true);
+      headerModals.open('auth', { initialView: 'signup', prefillEmail: event.detail.email });
     };
 
     window.addEventListener('oauth-login-success', handleOAuthSuccess);
@@ -294,7 +278,7 @@ export default function Header({ autoShowLogin = false }) {
     // This ensures we read from the same key that auth.js writes to ('sl_user_type')
     const updateUserType = () => {
       const storedUserType = getStoredUserType();
-      setUserType(storedUserType);
+      dispatch({ type: 'SET_USER_TYPE', payload: storedUserType });
     };
 
     // Check immediately on mount and when page loads
@@ -305,7 +289,7 @@ export default function Header({ autoShowLogin = false }) {
     }
 
     // Update when currentUser changes (after auth validation)
-    if (currentUser) {
+    if (state.currentUser) {
       updateUserType();
     }
 
@@ -316,7 +300,7 @@ export default function Header({ autoShowLogin = false }) {
       window.removeEventListener('load', updateUserType);
       window.removeEventListener('storage', updateUserType);
     };
-  }, [currentUser]);
+  }, [state.currentUser]);
 
   // Helper function to determine if user is a Host based on Supabase user type values
   // Possible values from database:
@@ -324,8 +308,8 @@ export default function Header({ autoShowLogin = false }) {
   // - "Trial Host"
   // - "Split Lease" (internal users - show both dropdowns)
   const isHost = () => {
-    if (!userType) return false;
-    return userType.includes('Host') || userType === 'Split Lease';
+    if (!state.userType) return false;
+    return state.userType.includes('Host') || state.userType === 'Split Lease';
   };
 
   // Helper function to determine if user is a Guest based on Supabase user type values
@@ -333,41 +317,31 @@ export default function Header({ autoShowLogin = false }) {
   // - "A Guest (I would like to rent a space)"
   // - "Split Lease" (internal users - show both dropdowns)
   const isGuest = () => {
-    if (!userType) return false;
-    return userType.includes('Guest') || userType === 'Split Lease';
+    if (!state.userType) return false;
+    return state.userType.includes('Guest') || state.userType === 'Split Lease';
   };
 
   // Fetch pending confirmation proposals for guest users
   useEffect(() => {
     const fetchPendingProposals = async () => {
       // Only fetch for logged-in guest users
-      if (!currentUser?.userId && !currentUser?.id) return;
+      if (!state.currentUser?.userId && !state.currentUser?.id) return;
       if (!isGuest()) return;
 
-      const userId = currentUser.userId || currentUser.id;
-      const count = await fetchPendingConfirmationCount(userId);
-      setPendingProposalCount(count);
+      const uid = state.currentUser.userId || state.currentUser.id;
+      const count = await fetchPendingConfirmationCount(uid);
+      dispatch({ type: 'SET_PENDING_PROPOSAL_COUNT', payload: count });
     };
 
-    if (currentUser && authChecked) {
+    if (state.currentUser && state.authChecked) {
       fetchPendingProposals();
     }
-  }, [currentUser, authChecked, userType]);
+  }, [state.currentUser, state.authChecked, state.userType]);
 
   // Handle scroll behavior - hide header on scroll down, show on scroll up
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down & past 100px
-        setHeaderVisible(false);
-      } else {
-        // Scrolling up
-        setHeaderVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
+      dispatch({ type: 'HANDLE_SCROLL', payload: { scrollY: window.scrollY } });
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -375,13 +349,13 @@ export default function Header({ autoShowLogin = false }) {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [lastScrollY]);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.nav-dropdown')) {
-        setActiveDropdown(null);
+        dispatch({ type: 'SET_ACTIVE_DROPDOWN', payload: null });
       }
     };
 
@@ -394,39 +368,37 @@ export default function Header({ autoShowLogin = false }) {
 
   // Toggle mobile menu
   const toggleMobileMenu = () => {
-    setMobileMenuActive(!mobileMenuActive);
+    dispatch({ type: 'TOGGLE_MOBILE_MENU' });
   };
 
   // Toggle dropdown menu
   const toggleDropdown = (dropdownName) => {
-    setActiveDropdown(activeDropdown === dropdownName ? null : dropdownName);
+    dispatch({ type: 'TOGGLE_DROPDOWN', payload: dropdownName });
+  };
+
+  // Close both dropdown and mobile menu (used by menu item clicks)
+  const closeMenus = () => {
+    dispatch({ type: 'CLOSE_MENUS' });
   };
 
   // Handle auth modal - open login popup
   const handleLoginClick = () => {
-    setAuthModalInitialView('login');
-    setShowAuthModal(true);
+    headerModals.open('auth', { initialView: 'login' });
   };
 
   // Handle signup modal - open signup popup
   const handleSignupClick = () => {
-    setDefaultUserType(null); // Clear any pre-selected user type
-    setAuthModalInitialView('signup');
-    setShowAuthModal(true);
+    headerModals.open('auth', { initialView: 'signup' });
   };
 
   // Handle host signup - open signup popup with host type pre-selected
   const handleHostSignupClick = () => {
-    setDefaultUserType('host');
-    setAuthModalInitialView('signup');
-    setShowAuthModal(true);
+    headerModals.open('auth', { initialView: 'signup', defaultUserType: 'host' });
   };
 
   // Handle auth modal close
   const handleAuthModalClose = () => {
-    setShowAuthModal(false);
-    setPrefillEmail(null); // Clear prefilled email when modal closes
-    setDefaultUserType(null); // Clear pre-selected user type when modal closes
+    headerModals.close('auth');
   };
 
   // Handle successful authentication
@@ -441,7 +413,7 @@ export default function Header({ autoShowLogin = false }) {
       e.preventDefault();
       toggleDropdown(dropdownName);
     } else if (e.key === 'Escape') {
-      setActiveDropdown(null);
+      dispatch({ type: 'SET_ACTIVE_DROPDOWN', payload: null });
     }
   };
 
@@ -469,98 +441,88 @@ export default function Header({ autoShowLogin = false }) {
 
   // Handle suggested proposal trigger click - load full proposals and show popup
   const handleSuggestedTriggerClick = async () => {
-    if (showSuggestedPopup) {
+    if (headerModals.isOpen('suggestedProposal')) {
       // Already open, just close
-      setShowSuggestedPopup(false);
+      headerModals.close('suggestedProposal');
       return;
     }
 
-    const userId = currentUser?.userId || currentUser?.id;
-    if (!userId) return;
+    const uid = state.currentUser?.userId || state.currentUser?.id;
+    if (!uid) return;
 
     // Fetch full proposal details when opening popup
-    const proposals = await fetchPendingConfirmationProposals(userId);
-    setPendingProposals(proposals);
-    setCurrentProposalIndex(0);
-    setShowSuggestedPopup(true);
+    const proposals = await fetchPendingConfirmationProposals(uid);
+    dispatch({ type: 'SET_PENDING_PROPOSALS', payload: proposals });
+    dispatch({ type: 'SET_CURRENT_PROPOSAL_INDEX', payload: 0 });
+    headerModals.open('suggestedProposal');
   };
 
   // Handle "Interested" action on suggested proposal
   const handleProposalInterested = async () => {
-    const proposal = pendingProposals[currentProposalIndex];
+    const proposal = state.pendingProposals[state.currentProposalIndex];
     if (!proposal) return;
 
-    setIsProcessingProposal(true);
+    dispatch({ type: 'SET_IS_PROCESSING_PROPOSAL', payload: true });
     const result = await markProposalInterested(proposal.id);
-    setIsProcessingProposal(false);
+    dispatch({ type: 'SET_IS_PROCESSING_PROPOSAL', payload: false });
 
     if (result.success) {
-      // Remove from list and update count
-      const newProposals = pendingProposals.filter((_, i) => i !== currentProposalIndex);
-      setPendingProposals(newProposals);
-      setPendingProposalCount(prev => Math.max(0, prev - 1));
+      dispatch({ type: 'REMOVE_PROPOSAL', payload: state.currentProposalIndex });
 
-      if (newProposals.length === 0) {
-        setShowSuggestedPopup(false);
-      } else if (currentProposalIndex >= newProposals.length) {
-        setCurrentProposalIndex(newProposals.length - 1);
+      // Check if all proposals are now gone (use current length minus 1 since REMOVE_PROPOSAL just ran)
+      const remainingCount = state.pendingProposals.length - 1;
+      if (remainingCount === 0) {
+        headerModals.close('suggestedProposal');
       }
     }
   };
 
   // Handle "Not Interested" action - opens the feedback modal
   const handleProposalRemove = () => {
-    const proposal = pendingProposals[currentProposalIndex];
+    const proposal = state.pendingProposals[state.currentProposalIndex];
     if (!proposal) return;
-    setIsNotInterestedModalOpen(true);
+    headerModals.open('notInterested');
   };
 
   // Close Not Interested modal
   const handleCloseNotInterestedModal = () => {
-    setIsNotInterestedModalOpen(false);
+    headerModals.close('notInterested');
   };
 
   // Confirm Not Interested with optional feedback
   const handleConfirmNotInterested = async (feedback = null) => {
-    const proposal = pendingProposals[currentProposalIndex];
+    const proposal = state.pendingProposals[state.currentProposalIndex];
     if (!proposal) return;
 
-    setIsProcessingProposal(true);
+    dispatch({ type: 'SET_IS_PROCESSING_PROPOSAL', payload: true });
     const result = await dismissProposal(proposal.id, feedback);
-    setIsProcessingProposal(false);
+    dispatch({ type: 'SET_IS_PROCESSING_PROPOSAL', payload: false });
 
     if (result.success) {
       // Close the modal
-      setIsNotInterestedModalOpen(false);
+      headerModals.close('notInterested');
 
-      // Remove from list and update count
-      const newProposals = pendingProposals.filter((_, i) => i !== currentProposalIndex);
-      setPendingProposals(newProposals);
-      setPendingProposalCount(prev => Math.max(0, prev - 1));
+      dispatch({ type: 'REMOVE_PROPOSAL', payload: state.currentProposalIndex });
 
-      if (newProposals.length === 0) {
-        setShowSuggestedPopup(false);
-      } else if (currentProposalIndex >= newProposals.length) {
-        setCurrentProposalIndex(newProposals.length - 1);
+      // Check if all proposals are now gone (use current length minus 1 since REMOVE_PROPOSAL just ran)
+      const remainingCount = state.pendingProposals.length - 1;
+      if (remainingCount === 0) {
+        headerModals.close('suggestedProposal');
       }
     }
   };
 
   // Navigate between proposals in popup
   const handleNextProposal = () => {
-    if (currentProposalIndex < pendingProposals.length - 1) {
-      setCurrentProposalIndex(prev => prev + 1);
-    }
+    dispatch({ type: 'NEXT_PROPOSAL' });
   };
 
   const handlePreviousProposal = () => {
-    if (currentProposalIndex > 0) {
-      setCurrentProposalIndex(prev => prev - 1);
-    }
+    dispatch({ type: 'PREVIOUS_PROPOSAL' });
   };
 
   return (
-    <header className={`main-header ${headerVisible ? 'header-visible' : 'header-hidden'}`}>
+    <header className={`main-header ${state.headerVisible ? 'header-visible' : 'header-hidden'}`}>
       <nav className="nav-container">
         {/* Logo Section */}
         <div className="nav-left">
@@ -571,18 +533,18 @@ export default function Header({ autoShowLogin = false }) {
         </div>
 
         {/* Mobile Suggested Proposal Trigger - visible only on mobile, positioned before hamburger */}
-        {currentUser && isGuest() && pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
+        {state.currentUser && isGuest() && state.pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
           <HeaderSuggestedProposalTrigger
             onClick={handleSuggestedTriggerClick}
-            isActive={showSuggestedPopup}
-            proposalCount={pendingProposalCount}
+            isActive={headerModals.isOpen('suggestedProposal')}
+            proposalCount={state.pendingProposalCount}
             className="mobile-sp-trigger"
           />
         )}
 
         {/* Mobile Hamburger Menu */}
         <button
-          className={`hamburger-menu ${mobileMenuActive ? 'active' : ''}`}
+          className={`hamburger-menu ${state.mobileMenuActive ? 'active' : ''}`}
           aria-label="Toggle navigation menu"
           onClick={toggleMobileMenu}
         >
@@ -592,15 +554,15 @@ export default function Header({ autoShowLogin = false }) {
         </button>
 
         {/* Center Navigation with Dropdowns */}
-        <div className={`nav-center ${mobileMenuActive ? 'mobile-active' : ''}`}>
+        <div className={`nav-center ${state.mobileMenuActive ? 'mobile-active' : ''}`}>
           {/* Host with Us Dropdown - Only show if not logged in OR if logged in as Host/Trial Host/Split Lease */}
-          {(!currentUser || !userType || isHost()) && (
+          {(!state.currentUser || !state.userType || isHost()) && (
           <div className="nav-dropdown">
             <a
               href="#host"
               className="nav-link dropdown-trigger"
               role="button"
-              aria-expanded={activeDropdown === 'host'}
+              aria-expanded={state.activeDropdown === 'host'}
               aria-haspopup="true"
               onClick={(e) => {
                 e.preventDefault();
@@ -628,7 +590,7 @@ export default function Header({ autoShowLogin = false }) {
               </svg>
             </a>
             <div
-              className={`dropdown-menu dropdown-menu-host ${activeDropdown === 'host' ? 'active' : ''}`}
+              className={`dropdown-menu dropdown-menu-host ${state.activeDropdown === 'host' ? 'active' : ''}`}
               role="menu"
               aria-label="Host with Us menu"
             >
@@ -649,10 +611,7 @@ export default function Header({ autoShowLogin = false }) {
                       <a
                         href={featured.ctaHref}
                         className="featured-link"
-                        onClick={() => {
-                          setActiveDropdown(null);
-                          setMobileMenuActive(false);
-                        }}
+                        onClick={closeMenus}
                       >
                         <span>{featured.cta}</span>
                         <svg className="featured-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -677,13 +636,9 @@ export default function Header({ autoShowLogin = false }) {
                             role="menuitem"
                             onClick={item.action ? (e) => {
                               e.preventDefault();
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
+                              closeMenus();
                               item.action();
-                            } : () => {
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
-                            }}
+                            } : closeMenus}
                           >
                             <span className="dropdown-title">{item.title}</span>
                           </a>
@@ -701,13 +656,9 @@ export default function Header({ autoShowLogin = false }) {
                             role="menuitem"
                             onClick={item.action ? (e) => {
                               e.preventDefault();
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
+                              closeMenus();
                               item.action();
-                            } : () => {
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
-                            }}
+                            } : closeMenus}
                           >
                             <span className="dropdown-title">{item.title}</span>
                           </a>
@@ -721,13 +672,9 @@ export default function Header({ autoShowLogin = false }) {
                           role="menuitem"
                           onClick={hostMenuConfig.cta.action ? (e) => {
                             e.preventDefault();
-                            setActiveDropdown(null);
-                            setMobileMenuActive(false);
+                            closeMenus();
                             hostMenuConfig.cta.action();
-                          } : () => {
-                            setActiveDropdown(null);
-                            setMobileMenuActive(false);
-                          }}
+                          } : closeMenus}
                         >
                           {hostMenuConfig.cta.label}
                         </a>
@@ -742,13 +689,13 @@ export default function Header({ autoShowLogin = false }) {
 
           {/* Stay with Us Dropdown - Only show if not logged in OR if logged in as Guest/Split Lease */}
           {/* Hidden on mobile when suggested proposal icons are visible to reduce clutter */}
-          {(!currentUser || !userType || isGuest()) && (
-          <div className={`nav-dropdown${pendingProposalCount > 0 ? ' hide-on-mobile-with-suggestions' : ''}`}>
+          {(!state.currentUser || !state.userType || isGuest()) && (
+          <div className={`nav-dropdown${state.pendingProposalCount > 0 ? ' hide-on-mobile-with-suggestions' : ''}`}>
             <a
               href="#stay"
               className="nav-link dropdown-trigger"
               role="button"
-              aria-expanded={activeDropdown === 'stay'}
+              aria-expanded={state.activeDropdown === 'stay'}
               aria-haspopup="true"
               onClick={(e) => {
                 e.preventDefault();
@@ -776,7 +723,7 @@ export default function Header({ autoShowLogin = false }) {
               </svg>
             </a>
             <div
-              className={`dropdown-menu dropdown-menu-guest ${activeDropdown === 'stay' ? 'active' : ''}`}
+              className={`dropdown-menu dropdown-menu-guest ${state.activeDropdown === 'stay' ? 'active' : ''}`}
               role="menu"
               aria-label="Stay with Us menu"
             >
@@ -797,10 +744,7 @@ export default function Header({ autoShowLogin = false }) {
                       <a
                         href={featured.ctaHref}
                         className="featured-link"
-                        onClick={() => {
-                          setActiveDropdown(null);
-                          setMobileMenuActive(false);
-                        }}
+                        onClick={closeMenus}
                       >
                         <span>{featured.cta}</span>
                         <svg className="featured-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -825,13 +769,9 @@ export default function Header({ autoShowLogin = false }) {
                             role="menuitem"
                             onClick={item.action ? (e) => {
                               e.preventDefault();
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
+                              closeMenus();
                               item.action();
-                            } : () => {
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
-                            }}
+                            } : closeMenus}
                           >
                             <span className="dropdown-title">{item.title}</span>
                           </a>
@@ -849,13 +789,9 @@ export default function Header({ autoShowLogin = false }) {
                             role="menuitem"
                             onClick={item.action ? (e) => {
                               e.preventDefault();
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
+                              closeMenus();
                               item.action();
-                            } : () => {
-                              setActiveDropdown(null);
-                              setMobileMenuActive(false);
-                            }}
+                            } : closeMenus}
                           >
                             <span className="dropdown-title">{item.title}</span>
                           </a>
@@ -869,13 +805,9 @@ export default function Header({ autoShowLogin = false }) {
                           role="menuitem"
                           onClick={guestMenuConfig.cta.action ? (e) => {
                             e.preventDefault();
-                            setActiveDropdown(null);
-                            setMobileMenuActive(false);
+                            closeMenus();
                             guestMenuConfig.cta.action();
-                          } : () => {
-                            setActiveDropdown(null);
-                            setMobileMenuActive(false);
-                          }}
+                          } : closeMenus}
                         >
                           {guestMenuConfig.cta.label}
                         </a>
@@ -890,8 +822,8 @@ export default function Header({ autoShowLogin = false }) {
         </div>
 
         {/* Right Navigation - Auth Buttons */}
-        <div className={`nav-right ${mobileMenuActive ? 'mobile-active' : ''}`}>
-          {currentUser && isHost() ? (
+        <div className={`nav-right ${state.mobileMenuActive ? 'mobile-active' : ''}`}>
+          {state.currentUser && isHost() ? (
             <a href={HOST_OVERVIEW_URL} className="explore-rentals-btn">
               Host Overview
             </a>
@@ -902,46 +834,46 @@ export default function Header({ autoShowLogin = false }) {
           )}
 
           {/* Desktop Suggested Proposal Trigger - visible only on desktop for guests with pending proposals */}
-          {currentUser && isGuest() && pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
+          {state.currentUser && isGuest() && state.pendingProposalCount > 0 && window.location.pathname !== '/guest-proposals' && (
             <HeaderSuggestedProposalTrigger
               onClick={handleSuggestedTriggerClick}
-              isActive={showSuggestedPopup}
-              proposalCount={pendingProposalCount}
+              isActive={headerModals.isOpen('suggestedProposal')}
+              proposalCount={state.pendingProposalCount}
               className="desktop-sp-trigger"
             />
           )}
 
-          {currentUser && currentUser.firstName ? (
+          {state.currentUser && state.currentUser.firstName ? (
             /* User is logged in - show LoggedInAvatar component with full menu */
             /* Note: currentUser.userId comes from validateTokenAndFetchUser() in auth.js */
             /* The hook useLoggedInAvatarData will fetch fresh data from Supabase using this ID */
             <LoggedInAvatar
               user={{
-                id: currentUser.userId || currentUser.id || '',
-                name: `${currentUser.firstName} ${currentUser.lastName || ''}`.trim(),
-                email: currentUser.email || '',
+                id: state.currentUser.userId || state.currentUser.id || '',
+                name: `${state.currentUser.firstName} ${state.currentUser.lastName || ''}`.trim(),
+                email: state.currentUser.email || '',
                 userType: (() => {
                   // Normalize user type to 'HOST', 'GUEST', or 'TRIAL_HOST'
                   // Handles both legacy Bubble format and new Supabase Auth format
-                  if (!userType) return 'GUEST';
-                  if (userType === 'Host' || userType === 'A Host (I have a space available to rent)' || userType === 'Split Lease') return 'HOST';
-                  if (userType === 'Trial Host') return 'TRIAL_HOST';
-                  if (userType === 'Guest' || userType === 'A Guest (I would like to rent a space)') return 'GUEST';
+                  if (!state.userType) return 'GUEST';
+                  if (state.userType === 'Host' || state.userType === 'A Host (I have a space available to rent)' || state.userType === 'Split Lease') return 'HOST';
+                  if (state.userType === 'Trial Host') return 'TRIAL_HOST';
+                  if (state.userType === 'Guest' || state.userType === 'A Guest (I would like to rent a space)') return 'GUEST';
                   // Fallback: check if it contains 'Host' (but not 'Trial')
-                  if (userType.includes('Host') && !userType.includes('Trial')) return 'HOST';
-                  if (userType.includes('Trial')) return 'TRIAL_HOST';
+                  if (state.userType.includes('Host') && !state.userType.includes('Trial')) return 'HOST';
+                  if (state.userType.includes('Trial')) return 'TRIAL_HOST';
                   return 'GUEST';
                 })(),
-                avatarUrl: currentUser.profilePhoto?.startsWith('//')
-                  ? `https:${currentUser.profilePhoto}`
-                  : currentUser.profilePhoto,
-                proposalsCount: currentUser.proposalsCount || 0,
-                listingsCount: currentUser.listingsCount || 0,
-                virtualMeetingsCount: currentUser.virtualMeetingsCount || 0,
-                houseManualsCount: currentUser.houseManualsCount || 0,
-                leasesCount: currentUser.leasesCount || 0,
-                favoritesCount: currentUser.favoritesCount || 0,
-                unreadMessagesCount: currentUser.unreadMessagesCount || 0,
+                avatarUrl: state.currentUser.profilePhoto?.startsWith('//')
+                  ? `https:${state.currentUser.profilePhoto}`
+                  : state.currentUser.profilePhoto,
+                proposalsCount: state.currentUser.proposalsCount || 0,
+                listingsCount: state.currentUser.listingsCount || 0,
+                virtualMeetingsCount: state.currentUser.virtualMeetingsCount || 0,
+                houseManualsCount: state.currentUser.houseManualsCount || 0,
+                leasesCount: state.currentUser.leasesCount || 0,
+                favoritesCount: state.currentUser.favoritesCount || 0,
+                unreadMessagesCount: state.currentUser.unreadMessagesCount || 0,
               }}
               currentPath={window.location.pathname}
               onNavigate={(path) => {
@@ -979,37 +911,37 @@ export default function Header({ autoShowLogin = false }) {
 
       {/* Auth Modal (SignUpLoginModal) */}
       <SignUpLoginModal
-        isOpen={showAuthModal}
+        isOpen={headerModals.isOpen('auth')}
         onClose={handleAuthModalClose}
-        initialView={authModalInitialView}
+        initialView={headerModals.getData('auth')?.initialView || 'initial'}
         onAuthSuccess={handleAuthSuccess}
         disableClose={autoShowLogin && isProtectedPage()}
-        prefillEmail={prefillEmail}
-        defaultUserType={defaultUserType}
+        prefillEmail={headerModals.getData('auth')?.prefillEmail || null}
+        defaultUserType={headerModals.getData('auth')?.defaultUserType || null}
       />
 
       {/* CreateDuplicateListingModal */}
-      {showListPropertyModal && (
+      {headerModals.isOpen('listProperty') && (
         <CreateDuplicateListingModal
-          isVisible={showListPropertyModal}
-          onClose={() => setShowListPropertyModal(false)}
-          currentUser={currentUser}
+          isVisible={headerModals.isOpen('listProperty')}
+          onClose={() => headerModals.close('listProperty')}
+          currentUser={state.currentUser}
         />
       )}
 
       {/* Suggested Proposal Popup */}
       <SuggestedProposalPopup
-        proposal={pendingProposals[currentProposalIndex]}
-        currentIndex={currentProposalIndex}
-        totalCount={pendingProposals.length}
+        proposal={state.pendingProposals[state.currentProposalIndex]}
+        currentIndex={state.currentProposalIndex}
+        totalCount={state.pendingProposals.length}
         onInterested={handleProposalInterested}
         onRemove={handleProposalRemove}
         onNext={handleNextProposal}
         onPrevious={handlePreviousProposal}
-        onClose={() => setShowSuggestedPopup(false)}
-        isVisible={showSuggestedPopup}
-        isProcessing={isProcessingProposal}
-        isNotInterestedModalOpen={isNotInterestedModalOpen}
+        onClose={() => headerModals.close('suggestedProposal')}
+        isVisible={headerModals.isOpen('suggestedProposal')}
+        isProcessing={state.isProcessingProposal}
+        isNotInterestedModalOpen={headerModals.isOpen('notInterested')}
         onCloseNotInterestedModal={handleCloseNotInterestedModal}
         onConfirmNotInterested={handleConfirmNotInterested}
       />

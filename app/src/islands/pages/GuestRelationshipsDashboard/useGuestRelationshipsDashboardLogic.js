@@ -7,10 +7,15 @@
  * Architecture:
  * - Islands Architecture (independent React root)
  * - Corporate internal tool for managing guest relationships
+ * - useReducer for centralized state management
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useReducer, useEffect, useCallback, useMemo } from 'react';
 import { useAsyncOperation } from '../../../hooks/useAsyncOperation.js';
+import {
+  guestRelationshipsDashboardReducer,
+  initialState,
+} from './guestRelationshipsDashboardReducer.js';
 import {
   searchGuests,
   getGuest,
@@ -82,72 +87,10 @@ function formatPhoneNumber(phone) {
 // ============================================================================
 
 export function useGuestRelationshipsDashboardLogic() {
-  // -------------------------------------------------------------------------
-  // STATE - Guest Selection
-  // -------------------------------------------------------------------------
-  const [selectedGuest, setSelectedGuest] = useState(null);
-  const [guestSearchResults, setGuestSearchResults] = useState([]);
-  const [isSearchingGuests, setIsSearchingGuests] = useState(false);
-
-  // Search inputs
-  const [nameSearch, setNameSearch] = useState('');
-  const [phoneSearch, setPhoneSearch] = useState('');
-  const [emailSearch, setEmailSearch] = useState('');
-
-  // Dropdown visibility
-  const [showNameDropdown, setShowNameDropdown] = useState(false);
-  const [showPhoneDropdown, setShowPhoneDropdown] = useState(false);
-  const [showEmailDropdown, setShowEmailDropdown] = useState(false);
+  const [state, dispatch] = useReducer(guestRelationshipsDashboardReducer, initialState);
 
   // -------------------------------------------------------------------------
-  // STATE - Create Customer Form
-  // -------------------------------------------------------------------------
-  const [createCustomerForm, setCreateCustomerForm] = useState({
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    email: '',
-    phoneNumber: '',
-    userType: 'guest'
-  });
-  const [createCustomerErrors, setCreateCustomerErrors] = useState({});
-  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
-
-  // -------------------------------------------------------------------------
-  // STATE - Messaging
-  // -------------------------------------------------------------------------
-  const [messageType, setMessageType] = useState('custom');
-  const [emailSubject, setEmailSubject] = useState('');
-  const [emailBody, setEmailBody] = useState('');
-  const [smsBody, setSmsBody] = useState('');
-  const [messageHistory, setMessageHistory] = useState([]);
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
-
-  // -------------------------------------------------------------------------
-  // STATE - Proposals & Listings
-  // -------------------------------------------------------------------------
-  const [currentProposals, setCurrentProposals] = useState([]);
-  const [suggestedProposals, setSuggestedProposals] = useState([]);
-  const [suggestedListings, setSuggestedListings] = useState([]);
-  const [allListings, setAllListings] = useState([]);
-  const [isLoadingProposals, setIsLoadingProposals] = useState(false);
-
-  // -------------------------------------------------------------------------
-  // STATE - Multi-user Selection
-  // -------------------------------------------------------------------------
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [allGuests, setAllGuests] = useState([]);
-
-  // -------------------------------------------------------------------------
-  // STATE - Knowledge Base
-  // -------------------------------------------------------------------------
-  const [allArticles, setAllArticles] = useState([]);
-  const [assignedArticles, setAssignedArticles] = useState([]);
-  const [selectedArticleToAdd, setSelectedArticleToAdd] = useState('');
-  const [isLoadingArticles, setIsLoadingArticles] = useState(false);
-
-  // -------------------------------------------------------------------------
-  // STATE - UI
+  // STATE - UI (useAsyncOperation for initial load)
   // -------------------------------------------------------------------------
   const {
     isLoading,
@@ -162,16 +105,14 @@ export function useGuestRelationshipsDashboardLogic() {
         searchListings({}, 20).catch(() => [])
       ]);
 
-      setAllArticles(articlesResult.articles || []);
-      setAllGuests(guestsResult || []);
-      setAllListings(listingsResult || []);
+      dispatch({ type: 'SET_ALL_ARTICLES', payload: articlesResult.articles || [] });
+      dispatch({ type: 'SET_ALL_GUESTS', payload: guestsResult || [] });
+      dispatch({ type: 'SET_ALL_LISTINGS', payload: listingsResult || [] });
     }
   );
 
   // Normalize error to string for consumers
   const error = rawLoadError?.message || (rawLoadError ? 'Failed to load data. Please refresh the page.' : null);
-
-  const [toast, setToast] = useState(null);
 
   // -------------------------------------------------------------------------
   // EFFECTS - Initial Data Load
@@ -189,19 +130,17 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   useEffect(() => {
-    if (selectedGuest?.id) {
-      loadGuestDetails(selectedGuest.id);
+    if (state.selectedGuest?.id) {
+      loadGuestDetails(state.selectedGuest.id);
     } else {
       // Clear guest-specific data
-      setAssignedArticles([]);
-      setCurrentProposals([]);
-      setSuggestedProposals([]);
+      dispatch({ type: 'CLEAR_GUEST_DETAILS' });
     }
-  }, [selectedGuest?.id]);
+  }, [state.selectedGuest?.id]);
 
   async function loadGuestDetails(guestId) {
     try {
-      setIsLoadingProposals(true);
+      dispatch({ type: 'SET_IS_LOADING_PROPOSALS', payload: true });
 
       const [guestData, proposalsData] = await Promise.all([
         getGuest(guestId, { includeHistory: true, includeArticles: true }),
@@ -210,20 +149,29 @@ export function useGuestRelationshipsDashboardLogic() {
 
       // Update assigned articles from guest data
       if (guestData.assignedArticles) {
-        setAssignedArticles(guestData.assignedArticles);
+        dispatch({ type: 'SET_ASSIGNED_ARTICLES', payload: guestData.assignedArticles });
       }
 
       // Separate proposals by type
       const proposals = proposalsData || [];
-      setCurrentProposals(proposals.filter(p => p.type === 'current' || !p.type));
-      setSuggestedProposals(proposals.filter(p => p.type === 'suggested'));
+      dispatch({ type: 'SET_CURRENT_PROPOSALS', payload: proposals.filter(p => p.type === 'current' || !p.type) });
+      dispatch({ type: 'SET_SUGGESTED_PROPOSALS', payload: proposals.filter(p => p.type === 'suggested') });
 
     } catch (err) {
       console.error('Failed to load guest details:', err);
       showToast('Failed to load guest details', 'error');
     } finally {
-      setIsLoadingProposals(false);
+      dispatch({ type: 'SET_IS_LOADING_PROPOSALS', payload: false });
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // HELPERS - Toast Notifications
+  // -------------------------------------------------------------------------
+
+  function showToast(message, type = 'info') {
+    dispatch({ type: 'SHOW_TOAST', payload: { message, type } });
+    setTimeout(() => dispatch({ type: 'HIDE_TOAST' }), 4000);
   }
 
   // -------------------------------------------------------------------------
@@ -233,18 +181,18 @@ export function useGuestRelationshipsDashboardLogic() {
   const handleSearchByName = useCallback(
     debounce(async (query) => {
       if (!query || query.length < 2) {
-        setGuestSearchResults([]);
+        dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: [] });
         return;
       }
 
       try {
-        setIsSearchingGuests(true);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: true });
         const results = await searchGuests({ query, searchType: 'name', limit: 10 });
-        setGuestSearchResults(results || []);
+        dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: results || [] });
       } catch (err) {
         console.error('Search failed:', err);
       } finally {
-        setIsSearchingGuests(false);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: false });
       }
     }, 300),
     []
@@ -253,18 +201,18 @@ export function useGuestRelationshipsDashboardLogic() {
   const handleSearchByPhone = useCallback(
     debounce(async (query) => {
       if (!query || query.length < 3) {
-        setGuestSearchResults([]);
+        dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: [] });
         return;
       }
 
       try {
-        setIsSearchingGuests(true);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: true });
         const results = await searchGuests({ query, searchType: 'phone', limit: 10 });
-        setGuestSearchResults(results || []);
+        dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: results || [] });
       } catch (err) {
         console.error('Search failed:', err);
       } finally {
-        setIsSearchingGuests(false);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: false });
       }
     }, 300),
     []
@@ -273,52 +221,44 @@ export function useGuestRelationshipsDashboardLogic() {
   const handleSearchByEmail = useCallback(
     debounce(async (query) => {
       if (!query || query.length < 3) {
-        setGuestSearchResults([]);
+        dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: [] });
         return;
       }
 
       try {
-        setIsSearchingGuests(true);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: true });
         const results = await searchGuests({ query, searchType: 'email', limit: 10 });
-        setGuestSearchResults(results || []);
+        dispatch({ type: 'SET_GUEST_SEARCH_RESULTS', payload: results || [] });
       } catch (err) {
         console.error('Search failed:', err);
       } finally {
-        setIsSearchingGuests(false);
+        dispatch({ type: 'SET_IS_SEARCHING_GUESTS', payload: false });
       }
     }, 300),
     []
   );
 
   function handleNameSearchChange(value) {
-    setNameSearch(value);
+    dispatch({ type: 'SET_NAME_SEARCH', payload: value });
     handleSearchByName(value);
   }
 
   function handlePhoneSearchChange(value) {
-    setPhoneSearch(value);
+    dispatch({ type: 'SET_PHONE_SEARCH', payload: value });
     handleSearchByPhone(value);
   }
 
   function handleEmailSearchChange(value) {
-    setEmailSearch(value);
+    dispatch({ type: 'SET_EMAIL_SEARCH', payload: value });
     handleSearchByEmail(value);
   }
 
   function handleGuestSelect(guest) {
-    setSelectedGuest(guest);
-    // Clear search inputs and close dropdowns
-    setNameSearch('');
-    setPhoneSearch('');
-    setEmailSearch('');
-    setShowNameDropdown(false);
-    setShowPhoneDropdown(false);
-    setShowEmailDropdown(false);
-    setGuestSearchResults([]);
+    dispatch({ type: 'GUEST_SELECT', payload: guest });
   }
 
   function handleClearSelectedGuest() {
-    setSelectedGuest(null);
+    dispatch({ type: 'SET_SELECTED_GUEST', payload: null });
   }
 
   // -------------------------------------------------------------------------
@@ -326,32 +266,32 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   function handleCreateCustomerFieldChange(field, value) {
-    setCreateCustomerForm(prev => ({ ...prev, [field]: value }));
+    dispatch({ type: 'UPDATE_CREATE_CUSTOMER_FIELD', payload: { field, value } });
     // Clear error for this field
-    if (createCustomerErrors[field]) {
-      setCreateCustomerErrors(prev => ({ ...prev, [field]: undefined }));
+    if (state.createCustomerErrors[field]) {
+      dispatch({ type: 'CLEAR_CREATE_CUSTOMER_FIELD_ERROR', payload: field });
     }
   }
 
   function validateCreateCustomerForm() {
     const errors = {};
 
-    if (!createCustomerForm.firstName?.trim()) {
+    if (!state.createCustomerForm.firstName?.trim()) {
       errors.firstName = 'First name is required';
     }
-    if (!createCustomerForm.lastName?.trim()) {
+    if (!state.createCustomerForm.lastName?.trim()) {
       errors.lastName = 'Last name is required';
     }
-    if (!createCustomerForm.email?.trim()) {
+    if (!state.createCustomerForm.email?.trim()) {
       errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createCustomerForm.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.createCustomerForm.email)) {
       errors.email = 'Please enter a valid email';
     }
-    if (!createCustomerForm.phoneNumber?.trim()) {
+    if (!state.createCustomerForm.phoneNumber?.trim()) {
       errors.phoneNumber = 'Phone number is required';
     }
 
-    setCreateCustomerErrors(errors);
+    dispatch({ type: 'SET_CREATE_CUSTOMER_ERRORS', payload: errors });
     return Object.keys(errors).length === 0;
   }
 
@@ -359,37 +299,33 @@ export function useGuestRelationshipsDashboardLogic() {
     if (!validateCreateCustomerForm()) return;
 
     try {
-      setIsCreatingCustomer(true);
-      const newGuest = await createGuest(createCustomerForm);
+      dispatch({ type: 'SET_IS_CREATING_CUSTOMER', payload: true });
+      const newGuest = await createGuest(state.createCustomerForm);
 
       // Select the newly created guest
-      setSelectedGuest({
-        id: newGuest.id,
-        firstName: newGuest.firstName,
-        lastName: newGuest.lastName,
-        email: newGuest.email,
-        phoneNumber: newGuest.phoneNumber
+      dispatch({
+        type: 'SET_SELECTED_GUEST',
+        payload: {
+          id: newGuest.id,
+          firstName: newGuest.firstName,
+          lastName: newGuest.lastName,
+          email: newGuest.email,
+          phoneNumber: newGuest.phoneNumber
+        }
       });
 
       // Clear form
-      setCreateCustomerForm({
-        firstName: '',
-        lastName: '',
-        birthDate: '',
-        email: '',
-        phoneNumber: '',
-        userType: 'guest'
-      });
+      dispatch({ type: 'RESET_CREATE_CUSTOMER_FORM' });
 
       // Add to allGuests
-      setAllGuests(prev => [newGuest, ...prev]);
+      dispatch({ type: 'PREPEND_GUEST', payload: newGuest });
 
       showToast('Customer created successfully', 'success');
     } catch (err) {
       console.error('Failed to create customer:', err);
       showToast(err.message || 'Failed to create customer', 'error');
     } finally {
-      setIsCreatingCustomer(false);
+      dispatch({ type: 'SET_IS_CREATING_CUSTOMER', payload: false });
     }
   }
 
@@ -398,53 +334,52 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   async function handleSendEmail() {
-    if (!selectedGuest || !emailSubject || !emailBody) {
+    if (!state.selectedGuest || !state.emailSubject || !state.emailBody) {
       showToast('Please fill in all email fields', 'error');
       return;
     }
 
     try {
-      setIsSendingMessage(true);
+      dispatch({ type: 'SET_IS_SENDING_MESSAGE', payload: true });
 
       await sendEmailToGuest({
-        to: selectedGuest.email,
-        subject: emailSubject,
-        body: emailBody
+        to: state.selectedGuest.email,
+        subject: state.emailSubject,
+        body: state.emailBody
       });
 
       // Add to message history
       const newMessage = {
         id: `msg-${Date.now()}`,
         senderId: 'staff',
-        recipientId: selectedGuest.id,
-        messageBody: `Subject: ${emailSubject}\n\n${emailBody}`,
+        recipientId: state.selectedGuest.id,
+        messageBody: `Subject: ${state.emailSubject}\n\n${state.emailBody}`,
         messageType: 'email',
         status: 'sent',
         timestamp: new Date().toISOString()
       };
-      setMessageHistory(prev => [newMessage, ...prev]);
+      dispatch({ type: 'PREPEND_MESSAGE', payload: newMessage });
 
       // Clear form
-      setEmailSubject('');
-      setEmailBody('');
+      dispatch({ type: 'CLEAR_EMAIL_FORM' });
 
       showToast('Email sent successfully', 'success');
     } catch (err) {
       console.error('Failed to send email:', err);
       showToast(err.message || 'Failed to send email', 'error');
     } finally {
-      setIsSendingMessage(false);
+      dispatch({ type: 'SET_IS_SENDING_MESSAGE', payload: false });
     }
   }
 
   async function handleSendSMS() {
-    if (!selectedGuest || !smsBody) {
+    if (!state.selectedGuest || !state.smsBody) {
       showToast('Please enter a message', 'error');
       return;
     }
 
     // Format phone for E.164
-    const phone = selectedGuest.phoneNumber?.replace(/\D/g, '');
+    const phone = state.selectedGuest.phoneNumber?.replace(/\D/g, '');
     if (!phone || phone.length < 10) {
       showToast('Invalid phone number', 'error');
       return;
@@ -453,34 +388,34 @@ export function useGuestRelationshipsDashboardLogic() {
     const formattedPhone = phone.length === 10 ? `+1${phone}` : `+${phone}`;
 
     try {
-      setIsSendingMessage(true);
+      dispatch({ type: 'SET_IS_SENDING_MESSAGE', payload: true });
 
       await sendSMSToGuest({
         to: formattedPhone,
-        body: smsBody
+        body: state.smsBody
       });
 
       // Add to message history
       const newMessage = {
         id: `msg-${Date.now()}`,
         senderId: 'staff',
-        recipientId: selectedGuest.id,
-        messageBody: smsBody,
+        recipientId: state.selectedGuest.id,
+        messageBody: state.smsBody,
         messageType: 'sms',
         status: 'sent',
         timestamp: new Date().toISOString()
       };
-      setMessageHistory(prev => [newMessage, ...prev]);
+      dispatch({ type: 'PREPEND_MESSAGE', payload: newMessage });
 
       // Clear form
-      setSmsBody('');
+      dispatch({ type: 'CLEAR_SMS_FORM' });
 
       showToast('SMS sent successfully', 'success');
     } catch (err) {
       console.error('Failed to send SMS:', err);
       showToast(err.message || 'Failed to send SMS', 'error');
     } finally {
-      setIsSendingMessage(false);
+      dispatch({ type: 'SET_IS_SENDING_MESSAGE', payload: false });
     }
   }
 
@@ -489,8 +424,7 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   function handleRemoveProposal(proposalId) {
-    setCurrentProposals(prev => prev.filter(p => p.id !== proposalId));
-    setSuggestedProposals(prev => prev.filter(p => p.id !== proposalId));
+    dispatch({ type: 'REMOVE_PROPOSAL', payload: proposalId });
     showToast('Proposal removed', 'success');
   }
 
@@ -499,14 +433,14 @@ export function useGuestRelationshipsDashboardLogic() {
   }
 
   function handleAddSuggestedProposal(listingId) {
-    const listing = allListings.find(l => l.id === listingId);
+    const listing = state.allListings.find(l => l.id === listingId);
     if (!listing) return;
 
     const newProposal = {
       id: `prop-${Date.now()}`,
       listingId,
       listing,
-      userId: selectedGuest?.id || '',
+      userId: state.selectedGuest?.id || '',
       moveInDate: new Date().toISOString().split('T')[0],
       daysSelected: 7,
       nights: 7,
@@ -518,7 +452,7 @@ export function useGuestRelationshipsDashboardLogic() {
       updatedAt: new Date().toISOString()
     };
 
-    setSuggestedProposals(prev => [...prev, newProposal]);
+    dispatch({ type: 'ADD_SUGGESTED_PROPOSAL', payload: newProposal });
     showToast('Suggested proposal added', 'success');
   }
 
@@ -527,15 +461,15 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   function handleAddListing(listingId, _userIds) {
-    const listing = allListings.find(l => l.id === listingId);
-    if (listing && !suggestedListings.some(l => l.id === listingId)) {
-      setSuggestedListings(prev => [...prev, listing]);
+    const listing = state.allListings.find(l => l.id === listingId);
+    if (listing && !state.suggestedListings.some(l => l.id === listingId)) {
+      dispatch({ type: 'ADD_SUGGESTED_LISTING', payload: listing });
       showToast('Listing added', 'success');
     }
   }
 
   function handleRemoveListing(listingId) {
-    setSuggestedListings(prev => prev.filter(l => l.id !== listingId));
+    dispatch({ type: 'REMOVE_SUGGESTED_LISTING', payload: listingId });
     showToast('Listing removed', 'success');
   }
 
@@ -548,19 +482,15 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   function handleSelectAllGuests() {
-    setSelectedUsers(allGuests.map(g => g.id));
+    dispatch({ type: 'SET_SELECTED_USERS', payload: state.allGuests.map(g => g.id) });
   }
 
   function handleDeselectAllGuests() {
-    setSelectedUsers([]);
+    dispatch({ type: 'SET_SELECTED_USERS', payload: [] });
   }
 
   function handleToggleUserSelection(userId) {
-    setSelectedUsers(prev =>
-      prev.includes(userId)
-        ? prev.filter(id => id !== userId)
-        : [...prev, userId]
-    );
+    dispatch({ type: 'TOGGLE_USER_SELECTION', payload: userId });
   }
 
   // -------------------------------------------------------------------------
@@ -568,55 +498,49 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   async function handleAddArticle(articleId) {
-    if (!selectedGuest || !articleId) return;
+    if (!state.selectedGuest || !articleId) return;
 
     try {
-      setIsLoadingArticles(true);
-      await assignArticle(selectedGuest.id, articleId);
+      dispatch({ type: 'SET_IS_LOADING_ARTICLES', payload: true });
+      await assignArticle(state.selectedGuest.id, articleId);
 
       // Find the article and add to assigned list
-      const article = allArticles.find(a => a.id === articleId);
+      const article = state.allArticles.find(a => a.id === articleId);
       if (article) {
-        setAssignedArticles(prev => [...prev, {
-          ...article,
-          assignedAt: new Date().toISOString()
-        }]);
+        dispatch({
+          type: 'ADD_ASSIGNED_ARTICLE',
+          payload: {
+            ...article,
+            assignedAt: new Date().toISOString()
+          }
+        });
       }
 
-      setSelectedArticleToAdd('');
+      dispatch({ type: 'SET_SELECTED_ARTICLE_TO_ADD', payload: '' });
       showToast('Article assigned', 'success');
     } catch (err) {
       console.error('Failed to assign article:', err);
       showToast(err.message || 'Failed to assign article', 'error');
     } finally {
-      setIsLoadingArticles(false);
+      dispatch({ type: 'SET_IS_LOADING_ARTICLES', payload: false });
     }
   }
 
   async function handleRemoveArticle(articleId) {
-    if (!selectedGuest || !articleId) return;
+    if (!state.selectedGuest || !articleId) return;
 
     try {
-      setIsLoadingArticles(true);
-      await removeArticle(selectedGuest.id, articleId);
+      dispatch({ type: 'SET_IS_LOADING_ARTICLES', payload: true });
+      await removeArticle(state.selectedGuest.id, articleId);
 
-      setAssignedArticles(prev => prev.filter(a => a.id !== articleId));
+      dispatch({ type: 'REMOVE_ASSIGNED_ARTICLE', payload: articleId });
       showToast('Article removed', 'success');
     } catch (err) {
       console.error('Failed to remove article:', err);
       showToast(err.message || 'Failed to remove article', 'error');
     } finally {
-      setIsLoadingArticles(false);
+      dispatch({ type: 'SET_IS_LOADING_ARTICLES', payload: false });
     }
-  }
-
-  // -------------------------------------------------------------------------
-  // HELPERS - Toast Notifications
-  // -------------------------------------------------------------------------
-
-  function showToast(message, type = 'info') {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
   }
 
   // -------------------------------------------------------------------------
@@ -624,11 +548,49 @@ export function useGuestRelationshipsDashboardLogic() {
   // -------------------------------------------------------------------------
 
   const availableArticles = useMemo(() => {
-    const assignedIds = new Set(assignedArticles.map(a => a.id));
-    return allArticles.filter(a => !assignedIds.has(a.id));
-  }, [allArticles, assignedArticles]);
+    const assignedIds = new Set(state.assignedArticles.map(a => a.id));
+    return state.allArticles.filter(a => !assignedIds.has(a.id));
+  }, [state.allArticles, state.assignedArticles]);
 
-  const guestHistory = selectedGuest?.history || [];
+  const guestHistory = state.selectedGuest?.history || [];
+
+  // -------------------------------------------------------------------------
+  // BACKWARD-COMPATIBLE DISPATCH WRAPPERS
+  // (Consumer passes these as direct setters to child components)
+  // -------------------------------------------------------------------------
+
+  const setShowNameDropdown = useCallback(
+    (value) => dispatch({ type: 'SET_SHOW_NAME_DROPDOWN', payload: value }),
+    []
+  );
+  const setShowPhoneDropdown = useCallback(
+    (value) => dispatch({ type: 'SET_SHOW_PHONE_DROPDOWN', payload: value }),
+    []
+  );
+  const setShowEmailDropdown = useCallback(
+    (value) => dispatch({ type: 'SET_SHOW_EMAIL_DROPDOWN', payload: value }),
+    []
+  );
+  const setMessageType = useCallback(
+    (value) => dispatch({ type: 'SET_MESSAGE_TYPE', payload: value }),
+    []
+  );
+  const setEmailSubject = useCallback(
+    (value) => dispatch({ type: 'SET_EMAIL_SUBJECT', payload: value }),
+    []
+  );
+  const setEmailBody = useCallback(
+    (value) => dispatch({ type: 'SET_EMAIL_BODY', payload: value }),
+    []
+  );
+  const setSmsBody = useCallback(
+    (value) => dispatch({ type: 'SET_SMS_BODY', payload: value }),
+    []
+  );
+  const setSelectedArticleToAdd = useCallback(
+    (value) => dispatch({ type: 'SET_SELECTED_ARTICLE_TO_ADD', payload: value }),
+    []
+  );
 
   // -------------------------------------------------------------------------
   // RETURN
@@ -640,15 +602,15 @@ export function useGuestRelationshipsDashboardLogic() {
     MESSAGE_TYPES,
 
     // Guest Selection
-    selectedGuest,
-    guestSearchResults,
-    isSearchingGuests,
-    nameSearch,
-    phoneSearch,
-    emailSearch,
-    showNameDropdown,
-    showPhoneDropdown,
-    showEmailDropdown,
+    selectedGuest: state.selectedGuest,
+    guestSearchResults: state.guestSearchResults,
+    isSearchingGuests: state.isSearchingGuests,
+    nameSearch: state.nameSearch,
+    phoneSearch: state.phoneSearch,
+    emailSearch: state.emailSearch,
+    showNameDropdown: state.showNameDropdown,
+    showPhoneDropdown: state.showPhoneDropdown,
+    showEmailDropdown: state.showEmailDropdown,
 
     // Guest Selection Handlers
     handleNameSearchChange,
@@ -661,55 +623,55 @@ export function useGuestRelationshipsDashboardLogic() {
     setShowEmailDropdown,
 
     // Create Customer
-    createCustomerForm,
-    createCustomerErrors,
-    isCreatingCustomer,
+    createCustomerForm: state.createCustomerForm,
+    createCustomerErrors: state.createCustomerErrors,
+    isCreatingCustomer: state.isCreatingCustomer,
     handleCreateCustomerFieldChange,
     handleCreateCustomer,
 
     // Messaging
-    messageType,
+    messageType: state.messageType,
     setMessageType,
-    emailSubject,
+    emailSubject: state.emailSubject,
     setEmailSubject,
-    emailBody,
+    emailBody: state.emailBody,
     setEmailBody,
-    smsBody,
+    smsBody: state.smsBody,
     setSmsBody,
-    messageHistory,
-    isSendingMessage,
+    messageHistory: state.messageHistory,
+    isSendingMessage: state.isSendingMessage,
     handleSendEmail,
     handleSendSMS,
 
     // Proposals
-    currentProposals,
-    suggestedProposals,
-    isLoadingProposals,
+    currentProposals: state.currentProposals,
+    suggestedProposals: state.suggestedProposals,
+    isLoadingProposals: state.isLoadingProposals,
     handleRemoveProposal,
     handleConfirmPricing,
     handleAddSuggestedProposal,
 
     // Listings
-    suggestedListings,
-    allListings,
+    suggestedListings: state.suggestedListings,
+    allListings: state.allListings,
     handleAddListing,
     handleRemoveListing,
     handleAddCuratedListing,
 
     // Multi-user Selection
-    selectedUsers,
-    allGuests,
+    selectedUsers: state.selectedUsers,
+    allGuests: state.allGuests,
     handleSelectAllGuests,
     handleDeselectAllGuests,
     handleToggleUserSelection,
 
     // Knowledge Base
-    allArticles,
-    assignedArticles,
+    allArticles: state.allArticles,
+    assignedArticles: state.assignedArticles,
     availableArticles,
-    selectedArticleToAdd,
+    selectedArticleToAdd: state.selectedArticleToAdd,
     setSelectedArticleToAdd,
-    isLoadingArticles,
+    isLoadingArticles: state.isLoadingArticles,
     handleAddArticle,
     handleRemoveArticle,
 
@@ -719,7 +681,7 @@ export function useGuestRelationshipsDashboardLogic() {
     // UI State
     isLoading,
     error,
-    toast,
+    toast: state.toast,
 
     // Helpers
     formatPhoneNumber

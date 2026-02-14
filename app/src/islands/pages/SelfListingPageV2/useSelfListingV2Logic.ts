@@ -3,10 +3,13 @@
  *
  * Contains all form state, validation, navigation, pricing calculations,
  * address autocomplete, draft persistence, and submission logic.
+ *
+ * State management: useReducer (selfListingV2Reducer) + useModalManager
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useReducer, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../../shared/Toast.jsx';
 import { useAuthenticatedUser } from '../../../hooks/useAuthenticatedUser.js';
+import { useModalManager } from '../../../hooks/useModalManager.js';
 import { createListing, getListingById } from '../../../lib/listing/index.js';
 import { isGuest } from '../../../logic/rules/users/isGuest.js';
 import { supabase } from '../../../lib/supabase.js';
@@ -14,6 +17,7 @@ import { NYC_BOUNDS, isValidServiceArea, getBoroughForZipCode, getBoroughFromCou
 import { fetchInformationalTexts } from '../../../lib/informationalTextsFetcher.js';
 import type { SelfListingFormData, NightId, SpaceType, AddressData } from './types';
 import { DEFAULT_FORM_DATA, HOST_TYPES, WEEKLY_PATTERNS } from './types';
+import { selfListingV2Reducer, initialState } from './selfListingV2Reducer';
 
 const STORAGE_KEY = 'selfListingV2Draft';
 const LAST_HOST_TYPE_KEY = 'selfListingV2LastHostType';
@@ -98,16 +102,11 @@ export function useSelfListingV2Logic() {
   // Auth hook
   const { user: authUser, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser();
 
-  // State
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<SelfListingFormData>(DEFAULT_FORM_DATA);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [pendingSubmit, setPendingSubmit] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [createdListingId, setCreatedListingId] = useState<string | null>(null);
-  const [headerKey, setHeaderKey] = useState(0);
+  // Reducer state
+  const [state, dispatch] = useReducer(selfListingV2Reducer, initialState);
+
+  // Modal manager (auth modal + continue on phone modal)
+  const modals = useModalManager({ allowMultiple: true });
 
   // Refs for nightly calculator
   const nightlyPricesRef = useRef<number[]>([100, 95, 90, 86, 82, 78, 74]);
@@ -115,33 +114,9 @@ export function useSelfListingV2Logic() {
   // Address autocomplete state and refs
   const addressInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const [addressError, setAddressError] = useState<string | null>(null);
-  const [isAddressValid, setIsAddressValid] = useState(false);
-
-  // Continue on Phone modal state
-  const [showContinueOnPhoneModal, setShowContinueOnPhoneModal] = useState(false);
-  const [continueOnPhoneLink, setContinueOnPhoneLink] = useState<string | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
-  const [isSavingDraft, setIsSavingDraft] = useState(false);
-  const [draftListingId, setDraftListingId] = useState<string | null>(null);
-
-  // Edit mode state
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingListingId, setEditingListingId] = useState<string | null>(null);
-
-  // Mobile detection state
-  const [isMobile, setIsMobile] = useState(false);
 
   // Toast notifications
   const { toasts, showToast, removeToast } = useToast();
-
-  // Validation errors for highlighting fields
-  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
-
-  // Informational text tooltip state
-  const [activeInfoTooltip, setActiveInfoTooltip] = useState<string | null>(null);
-  const [informationalTexts, setInformationalTexts] = useState<Record<string, { desktop?: string; mobile?: string; desktopPlus?: string; showMore?: boolean }>>({});
 
   // Refs for informational text tooltips
   const leaseStyleNightlyInfoRef = useRef<HTMLButtonElement>(null);
@@ -156,15 +131,12 @@ export function useSelfListingV2Logic() {
   const utilitiesInfoRef = useRef<HTMLButtonElement>(null);
   const scheduleInfoRef = useRef<HTMLButtonElement>(null);
 
-  // Access control state
-  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
-
   // Helper to get informational text content (database-first with fallback)
   const getInfoContent = (tooltipId: string) => {
     const config = infoContentConfig[tooltipId];
     if (!config) return { title: '', content: '', expandedContent: '', showMore: false };
 
-    const dbEntry = informationalTexts[config.dbTag];
+    const dbEntry = state.informationalTexts[config.dbTag];
     return {
       title: config.title,
       content: dbEntry?.desktop || config.fallbackContent,
@@ -176,14 +148,17 @@ export function useSelfListingV2Logic() {
   // Handle info tooltip toggle
   const handleInfoClick = (tooltipId: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setActiveInfoTooltip(activeInfoTooltip === tooltipId ? null : tooltipId);
+    dispatch({
+      type: 'SET_ACTIVE_INFO_TOOLTIP',
+      payload: state.activeInfoTooltip === tooltipId ? null : tooltipId,
+    });
   };
 
   // Fetch informational texts from database on mount
   useEffect(() => {
     const loadInformationalTexts = async () => {
       const texts = await fetchInformationalTexts();
-      setInformationalTexts(texts);
+      dispatch({ type: 'SET_INFORMATIONAL_TEXTS', payload: texts });
     };
     loadInformationalTexts();
   }, []);
@@ -191,7 +166,7 @@ export function useSelfListingV2Logic() {
   // Mobile detection
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      dispatch({ type: 'SET_IS_MOBILE', payload: window.innerWidth < 768 });
     };
 
     checkMobile();
@@ -206,7 +181,7 @@ export function useSelfListingV2Logic() {
 
     if (!isAuthenticated) {
       console.log('[SelfListingPageV2] User is logged out - access allowed');
-      setIsCheckingAccess(false);
+      dispatch({ type: 'SET_IS_CHECKING_ACCESS', payload: false });
       return;
     }
 
@@ -220,7 +195,7 @@ export function useSelfListingV2Logic() {
     }
 
     console.log('[SelfListingPageV2] Host user - access allowed');
-    setIsCheckingAccess(false);
+    dispatch({ type: 'SET_IS_CHECKING_ACCESS', payload: false });
   }, [authLoading, isAuthenticated, authUser]);
 
   // Load draft and step from localStorage
@@ -235,7 +210,7 @@ export function useSelfListingV2Logic() {
       console.log('[SelfListingPageV2] Prefilling hostType from last listing:', lastHostType);
     }
     if (lastMarketStrategy && ['private', 'public'].includes(lastMarketStrategy)) {
-      prefillFromLastListing.marketStrategy = lastMarketStrategy as FormData['marketStrategy'];
+      prefillFromLastListing.marketStrategy = lastMarketStrategy as SelfListingFormData['marketStrategy'];
       console.log('[SelfListingPageV2] Prefilling marketStrategy from last listing:', lastMarketStrategy);
     }
 
@@ -244,21 +219,24 @@ export function useSelfListingV2Logic() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.formData) {
-          setFormData({
-            ...DEFAULT_FORM_DATA,
-            ...parsed.formData,
-            ...prefillFromLastListing,
+          dispatch({
+            type: 'SET_FORM_DATA',
+            payload: {
+              ...DEFAULT_FORM_DATA,
+              ...parsed.formData,
+              ...prefillFromLastListing,
+            },
           });
           console.log('[SelfListingPageV2] Restored draft with LAST_* prefill applied');
         }
         if (parsed.currentStep && parsed.currentStep >= 1 && parsed.currentStep <= 8) {
-          setCurrentStep(parsed.currentStep);
+          dispatch({ type: 'SET_CURRENT_STEP', payload: parsed.currentStep });
         }
       } catch (e) {
         console.error('Failed to load draft:', e);
       }
     } else if (Object.keys(prefillFromLastListing).length > 0) {
-      setFormData(prev => ({ ...prev, ...prefillFromLastListing }));
+      dispatch({ type: 'UPDATE_FORM_DATA', payload: prefillFromLastListing });
       console.log('[SelfListingPageV2] No draft, applied LAST_* prefill');
     }
   }, []);
@@ -266,18 +244,18 @@ export function useSelfListingV2Logic() {
   // Save draft and step to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      formData,
-      currentStep,
+      formData: state.formData,
+      currentStep: state.currentStep,
     }));
-  }, [formData, currentStep]);
+  }, [state.formData, state.currentStep]);
 
   // Sync auth hook state to local isLoggedIn + phone number
   useEffect(() => {
     if (authLoading) return;
-    setIsLoggedIn(isAuthenticated);
+    dispatch({ type: 'SET_IS_LOGGED_IN', payload: isAuthenticated });
     if (authUser?.phoneNumber) {
-      setUserPhoneNumber(authUser.phoneNumber);
-      setPhoneNumber(authUser.phoneNumber);
+      dispatch({ type: 'SET_USER_PHONE_NUMBER', payload: authUser.phoneNumber });
+      dispatch({ type: 'SET_PHONE_NUMBER', payload: authUser.phoneNumber });
     }
   }, [authLoading, isAuthenticated, authUser]);
 
@@ -293,8 +271,10 @@ export function useSelfListingV2Logic() {
       // Check for edit mode first (existing listing ID)
       if (listingId) {
         console.log('[SelfListingPageV2] Edit mode detected, loading listing:', listingId);
-        setIsEditMode(true);
-        setEditingListingId(listingId);
+        dispatch({
+          type: 'SET_EDIT_MODE',
+          payload: { isEditMode: true, editingListingId: listingId },
+        });
 
         try {
           const existingListing = await getListingById(listingId);
@@ -302,10 +282,10 @@ export function useSelfListingV2Logic() {
           if (existingListing) {
             localStorage.removeItem(STORAGE_KEY);
 
-            setFormData(prev => ({
-              ...prev,
-              hostType: existingListing.host_type || prev.hostType,
-            }));
+            dispatch({
+              type: 'UPDATE_FORM_DATA',
+              payload: { hostType: existingListing.host_type || state.formData.hostType },
+            });
 
             console.log('[SelfListingPageV2] Listing loaded, hostType pre-set to:', existingListing.host_type);
           } else {
@@ -328,12 +308,12 @@ export function useSelfListingV2Logic() {
             .maybeSingle();
 
           if (!error && data) {
-            setFormData(data.form_data);
+            dispatch({ type: 'SET_FORM_DATA', payload: data.form_data });
             if (data.form_data.nightlyPrices) {
               nightlyPricesRef.current = data.form_data.nightlyPrices;
             }
-            setCurrentStep(data.current_step || 7);
-            setDraftListingId(draftId);
+            dispatch({ type: 'SET_CURRENT_STEP', payload: data.current_step || 7 });
+            dispatch({ type: 'SET_DRAFT_LISTING_ID', payload: draftId });
           }
         } catch (err) {
           console.log('Could not load draft from database:', err);
@@ -344,13 +324,13 @@ export function useSelfListingV2Logic() {
           try {
             const parsed = JSON.parse(storedData);
             if (parsed.formData) {
-              setFormData(parsed.formData);
+              dispatch({ type: 'SET_FORM_DATA', payload: parsed.formData });
               if (parsed.formData.nightlyPrices) {
                 nightlyPricesRef.current = parsed.formData.nightlyPrices;
               }
             }
-            setCurrentStep(parsed.currentStep || 7);
-            setDraftListingId(sessionId);
+            dispatch({ type: 'SET_CURRENT_STEP', payload: parsed.currentStep || 7 });
+            dispatch({ type: 'SET_DRAFT_LISTING_ID', payload: sessionId });
           } catch (err) {
             console.log('Could not parse localStorage draft:', err);
           }
@@ -361,7 +341,7 @@ export function useSelfListingV2Logic() {
       if (step) {
         const stepNum = parseInt(step, 10);
         if (stepNum >= 1 && stepNum <= 8) {
-          setCurrentStep(stepNum);
+          dispatch({ type: 'SET_CURRENT_STEP', payload: stepNum });
         }
       }
 
@@ -388,7 +368,7 @@ export function useSelfListingV2Logic() {
    * Calculate host rates that produce desired guest prices after platform markup
    */
   const calculateNightlyPrices = useCallback(() => {
-    const { nightlyBaseRate, nightlyDiscount } = formData;
+    const { nightlyBaseRate, nightlyDiscount } = state.formData;
     const N = 7;
 
     const desiredGuestPrices: number[] = [];
@@ -408,30 +388,32 @@ export function useSelfListingV2Logic() {
 
     nightlyPricesRef.current = hostRates;
 
-    const numNights = formData.selectedNights.length;
+    const numNights = state.formData.selectedNights.length;
     let weeklyTotal = 0;
     for (let i = 0; i < numNights && i < hostRates.length; i++) {
       const guestPrice = hostRates[i] * getPlatformMultiplier(i + 1);
       weeklyTotal += Math.round(guestPrice);
     }
 
-    setFormData(prev => ({
-      ...prev,
-      weeklyTotal,
-      monthlyEstimate: weeklyTotal * 4.33,
-    }));
-  }, [formData.nightlyBaseRate, formData.nightlyDiscount, formData.selectedNights, getPlatformMultiplier]);
+    dispatch({
+      type: 'UPDATE_FORM_DATA',
+      payload: {
+        weeklyTotal,
+        monthlyEstimate: weeklyTotal * 4.33,
+      },
+    });
+  }, [state.formData.nightlyBaseRate, state.formData.nightlyDiscount, state.formData.selectedNights, getPlatformMultiplier]);
 
   // Recalculate prices when relevant values change
   useEffect(() => {
-    if (formData.leaseStyle === 'nightly') {
+    if (state.formData.leaseStyle === 'nightly') {
       calculateNightlyPrices();
     }
-  }, [formData.nightlyBaseRate, formData.nightlyDiscount, formData.selectedNights, formData.leaseStyle]);
+  }, [state.formData.nightlyBaseRate, state.formData.nightlyDiscount, state.formData.selectedNights, state.formData.leaseStyle]);
 
   // Initialize Google Places autocomplete when on step 6
   useEffect(() => {
-    if (currentStep !== 6) return;
+    if (state.currentStep !== 6) return;
 
     let retryCount = 0;
     const maxRetries = 50;
@@ -442,7 +424,7 @@ export function useSelfListingV2Logic() {
         if (retryCount < maxRetries) {
           setTimeout(initAutocomplete, 100);
         } else {
-          setAddressError('Address autocomplete is unavailable. Please enter your address manually.');
+          dispatch({ type: 'SET_ADDRESS_ERROR', payload: 'Address autocomplete is unavailable. Please enter your address manually.' });
         }
         return;
       }
@@ -477,15 +459,15 @@ export function useSelfListingV2Logic() {
         const place = autocomplete.getPlace();
 
         if (!place.place_id || !place.geometry || !place.address_components) {
-          setAddressError('Please select a valid address from the dropdown');
-          setIsAddressValid(false);
+          dispatch({ type: 'SET_ADDRESS_ERROR', payload: 'Please select a valid address from the dropdown' });
+          dispatch({ type: 'SET_IS_ADDRESS_VALID', payload: false });
           return;
         }
 
         let streetNumber = '';
         let streetName = '';
         let city = '';
-        let state = '';
+        let stateVal = '';
         let zip = '';
         let neighborhood = '';
         let county = '';
@@ -495,20 +477,20 @@ export function useSelfListingV2Logic() {
           if (types.includes('street_number')) streetNumber = component.long_name;
           if (types.includes('route')) streetName = component.long_name;
           if (types.includes('locality')) city = component.long_name;
-          if (types.includes('administrative_area_level_1')) state = component.short_name;
+          if (types.includes('administrative_area_level_1')) stateVal = component.short_name;
           if (types.includes('administrative_area_level_2')) county = component.long_name;
           if (types.includes('postal_code')) zip = component.long_name;
           if (types.includes('neighborhood') || types.includes('sublocality')) neighborhood = component.long_name;
         });
 
-        if (!isValidServiceArea(zip, state, county)) {
+        if (!isValidServiceArea(zip, stateVal, county)) {
           const boroughFromZip = zip ? getBoroughForZipCode(zip) : null;
           const boroughFromCounty = county ? getBoroughFromCounty(county) : null;
 
           let errorMsg: string;
           if (boroughFromZip) {
             errorMsg = `This address (zip: ${zip}) is outside our service area. We only accept listings in NYC and Hudson County, NJ.`;
-          } else if (state === 'NJ' && county) {
+          } else if (stateVal === 'NJ' && county) {
             errorMsg = `This address is outside our service area. We only accept listings in Hudson County, NJ, not ${county}.`;
           } else if (boroughFromCounty) {
             errorMsg = `This address in ${boroughFromCounty} couldn't be validated. Please try selecting a more specific address.`;
@@ -516,9 +498,9 @@ export function useSelfListingV2Logic() {
             errorMsg = `This address is outside our NYC / Hudson County service area.`;
           }
 
-          console.warn('Address validation failed:', { zip, state, county, boroughFromZip, boroughFromCounty });
-          setAddressError(errorMsg);
-          setIsAddressValid(false);
+          console.warn('Address validation failed:', { zip, state: stateVal, county, boroughFromZip, boroughFromCounty });
+          dispatch({ type: 'SET_ADDRESS_ERROR', payload: errorMsg });
+          dispatch({ type: 'SET_IS_ADDRESS_VALID', payload: false });
           return;
         }
 
@@ -527,7 +509,7 @@ export function useSelfListingV2Logic() {
           number: streetNumber,
           street: streetName,
           city: city,
-          state: state,
+          state: stateVal,
           zip: zip,
           neighborhood: neighborhood,
           latitude: place.geometry.location?.lat() || null,
@@ -536,9 +518,9 @@ export function useSelfListingV2Logic() {
         };
 
         updateFormData({ address: parsedAddress });
-        setAddressError(null);
-        setIsAddressValid(true);
-        setValidationErrors(prev => ({ ...prev, address: false }));
+        dispatch({ type: 'SET_ADDRESS_ERROR', payload: null });
+        dispatch({ type: 'SET_IS_ADDRESS_VALID', payload: true });
+        dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { ...state.validationErrors, address: false } });
       });
     };
 
@@ -549,19 +531,19 @@ export function useSelfListingV2Logic() {
         window.google?.maps?.event?.clearInstanceListeners(autocompleteRef.current);
       }
     };
-  }, [currentStep]);
+  }, [state.currentStep]);
 
   // Handle manual address input change
   const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setIsAddressValid(false);
-    setAddressError(null);
-    if (validationErrors.address) {
-      setValidationErrors(prev => ({ ...prev, address: false }));
+    dispatch({ type: 'SET_IS_ADDRESS_VALID', payload: false });
+    dispatch({ type: 'SET_ADDRESS_ERROR', payload: null });
+    if (state.validationErrors.address) {
+      dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { ...state.validationErrors, address: false } });
     }
     updateFormData({
       address: {
-        ...formData.address,
+        ...state.formData.address,
         fullAddress: value,
         validated: false
       }
@@ -569,23 +551,32 @@ export function useSelfListingV2Logic() {
   };
 
   // Update form data
-  const updateFormData = (updates: Partial<FormData>) => {
-    setFormData(prev => ({ ...prev, ...updates }));
+  const updateFormData = (updates: Partial<SelfListingFormData>) => {
+    dispatch({ type: 'UPDATE_FORM_DATA', payload: updates });
+  };
+
+  // setFormData - backward-compat wrapper for full replacement or functional updates
+  const setFormData = (updaterOrValue: SelfListingFormData | ((prev: SelfListingFormData) => SelfListingFormData)) => {
+    if (typeof updaterOrValue === 'function') {
+      dispatch({ type: 'SET_FORM_DATA', payload: updaterOrValue(state.formData) });
+    } else {
+      dispatch({ type: 'SET_FORM_DATA', payload: updaterOrValue });
+    }
   };
 
   // Handle night selection change from HostScheduleSelector
   const handleNightSelectionChange = (nights: NightId[]) => {
     updateFormData({ selectedNights: nights });
-    if (nights.length >= 2 && validationErrors.nightSelector) {
-      setValidationErrors(prev => ({ ...prev, nightSelector: false }));
+    if (nights.length >= 2 && state.validationErrors.nightSelector) {
+      dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { ...state.validationErrors, nightSelector: false } });
     }
   };
 
   // Get schedule text
   const getScheduleText = () => {
-    const count = formData.selectedNights.length;
+    const count = state.formData.selectedNights.length;
     const weekdayNights: NightId[] = ['monday', 'tuesday', 'wednesday', 'thursday'];
-    const isWeekdays = count === 4 && weekdayNights.every(n => formData.selectedNights.includes(n));
+    const isWeekdays = count === 4 && weekdayNights.every(n => state.formData.selectedNights.includes(n));
 
     if (count < 2) return { text: 'Select at least 2 nights', error: true };
     if (isWeekdays) return { text: 'Weekdays Only (You keep weekends!)', error: false };
@@ -595,7 +586,7 @@ export function useSelfListingV2Logic() {
   // Determine next step based on lease style
   const getNextStep = (current: number): number => {
     if (current === 3) {
-      return formData.leaseStyle === 'nightly' ? 4 : 5;
+      return state.formData.leaseStyle === 'nightly' ? 4 : 5;
     }
     if (current === 4) {
       return 6;
@@ -606,7 +597,7 @@ export function useSelfListingV2Logic() {
   // Determine previous step based on lease style
   const getPrevStep = (current: number): number => {
     if (current === 6) {
-      return formData.leaseStyle === 'nightly' ? 4 : 5;
+      return state.formData.leaseStyle === 'nightly' ? 4 : 5;
     }
     if (current === 5) {
       return 3;
@@ -619,7 +610,7 @@ export function useSelfListingV2Logic() {
 
   // Get display step number (for progress)
   const getDisplayStep = (actual: number): number => {
-    if (formData.leaseStyle === 'nightly') {
+    if (state.formData.leaseStyle === 'nightly') {
       const map: Record<number, number> = { 1: 1, 2: 2, 3: 3, 4: 4, 6: 5, 7: 6, 8: 7 };
       return map[actual] || actual;
     } else {
@@ -639,47 +630,47 @@ export function useSelfListingV2Logic() {
 
   // Validation
   const validateStep = (step: number): boolean => {
-    setValidationErrors({});
+    dispatch({ type: 'SET_VALIDATION_ERRORS', payload: {} });
 
     switch (step) {
       case 3:
-        if (formData.leaseStyle === 'nightly' && formData.selectedNights.length < 2) {
+        if (state.formData.leaseStyle === 'nightly' && state.formData.selectedNights.length < 2) {
           showToast('Please select at least 2 nights', 'error', 4000);
-          setValidationErrors({ nightSelector: true });
+          dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { nightSelector: true } });
           scrollToFirstError('nightSelector');
           return false;
         }
-        if (formData.leaseStyle === 'monthly' && !formData.monthlyAgreement) {
+        if (state.formData.leaseStyle === 'monthly' && !state.formData.monthlyAgreement) {
           showToast('You must agree to the terms or select a different rental style.', 'error', 4000);
-          setValidationErrors({ monthlyAgreement: true });
+          dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { monthlyAgreement: true } });
           scrollToFirstError('monthlyAgreement');
           return false;
         }
         return true;
       case 5:
-        if (!formData.price || formData.price <= 0) {
+        if (!state.formData.price || state.formData.price <= 0) {
           showToast('Please enter a price', 'error', 4000);
-          setValidationErrors({ price: true });
+          dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { price: true } });
           scrollToFirstError('price');
           return false;
         }
         return true;
       case 6:
-        if (!formData.typeOfSpace) {
+        if (!state.formData.typeOfSpace) {
           showToast('Please select a type of space', 'error', 4000);
-          setValidationErrors({ typeOfSpace: true });
+          dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { typeOfSpace: true } });
           scrollToFirstError('typeOfSpace');
           return false;
         }
-        if (!formData.address.fullAddress.trim()) {
+        if (!state.formData.address.fullAddress.trim()) {
           showToast('Please enter your address', 'error', 4000);
-          setValidationErrors({ address: true });
+          dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { address: true } });
           scrollToFirstError('address');
           return false;
         }
-        if (!formData.address.validated) {
+        if (!state.formData.address.validated) {
           showToast('Please select a valid address from the dropdown suggestions', 'error', 4000);
-          setValidationErrors({ address: true });
+          dispatch({ type: 'SET_VALIDATION_ERRORS', payload: { address: true } });
           scrollToFirstError('address');
           return false;
         }
@@ -693,35 +684,35 @@ export function useSelfListingV2Logic() {
 
   // Navigation
   const nextStep = () => {
-    if (!validateStep(currentStep)) return;
+    if (!validateStep(state.currentStep)) return;
 
-    const next = getNextStep(currentStep);
+    const next = getNextStep(state.currentStep);
     if (next <= 8) {
-      setCurrentStep(next);
+      dispatch({ type: 'SET_CURRENT_STEP', payload: next });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const prevStep = () => {
-    const prev = getPrevStep(currentStep);
+    const prev = getPrevStep(state.currentStep);
     if (prev >= 1) {
-      setCurrentStep(prev);
+      dispatch({ type: 'SET_CURRENT_STEP', payload: prev });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   // Skip current step (for optional steps like Photos)
   const skipStep = () => {
-    const next = getNextStep(currentStep);
+    const next = getNextStep(state.currentStep);
     if (next <= 8) {
-      setCurrentStep(next);
+      dispatch({ type: 'SET_CURRENT_STEP', payload: next });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   // Save draft to Supabase draft_listings table and generate continue link
   const saveDraftAndGenerateLink = async () => {
-    setIsSavingDraft(true);
+    dispatch({ type: 'SET_IS_SAVING_DRAFT', payload: true });
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -732,7 +723,7 @@ export function useSelfListingV2Logic() {
       const draftData = {
         user_id: user.id,
         form_data: {
-          ...formData,
+          ...state.formData,
           nightlyPrices: nightlyPricesRef.current,
         },
         current_step: 7,
@@ -740,9 +731,9 @@ export function useSelfListingV2Logic() {
         updated_at: new Date().toISOString(),
       };
 
-      let savedDraftId = draftListingId;
+      let savedDraftId = state.draftListingId;
 
-      if (draftListingId) {
+      if (state.draftListingId) {
         const { error } = await supabase
           .from('listing_drafts')
           .update({
@@ -750,7 +741,7 @@ export function useSelfListingV2Logic() {
             current_step: draftData.current_step,
             updated_at: draftData.updated_at,
           })
-          .eq('id', draftListingId);
+          .eq('id', state.draftListingId);
 
         if (error) throw error;
       } else {
@@ -762,12 +753,12 @@ export function useSelfListingV2Logic() {
 
         if (error) throw error;
         savedDraftId = data.id;
-        setDraftListingId(savedDraftId);
+        dispatch({ type: 'SET_DRAFT_LISTING_ID', payload: savedDraftId });
       }
 
       const baseUrl = window.location.origin + window.location.pathname;
       const link = `${baseUrl}?draft=${savedDraftId}&step=7`;
-      setContinueOnPhoneLink(link);
+      dispatch({ type: 'SET_CONTINUE_ON_PHONE_LINK', payload: link });
 
       return link;
     } catch (error: any) {
@@ -779,7 +770,7 @@ export function useSelfListingV2Logic() {
 
         const draftData = {
           formData: {
-            ...formData,
+            ...state.formData,
             nightlyPrices: nightlyPricesRef.current,
           },
           currentStep: 7,
@@ -789,8 +780,8 @@ export function useSelfListingV2Logic() {
 
         const baseUrl = window.location.origin + window.location.pathname;
         const link = `${baseUrl}?session=${sessionId}`;
-        setContinueOnPhoneLink(link);
-        setDraftListingId(sessionId);
+        dispatch({ type: 'SET_CONTINUE_ON_PHONE_LINK', payload: link });
+        dispatch({ type: 'SET_DRAFT_LISTING_ID', payload: sessionId });
 
         return link;
       }
@@ -798,35 +789,35 @@ export function useSelfListingV2Logic() {
       showToast('Failed to save progress. Please try again.', 'error', 4000);
       return null;
     } finally {
-      setIsSavingDraft(false);
+      dispatch({ type: 'SET_IS_SAVING_DRAFT', payload: false });
     }
   };
 
   // Handle Continue on Phone button click
   const handleContinueOnPhone = async () => {
-    if (!isLoggedIn) {
+    if (!state.isLoggedIn) {
       showToast('Please log in to save your progress and continue on phone', 'info', 4000);
-      setShowAuthModal(true);
+      modals.open('auth');
       return;
     }
-    setShowContinueOnPhoneModal(true);
+    modals.open('continueOnPhone');
     await saveDraftAndGenerateLink();
   };
 
   // Auth success handler
   const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-    setIsLoggedIn(true);
-    setHeaderKey(prev => prev + 1);
+    modals.close('auth');
+    dispatch({ type: 'SET_IS_LOGGED_IN', payload: true });
+    dispatch({ type: 'INCREMENT_HEADER_KEY' });
 
-    if (pendingSubmit) {
-      setPendingSubmit(false);
+    if (state.pendingSubmit) {
+      dispatch({ type: 'SET_PENDING_SUBMIT', payload: false });
       handleSubmit();
     }
   };
 
   // Map form data to listingService format
-  const mapFormDataToListingService = (data: FormData) => {
+  const mapFormDataToListingService = (data: SelfListingFormData) => {
     const allDaysAvailable = {
       sunday: true,
       monday: true,
@@ -953,60 +944,74 @@ export function useSelfListingV2Logic() {
 
   // Submit handler
   const handleSubmit = async () => {
-    setIsSubmitting(true);
+    dispatch({ type: 'SET_IS_SUBMITTING', payload: true });
 
     if (!isAuthenticated) {
       console.log('[SelfListingPageV2] User not logged in, showing auth modal');
-      setIsSubmitting(false);
-      setShowAuthModal(true);
-      setPendingSubmit(true);
+      dispatch({ type: 'SET_IS_SUBMITTING', payload: false });
+      modals.open('auth');
+      dispatch({ type: 'SET_PENDING_SUBMIT', payload: true });
       return;
     }
 
     console.log('[SelfListingPageV2] User is logged in, proceeding with submission');
 
     try {
-      const listingData = mapFormDataToListingService(formData);
+      const listingData = mapFormDataToListingService(state.formData);
       const result = await createListing(listingData);
 
       console.log('[SelfListingPageV2] Listing created:', result);
-      setCreatedListingId(result.id);
-      setSubmitSuccess(true);
-      localStorage.setItem(LAST_HOST_TYPE_KEY, formData.hostType);
-      localStorage.setItem(LAST_MARKET_STRATEGY_KEY, formData.marketStrategy);
+      dispatch({ type: 'SET_CREATED_LISTING_ID', payload: result.id });
+      dispatch({ type: 'SET_SUBMIT_SUCCESS', payload: true });
+      localStorage.setItem(LAST_HOST_TYPE_KEY, state.formData.hostType);
+      localStorage.setItem(LAST_MARKET_STRATEGY_KEY, state.formData.marketStrategy);
       localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
       console.error('[SelfListingPageV2] Submit error:', error);
       alert('Failed to create listing. Please try again.');
-      setIsSubmitting(false);
+      dispatch({ type: 'SET_IS_SUBMITTING', payload: false });
     }
   };
 
   // Progress percentage
-  const progressPercentage = (getDisplayStep(currentStep) / 7) * 100;
+  const progressPercentage = (getDisplayStep(state.currentStep) / 7) * 100;
+
+  // Backward-compat setter aliases for consumer
+  const setShowAuthModal = (value: boolean) => {
+    if (value) { modals.open('auth'); } else { modals.close('auth'); }
+  };
+  const setShowContinueOnPhoneModal = (value: boolean) => {
+    if (value) { modals.open('continueOnPhone'); } else { modals.close('continueOnPhone'); }
+  };
+  const setPendingSubmit = (value: boolean) => dispatch({ type: 'SET_PENDING_SUBMIT', payload: value });
+  const setCurrentStep = (value: number) => dispatch({ type: 'SET_CURRENT_STEP', payload: value });
+  const setValidationErrors = (value: Record<string, boolean>) => dispatch({ type: 'SET_VALIDATION_ERRORS', payload: value });
+  const setActiveInfoTooltip = (value: string | null) => dispatch({ type: 'SET_ACTIVE_INFO_TOOLTIP', payload: value });
+  const setContinueOnPhoneLink = (value: string | null) => dispatch({ type: 'SET_CONTINUE_ON_PHONE_LINK', payload: value });
+  const setPhoneNumber = (value: string) => dispatch({ type: 'SET_PHONE_NUMBER', payload: value });
 
   return {
     // Auth state
     isAuthenticated,
-    isLoggedIn,
+    isLoggedIn: state.isLoggedIn,
     authLoading,
-    isCheckingAccess,
-    showAuthModal,
+    isCheckingAccess: state.isCheckingAccess,
+    showAuthModal: modals.isOpen('auth'),
     setShowAuthModal,
-    pendingSubmit,
+    pendingSubmit: state.pendingSubmit,
     setPendingSubmit,
     handleAuthSuccess,
-    headerKey,
+    headerKey: state.headerKey,
 
     // Form state
-    formData,
+    formData: state.formData,
     updateFormData,
     setFormData,
-    validationErrors,
+    validationErrors: state.validationErrors,
     setValidationErrors,
 
     // Navigation
-    currentStep,
+    currentStep: state.currentStep,
     setCurrentStep,
     nextStep,
     prevStep,
@@ -1020,8 +1025,8 @@ export function useSelfListingV2Logic() {
 
     // Address
     addressInputRef,
-    addressError,
-    isAddressValid,
+    addressError: state.addressError,
+    isAddressValid: state.isAddressValid,
     handleAddressInputChange,
 
     // Night selection
@@ -1031,28 +1036,28 @@ export function useSelfListingV2Logic() {
     // Photos (handlers moved to step component)
 
     // Submit
-    isSubmitting,
-    submitSuccess,
-    createdListingId,
+    isSubmitting: state.isSubmitting,
+    submitSuccess: state.submitSuccess,
+    createdListingId: state.createdListingId,
     handleSubmit,
 
     // Continue on Phone
-    showContinueOnPhoneModal,
+    showContinueOnPhoneModal: modals.isOpen('continueOnPhone'),
     setShowContinueOnPhoneModal,
-    continueOnPhoneLink,
+    continueOnPhoneLink: state.continueOnPhoneLink,
     setContinueOnPhoneLink,
-    phoneNumber,
+    phoneNumber: state.phoneNumber,
     setPhoneNumber,
-    userPhoneNumber,
-    isSavingDraft,
-    isMobile,
+    userPhoneNumber: state.userPhoneNumber,
+    isSavingDraft: state.isSavingDraft,
+    isMobile: state.isMobile,
     handleContinueOnPhone,
     saveDraftAndGenerateLink,
-    draftListingId,
+    draftListingId: state.draftListingId,
 
     // Edit mode
-    isEditMode,
-    editingListingId,
+    isEditMode: state.isEditMode,
+    editingListingId: state.editingListingId,
 
     // Toast
     toasts,
@@ -1060,7 +1065,7 @@ export function useSelfListingV2Logic() {
     removeToast,
 
     // Informational text
-    activeInfoTooltip,
+    activeInfoTooltip: state.activeInfoTooltip,
     setActiveInfoTooltip,
     getInfoContent,
     handleInfoClick,

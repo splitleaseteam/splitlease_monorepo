@@ -28,6 +28,7 @@ import MessageBubble from '../../pages/MessagingPage/components/MessageBubble.js
 import MessageInput from '../../pages/MessagingPage/components/MessageInput.jsx';
 import TypingIndicator from '../../pages/MessagingPage/components/TypingIndicator.jsx';
 import CreateProposalFlow from '../CreateProposalFlow.jsx';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../lib/avatarUtils.js';
 import './HeaderMessagingPanel.css';
 
 /**
@@ -195,12 +196,10 @@ export default function HeaderMessagingPanel({
             </button>
             <div className="header-messaging-panel__contact">
               <img
-                src={selectedThread.contact_avatar || '/assets/images/default-avatar.jpg'}
+                src={selectedThread.contact_avatar || getInitialsAvatarUrl(selectedThread.contact_name)}
                 alt=""
                 className="header-messaging-panel__contact-avatar"
-                onError={(e) => {
-                  e.target.src = '/assets/images/default-avatar.jpg';
-                }}
+                onError={handleAvatarError}
               />
               <div className="header-messaging-panel__contact-info">
                 <span className="header-messaging-panel__contact-name">

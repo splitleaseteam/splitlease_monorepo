@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import './LoggedInAvatar.css';
 import { useLoggedInAvatarData, getMenuVisibility, NORMALIZED_USER_TYPES } from './useLoggedInAvatarData.js';
 import HeaderMessagingPanel from '../HeaderMessagingPanel/HeaderMessagingPanel.jsx';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../lib/avatarUtils.js';
 
 /**
  * Logged In Avatar Dropdown Component
@@ -394,12 +395,10 @@ export default function LoggedInAvatar({
         aria-expanded={isOpen}
       >
         <img
-          src={user.avatarUrl || '/assets/images/default-avatar.jpg'}
+          src={user.avatarUrl || getInitialsAvatarUrl(firstName)}
           alt={user.name}
           className="avatar-image"
-          onError={(e) => {
-            e.target.src = '/assets/images/default-avatar.jpg';
-          }}
+          onError={handleAvatarError}
         />
         <span className="user-name-wrapper">
           {firstName}

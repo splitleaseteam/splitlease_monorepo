@@ -6,6 +6,7 @@
  */
 import { User, Mail, Phone, CheckCircle, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatPhoneNumber } from '../formatters.js';
+import { getInitialsAvatarUrl, handleAvatarError } from '../../../../lib/avatarUtils.js';
 
 /**
  * Get guest avatar URL with fallback
@@ -15,7 +16,7 @@ import { formatPhoneNumber } from '../formatters.js';
 function getGuestAvatar(guest) {
   if (guest?.profilePhoto) return guest.profilePhoto;
   const name = guest?.firstName || guest?.name || 'Guest';
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6C7FEB&color=FFFFFF&size=80`;
+  return getInitialsAvatarUrl(name);
 }
 
 /**
@@ -60,6 +61,7 @@ export function GuestInfoSection({ guest, isExpanded = false, onToggle }) {
             src={avatar}
             alt={`${displayName}'s avatar`}
             className="hl-guest-avatar"
+            onError={handleAvatarError}
           />
           <div className="hl-guest-name-badges">
             <span className="hl-guest-name">{displayName}</span>

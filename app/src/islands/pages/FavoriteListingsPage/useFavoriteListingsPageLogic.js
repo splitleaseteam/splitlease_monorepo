@@ -9,7 +9,9 @@
  * @pattern Logic Hook (orchestration layer between Component and Logic Core).
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useReducer, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useModalManager } from '../../../hooks/useModalManager.js';
+import { favoriteListingsReducer, initialState } from './favoriteListingsReducer.js';
 import { clearProposalDraft } from '../../shared/CreateProposalFlow.jsx';
 import { getFavoritedListingIds, removeFromFavorites } from './favoritesApi';
 
@@ -62,75 +64,29 @@ export function useFavoriteListingsPageLogic() {
   // GOLD STANDARD AUTH PATTERN - Use consolidated hook
   const { user: authenticatedUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser();
 
-  // State management
-  const [listings, setListings] = useState([]);
-  const [viewMode, setViewMode] = useState('grid');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(null);
+  // Reducer-based state management
+  const [state, dispatch] = useReducer(favoriteListingsReducer, initialState);
 
-  // Auth state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [favoritedListingIds, setFavoritedListingIds] = useState(new Set());
-
-  // Proposals state - Map of listing ID to proposal object
-  const [proposalsByListingId, setProposalsByListingId] = useState(new Map());
-
-  // Modal state
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [selectedListing, setSelectedListing] = useState(null);
-  const [infoModalTriggerRef, setInfoModalTriggerRef] = useState(null);
-
-  // Proposal modal state
-  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-  const [selectedListingForProposal, setSelectedListingForProposal] = useState(null);
-  const [zatConfig, setZatConfig] = useState(null);
-  const [moveInDate, setMoveInDate] = useState(null);
-  const [selectedDayObjects, setSelectedDayObjects] = useState([]);
-  const [reservationSpan, setReservationSpan] = useState(13);
-  const [priceBreakdown, setPriceBreakdown] = useState(null);
-  const [pendingProposalData, setPendingProposalData] = useState(null);
-  const [loggedInUserData, setLoggedInUserData] = useState(null);
-  const [lastProposalDefaults, setLastProposalDefaults] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successProposalId, setSuccessProposalId] = useState(null);
-  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  // Photo gallery modal state
-  const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const [selectedListingPhotos, setSelectedListingPhotos] = useState([]);
-  const [selectedListingName, setSelectedListingName] = useState('');
+  // Centralized modal state (contact, info, proposal, success, auth, photo)
+  const modals = useModalManager({ allowMultiple: true });
 
   // Close photo modal on ESC key press
+  const photoModalOpen = modals.isOpen('photo');
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && showPhotoModal) {
-        setShowPhotoModal(false);
+      if (e.key === 'Escape' && photoModalOpen) {
+        modals.close('photo');
       }
     };
 
-    if (showPhotoModal) {
+    if (photoModalOpen) {
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showPhotoModal]);
-
-  // Toast notification state
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-
-  // Informational texts
-  const [informationalTexts, setInformationalTexts] = useState({});
-
-  // Mobile map visibility
-  const [mobileMapVisible, setMobileMapVisible] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  }, [photoModalOpen, modals]);
 
   // Refs
   const mapRef = useRef(null);
@@ -262,7 +218,7 @@ export function useFavoriteListingsPageLogic() {
   useEffect(() => {
     const loadInformationalTexts = async () => {
       const texts = await fetchInformationalTexts();
-      setInformationalTexts(texts);
+      dispatch({ type: 'SET_INFORMATIONAL_TEXTS', payload: texts });
     };
     loadInformationalTexts();
   }, []);
@@ -272,7 +228,7 @@ export function useFavoriteListingsPageLogic() {
     const loadZatConfig = async () => {
       try {
         const config = await fetchZatPriceConfiguration();
-        setZatConfig(config);
+        dispatch({ type: 'SET_ZAT_CONFIG', payload: config });
       } catch (error) {
         console.warn('Failed to load ZAT config:', error);
       }
@@ -284,23 +240,19 @@ export function useFavoriteListingsPageLogic() {
   useEffect(() => {
     const initializePage = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
+        dispatch({ type: 'INIT_START' });
 
         // Wait for auth hook to complete
         if (authLoading) return;
 
         // GOLD STANDARD AUTH PATTERN - Use hook result
         if (!isAuthenticated || !authUserId) {
-          setError('Please log in to view your favorite listings.');
-          setIsLoading(false);
+          dispatch({ type: 'INIT_ERROR', payload: 'Please log in to view your favorite listings.' });
           return;
         }
 
         // Set auth state from hook
-        setIsLoggedIn(true);
-        setUserId(authUserId);
-        setCurrentUser(authenticatedUser);
+        dispatch({ type: 'SET_AUTH', payload: { userId: authUserId, currentUser: authenticatedUser } });
 
         // Ensure lookups are ready before transforming listings.
         // Prevents raw UUIDs from showing for neighborhood/borough names.
@@ -322,17 +274,17 @@ export function useFavoriteListingsPageLogic() {
           if (!profileResult.error && profileResult.data) {
             const junctionCounts = countsResult.data?.[0] || {};
             const proposalCount = Number(junctionCounts.proposals_count) || 0;
-            setLoggedInUserData({
+            dispatch({ type: 'SET_USER_DATA', payload: {
               aboutMe: profileResult.data.bio_text || '',
               needForSpace: profileResult.data.stated_need_for_space_text || '',
               specialNeeds: profileResult.data.stated_special_needs_text || '',
               proposalCount: proposalCount
-            });
+            }});
 
             // Fetch last proposal defaults for pre-population
             const proposalDefaults = await fetchLastProposalDefaults(authUserId);
             if (proposalDefaults) {
-              setLastProposalDefaults(proposalDefaults);
+              dispatch({ type: 'SET_LAST_PROPOSAL_DEFAULTS', payload: proposalDefaults });
               console.log('[FavoriteListingsPage] Loaded last proposal defaults:', proposalDefaults);
             }
           }
@@ -346,8 +298,7 @@ export function useFavoriteListingsPageLogic() {
           favoritedIds = await getFavoritedListingIds(authUserId);
         } catch (favError) {
           console.error('Error fetching favorites:', favError);
-          setError('Failed to load your favorites. Please try again.');
-          setIsLoading(false);
+          dispatch({ type: 'INIT_ERROR', payload: 'Failed to load your favorites. Please try again.' });
           return;
         }
 
@@ -356,11 +307,11 @@ export function useFavoriteListingsPageLogic() {
 
         // Filter to valid listing IDs (non-empty strings)
         favoritedIds = favoritedIds.filter(id => typeof id === 'string' && id.length > 0);
-        setFavoritedListingIds(new Set(favoritedIds));
+        dispatch({ type: 'SET_FAVORITED_IDS', payload: new Set(favoritedIds) });
 
         if (favoritedIds.length === 0) {
-          setListings([]);
-          setIsLoading(false);
+          dispatch({ type: 'SET_LISTINGS', payload: [] });
+          dispatch({ type: 'INIT_COMPLETE' });
           return;
         }
 
@@ -373,8 +324,7 @@ export function useFavoriteListingsPageLogic() {
 
         if (listingsError) {
           console.error('Error fetching listings:', listingsError);
-          setError('Failed to load listings. Please try again.');
-          setIsLoading(false);
+          dispatch({ type: 'INIT_ERROR', payload: 'Failed to load listings. Please try again.' });
           return;
         }
 
@@ -462,7 +412,7 @@ export function useFavoriteListingsPageLogic() {
           .filter(listing => listing.coordinates && listing.coordinates.lat && listing.coordinates.lng)
           .filter(listing => listing.images && listing.images.length > 0);
 
-        setListings(transformedListings);
+        dispatch({ type: 'SET_LISTINGS', payload: transformedListings });
         console.log(`Loaded ${transformedListings.length} favorite listings`);
 
         // Fetch user's proposals to check if any exist for these listings
@@ -483,7 +433,7 @@ export function useFavoriteListingsPageLogic() {
             }
           });
 
-          setProposalsByListingId(proposalsMap);
+          dispatch({ type: 'SET_PROPOSALS_MAP', payload: proposalsMap });
           console.log(`📋 Mapped ${proposalsMap.size} listings with proposals`);
         } catch (proposalErr) {
           console.warn('Failed to fetch proposals (non-critical):', proposalErr);
@@ -491,9 +441,9 @@ export function useFavoriteListingsPageLogic() {
         }
       } catch (err) {
         console.error('❌ Error initializing page:', err);
-        setError(`Failed to load your favorite listings: ${err?.message || 'Unknown error'}. Please try again.`);
+        dispatch({ type: 'INIT_ERROR', payload: `Failed to load your favorite listings: ${err?.message || 'Unknown error'}. Please try again.` });
       } finally {
-        setIsLoading(false);
+        dispatch({ type: 'INIT_COMPLETE' });
       }
     };
 
@@ -502,9 +452,9 @@ export function useFavoriteListingsPageLogic() {
 
   // Show toast notification
   const showToast = (message, type = 'success') => {
-    setToast({ show: true, message, type });
+    dispatch({ type: 'SHOW_TOAST', payload: { message, type } });
     setTimeout(() => {
-      setToast({ show: false, message: '', type: 'success' });
+      dispatch({ type: 'HIDE_TOAST' });
     }, 3000);
   };
 
@@ -514,45 +464,25 @@ export function useFavoriteListingsPageLogic() {
 
     // If unfavorited (newState = false), remove from listings display
     if (!newState) {
-      if (!userId) {
+      if (!state.userId) {
         showToast('Please log in to manage favorites.', 'error');
         return;
       }
 
-      const removedIndex = listings.findIndex(l => l.id === listingId);
-      const removedListing = removedIndex >= 0 ? listings[removedIndex] : null;
+      const removedIndex = state.listings.findIndex(l => l.id === listingId);
+      const removedListing = removedIndex >= 0 ? state.listings[removedIndex] : null;
 
       // Optimistic UI update
-      setListings(prev => prev.filter(l => l.id !== listingId));
-      setFavoritedListingIds(prev => {
-        const next = new Set(prev);
-        next.delete(listingId);
-        return next;
-      });
+      dispatch({ type: 'REMOVE_LISTING', payload: listingId });
 
       try {
-        await removeFromFavorites(userId, listingId);
+        await removeFromFavorites(state.userId, listingId);
         showToast(`${displayName} removed from favorites`, 'info');
       } catch (removeError) {
         console.error('[FavoriteListingsPage] Failed to remove favorite:', removeError);
 
         // Roll back optimistic update if persistence fails
-        if (removedListing) {
-          setListings(prev => {
-            if (prev.some(l => l.id === removedListing.id)) {
-              return prev;
-            }
-            const next = [...prev];
-            const insertIndex = removedIndex >= 0 && removedIndex <= next.length ? removedIndex : 0;
-            next.splice(insertIndex, 0, removedListing);
-            return next;
-          });
-        }
-        setFavoritedListingIds(prev => {
-          const next = new Set(prev);
-          next.add(listingId);
-          return next;
-        });
+        dispatch({ type: 'ROLLBACK_LISTING', payload: { listing: removedListing, index: removedIndex, listingId } });
 
         showToast('Could not remove from favorites. Please try again.', 'error');
       }
@@ -563,25 +493,19 @@ export function useFavoriteListingsPageLogic() {
 
   // Modal handlers
   const handleOpenContactModal = (listing) => {
-    setSelectedListing(listing);
-    setIsContactModalOpen(true);
+    modals.open('contact', { listing });
   };
 
   const handleCloseContactModal = () => {
-    setIsContactModalOpen(false);
-    setSelectedListing(null);
+    modals.close('contact');
   };
 
   const handleOpenInfoModal = (listing, triggerRef) => {
-    setSelectedListing(listing);
-    setInfoModalTriggerRef(triggerRef);
-    setIsInfoModalOpen(true);
+    modals.open('info', { listing, triggerRef });
   };
 
   const handleCloseInfoModal = () => {
-    setIsInfoModalOpen(false);
-    setSelectedListing(null);
-    setInfoModalTriggerRef(null);
+    modals.close('info');
   };
 
   // Handler to open proposal creation modal for a specific listing
@@ -617,13 +541,13 @@ export function useFavoriteListingsPageLogic() {
     // Determine move-in date: prefer last proposal's date (shifted if needed), fallback to smart calculation
     let smartMoveInDate = minMoveInDate;
 
-    if (lastProposalDefaults?.moveInDate) {
+    if (state.lastProposalDefaults?.moveInDate) {
       // Use previous proposal's move-in date, shifted forward if necessary
       smartMoveInDate = shiftMoveInDateIfPast({
-        previousMoveInDate: lastProposalDefaults.moveInDate,
+        previousMoveInDate: state.lastProposalDefaults.moveInDate,
         minDate: minMoveInDate
       }) || minMoveInDate;
-      console.log('[FavoriteListingsPage] Pre-filling move-in from last proposal:', lastProposalDefaults.moveInDate, '->', smartMoveInDate);
+      console.log('[FavoriteListingsPage] Pre-filling move-in from last proposal:', state.lastProposalDefaults.moveInDate, '->', smartMoveInDate);
     } else if (initialDays.length > 0) {
       // Fallback: calculate based on selected days
       try {
@@ -639,28 +563,28 @@ export function useFavoriteListingsPageLogic() {
     }
 
     // Determine reservation span: prefer last proposal's span, fallback to default
-    const prefillReservationSpan = lastProposalDefaults?.reservationSpanWeeks || 13;
+    const prefillReservationSpan = state.lastProposalDefaults?.reservationSpanWeeks || 13;
 
-    setSelectedListingForProposal(listing);
-    setSelectedDayObjects(initialDays);
-    setMoveInDate(smartMoveInDate);
-    setReservationSpan(prefillReservationSpan);
-    setPriceBreakdown(null); // Will be calculated by ListingScheduleSelector
-    setIsProposalModalOpen(true);
+    dispatch({ type: 'PREPARE_PROPOSAL', payload: {
+      selectedDayObjects: initialDays,
+      moveInDate: smartMoveInDate,
+      reservationSpan: prefillReservationSpan,
+    }});
+    modals.open('proposal', { listing });
   };
 
   // Handler to open fullscreen photo gallery
   const handlePhotoGalleryOpen = (listing, photoIndex = 0) => {
     if (!listing.images || listing.images.length === 0) return;
-    setSelectedListingPhotos(listing.images);
-    setSelectedListingName(listing.title || 'Listing');
-    setCurrentPhotoIndex(photoIndex);
-    setShowPhotoModal(true);
+    modals.open('photo', { index: photoIndex, photos: listing.images, listingName: listing.title || 'Listing' });
   };
 
   // Submit proposal to backend
   const handleSubmitProposal = async (proposalData) => {
-    setIsSubmittingProposal(true);
+    dispatch({ type: 'START_PROPOSAL_SUBMIT' });
+
+    // Capture listing reference before closing modal (close clears data)
+    const proposalListing = modals.getData('proposal')?.listing || null;
 
     try {
       const guestId = getSessionId();
@@ -684,7 +608,7 @@ export function useFavoriteListingsPageLogic() {
       // Build payload (using 0-indexed days)
       const payload = {
         guestId: guestId,
-        listingId: selectedListingForProposal.id,
+        listingId: proposalListing?.id,
         moveInStartRange: proposalData.moveInDate,
         moveInEndRange: proposalData.moveInDate, // Same as start if no flexibility
         daysSelected: daysInJsFormat,
@@ -731,18 +655,13 @@ export function useFavoriteListingsPageLogic() {
       // Clear the localStorage draft on successful submission
       clearProposalDraft(proposalData.listingId);
 
-      setIsProposalModalOpen(false);
-      setPendingProposalData(null);
-      setSuccessProposalId(data.data?.proposalId);
-      setShowSuccessModal(true);
+      modals.close('proposal');
+      dispatch({ type: 'SET_PENDING_PROPOSAL', payload: null });
+      modals.open('success', { proposalId: data.data?.proposalId });
 
       // Update proposals map to show "View Proposal" instead of "Create Proposal"
-      if (data.data?.proposalId && selectedListingForProposal) {
-        setProposalsByListingId(prev => {
-          const newMap = new Map(prev);
-          newMap.set(selectedListingForProposal.id, { id: data.data.proposalId });
-          return newMap;
-        });
+      if (data.data?.proposalId && proposalListing) {
+        dispatch({ type: 'UPDATE_PROPOSAL', payload: { listingId: proposalListing.id, proposal: { id: data.data.proposalId } } });
       }
 
       showToast('Proposal submitted successfully!', 'success');
@@ -751,7 +670,7 @@ export function useFavoriteListingsPageLogic() {
       console.error('❌ Error submitting proposal:', error);
       showToast(error.message || 'Failed to submit proposal. Please try again.', 'error');
     } finally {
-      setIsSubmittingProposal(false);
+      dispatch({ type: 'END_PROPOSAL_SUBMIT' });
     }
   };
 
@@ -763,9 +682,9 @@ export function useFavoriteListingsPageLogic() {
 
     if (!isAuthenticated) {
       console.log('User not logged in, showing auth modal');
-      setPendingProposalData(proposalData);
-      setIsProposalModalOpen(false);
-      setShowAuthModal(true);
+      dispatch({ type: 'SET_PENDING_PROPOSAL', payload: proposalData });
+      modals.close('proposal');
+      modals.open('auth');
       return;
     }
 
@@ -780,8 +699,7 @@ export function useFavoriteListingsPageLogic() {
   const handleLogout = async () => {
     try {
       await logoutUser();
-      setIsLoggedIn(false);
-      setCurrentUser(null);
+      dispatch({ type: 'CLEAR_AUTH' });
       window.location.href = '/search';
     } catch (error) {
       console.error('Logout error:', error);
@@ -791,8 +709,8 @@ export function useFavoriteListingsPageLogic() {
   // Handle auth completion - submit pending proposal if exists
   const handleAuthSuccess = async (authResult) => {
     console.log('Auth completed:', authResult);
-    setShowAuthModal(false);
-    setIsLoggedIn(true);
+    modals.close('auth');
+    dispatch({ type: 'SET_AUTH', payload: { userId: state.userId, currentUser: state.currentUser } });
 
     // Update user data after successful auth
     // CRITICAL: Use clearOnFailure: false to preserve session if Edge Function fails
@@ -801,13 +719,13 @@ export function useFavoriteListingsPageLogic() {
       const sessionId = getSessionId();
 
       if (userData) {
-        setCurrentUser({
+        dispatch({ type: 'SET_CURRENT_USER', payload: {
           id: sessionId,
           name: userData.fullName || userData.firstName || '',
           email: userData.email || '',
           userType: userData.userType || 'GUEST',
           avatarUrl: userData.profilePhoto || null
-        });
+        }});
 
         // Fetch user profile + proposal count from junction tables (Phase 5b migration)
         const [profileResult, countsResult] = await Promise.all([
@@ -822,12 +740,12 @@ export function useFavoriteListingsPageLogic() {
         if (profileResult.data) {
           const junctionCounts = countsResult.data?.[0] || {};
           const proposalCount = Number(junctionCounts.proposals_count) || 0;
-          setLoggedInUserData({
+          dispatch({ type: 'SET_USER_DATA', payload: {
             aboutMe: profileResult.data.bio_text || '',
             needForSpace: profileResult.data.stated_need_for_space_text || '',
             specialNeeds: profileResult.data.stated_special_needs_text || '',
             proposalCount: proposalCount
-          });
+          }});
         }
       }
     } catch (e) {
@@ -835,9 +753,9 @@ export function useFavoriteListingsPageLogic() {
     }
 
     // If there's a pending proposal, submit it now
-    if (pendingProposalData) {
+    if (state.pendingProposalData) {
       console.log('Submitting pending proposal after auth...');
-      await handleSubmitProposal(pendingProposalData);
+      await handleSubmitProposal(state.pendingProposalData);
     }
   };
 
@@ -851,56 +769,56 @@ export function useFavoriteListingsPageLogic() {
 
   return {
     // State
-    listings,
-    viewMode,
-    setViewMode,
-    isLoading,
-    error,
-    userId,
-    isLoggedIn,
-    currentUser,
-    favoritedListingIds,
-    proposalsByListingId,
-    isContactModalOpen,
-    isInfoModalOpen,
-    selectedListing,
-    infoModalTriggerRef,
-    isProposalModalOpen,
-    selectedListingForProposal,
-    zatConfig,
-    moveInDate,
-    selectedDayObjects,
-    reservationSpan,
-    priceBreakdown,
-    loggedInUserData,
-    showSuccessModal,
-    successProposalId,
-    isSubmittingProposal,
-    showAuthModal,
-    showPhotoModal,
-    currentPhotoIndex,
-    selectedListingPhotos,
-    selectedListingName,
-    toast,
-    informationalTexts,
-    mobileMapVisible,
-    menuOpen,
-    setMenuOpen,
+    listings: state.listings,
+    viewMode: state.viewMode,
+    setViewMode: (val) => dispatch({ type: 'SET_VIEW_MODE', payload: val }),
+    isLoading: state.isLoading,
+    error: state.error,
+    userId: state.userId,
+    isLoggedIn: state.isLoggedIn,
+    currentUser: state.currentUser,
+    favoritedListingIds: state.favoritedListingIds,
+    proposalsByListingId: state.proposalsByListingId,
+    isContactModalOpen: modals.isOpen('contact'),
+    isInfoModalOpen: modals.isOpen('info'),
+    selectedListing: modals.getData('contact')?.listing || modals.getData('info')?.listing || null,
+    infoModalTriggerRef: modals.getData('info')?.triggerRef || null,
+    isProposalModalOpen: modals.isOpen('proposal'),
+    selectedListingForProposal: modals.getData('proposal')?.listing || null,
+    zatConfig: state.zatConfig,
+    moveInDate: state.moveInDate,
+    selectedDayObjects: state.selectedDayObjects,
+    reservationSpan: state.reservationSpan,
+    priceBreakdown: state.priceBreakdown,
+    loggedInUserData: state.loggedInUserData,
+    showSuccessModal: modals.isOpen('success'),
+    successProposalId: modals.getData('success')?.proposalId || null,
+    isSubmittingProposal: state.isSubmittingProposal,
+    showAuthModal: modals.isOpen('auth'),
+    showPhotoModal: modals.isOpen('photo'),
+    currentPhotoIndex: modals.getData('photo')?.index ?? 0,
+    selectedListingPhotos: modals.getData('photo')?.photos || [],
+    selectedListingName: modals.getData('photo')?.listingName || '',
+    toast: state.toast,
+    informationalTexts: state.informationalTexts,
+    mobileMapVisible: state.mobileMapVisible,
+    menuOpen: state.menuOpen,
+    setMenuOpen: (val) => dispatch({ type: 'SET_MENU_OPEN', payload: val }),
     showMessageButton,
 
     // Refs
     mapRef,
 
     // Setters needed by JSX
-    setMobileMapVisible,
-    setShowPhotoModal,
-    setCurrentPhotoIndex,
-    setIsProposalModalOpen,
-    setSelectedListingForProposal,
-    setShowAuthModal,
-    setPendingProposalData,
-    setShowSuccessModal,
-    setSuccessProposalId,
+    setMobileMapVisible: (val) => dispatch({ type: 'SET_MOBILE_MAP_VISIBLE', payload: val }),
+    setShowPhotoModal: (val) => val ? modals.open('photo') : modals.close('photo'),
+    setCurrentPhotoIndex: (idx) => { const d = modals.getData('photo'); if (d) modals.open('photo', { ...d, index: idx }); },
+    setIsProposalModalOpen: (val) => val ? modals.open('proposal') : modals.close('proposal'),
+    setSelectedListingForProposal: (listing) => { if (listing) modals.open('proposal', { listing }); },
+    setShowAuthModal: (val) => val ? modals.open('auth') : modals.close('auth'),
+    setPendingProposalData: (val) => dispatch({ type: 'SET_PENDING_PROPOSAL', payload: val }),
+    setShowSuccessModal: (val) => val ? modals.open('success') : modals.close('success'),
+    setSuccessProposalId: (id) => { if (id) modals.open('success', { proposalId: id }); },
 
     // Handlers
     handleToggleFavorite,
