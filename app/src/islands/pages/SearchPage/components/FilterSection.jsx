@@ -61,6 +61,14 @@ export default function FilterSection({
           <div className="filter-divider"></div>
           {checkInOutDays.checkIn && checkInOutDays.checkOut && (
             <div className="checkin-block">
+              <span className="checkin-repeat-icon" title="Repeats weekly" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10"></path>
+                  <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14"></path>
+                </svg>
+              </span>
               <div className="checkin-details">
                 <div className="checkin-row">
                   <span className="label">Check-in:</span>

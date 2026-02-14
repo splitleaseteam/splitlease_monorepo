@@ -89,6 +89,18 @@
   flex-shrink: 0;
 }
 
+.checkin-repeat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--secondary-purple);
+  flex-shrink: 0;
+}
+
+.checkin-repeat-icon svg {
+  display: block;
+}
+
 @media (max-width: 1200px) {
   .filter-bar {
     gap: 0.5rem;
@@ -1872,6 +1884,19 @@
   .compact-schedule-text .compact-label {
     color: var(--text-gray);
     font-weight: 400;
+  }
+
+  .compact-schedule-text .compact-repeat-symbol {
+    color: var(--secondary-purple, #6D31C2);
+    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: -1px;
+    flex-shrink: 0;
+  }
+
+  .compact-schedule-text .compact-repeat-symbol svg {
+    display: block;
   }
 
   .compact-schedule-dots {

@@ -28,6 +28,14 @@ export default function CompactScheduleIndicator({ isVisible }) {
       <span className="compact-schedule-text">
         {hasEnoughDays ? (
           <>
+            <span className="compact-repeat-symbol" title="Repeats weekly" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" />
+                <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" />
+              </svg>
+            </span>{' '}
             <span className="compact-label">Check-in:</span> {checkInText} • <span className="compact-label">Check-out:</span> {checkOutText}
           </>
         ) : (
