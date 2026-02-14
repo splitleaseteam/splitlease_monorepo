@@ -1099,11 +1099,15 @@ async function handleClearBookedDates(
   }
 
   // Get lease to find proposal
-  const { data: lease } = await _supabase
+  const { data: lease, error: leaseFetchError } = await _supabase
     .from('booking_lease')
     .select('id')
     .eq('id', leaseId)
     .single();
+
+  if (leaseFetchError || !lease) {
+    throw new Error(`Lease not found: ${leaseId}`);
+  }
 
   // Clear lease booked dates
   const { error: leaseError } = await _supabase

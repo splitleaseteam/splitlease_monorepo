@@ -139,7 +139,7 @@ export async function handleSubmitReview(
     .from("user")
     .select("id, supabase_user_id")
     .eq("supabase_user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.error(`[submitReview] User not found for supabase ID:`, userError);

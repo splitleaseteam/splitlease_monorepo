@@ -107,20 +107,33 @@ Deno.serve(async (req: Request) => {
       throw new Error('Missing Supabase configuration');
     }
 
-    // Authenticate user and verify admin status (OPTIONAL for internal pages)
-    // NOTE: Authentication is now optional - internal pages can access without auth
-    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
-
-    if (user) {
-      console.log(`[identity-verification-admin] Authenticated user: ${user.email} (${user.id})`);
-    } else {
-      console.log('[identity-verification-admin] No auth header - proceeding as internal page request');
-    }
-
     // Create service client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // SECURITY: Require admin authentication for all actions
+    // Identity documents are highly sensitive PII
+    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+
+    if (!user) {
+      console.warn('[identity-verification-admin] Unauthenticated access attempt');
+      return errorResponse('Authentication required', 401);
+    }
+
+    // Verify admin role
+    const { data: adminCheck } = await supabase
+      .from('user')
+      .select('is_admin')
+      .eq('supabase_user_id', user.id)
+      .maybeSingle();
+
+    if (!adminCheck?.is_admin) {
+      console.warn(`[identity-verification-admin] Non-admin access attempt by: ${user.email}`);
+      return errorResponse('Admin access required', 403);
+    }
+
+    console.log(`[identity-verification-admin] Admin authenticated: ${user.email} (${user.id})`);
 
     let result: unknown;
 

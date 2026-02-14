@@ -17,41 +17,41 @@ import { PRICING_CONSTANTS } from '../../../constants/pricingConstants.js';
 // Mock data for testing
 const mockValidListing = {
   id: 'test-listing-1',
-  'nightly_rate_1_night': null,
-  'nightly_rate_2_nights': 100,
-  'nightly_rate_3_nights': 95,
-  'nightly_rate_4_nights': 90,
-  'nightly_rate_5_nights': 85,
-  'nightly_rate_6_nights': 80,
-  'nightly_rate_7_nights': 75,
+  'nightly_rate_for_1_night_stay': null,
+  'nightly_rate_for_2_night_stay': 100,
+  'nightly_rate_for_3_night_stay': 95,
+  'nightly_rate_for_4_night_stay': 90,
+  'nightly_rate_for_5_night_stay': 85,
+  'nightly_rate_for_6_night_stay': 80,
+  'nightly_rate_for_7_night_stay': 75,
   'cleaning_fee': 50,
   'damage_deposit': 200,
   'price_override': null,
-  'rental type': 'Nightly'
+  rental_type: 'Nightly'
 };
 
 const mockListingAllNullRates = {
   id: 'test-listing-2',
-  'nightly_rate_1_night': null,
-  'nightly_rate_2_nights': null,
-  'nightly_rate_3_nights': null,
-  'nightly_rate_4_nights': null,
-  'nightly_rate_5_nights': null,
-  'nightly_rate_6_nights': null,
-  'nightly_rate_7_nights': null,
-  'rental type': 'Nightly'
+  'nightly_rate_for_1_night_stay': null,
+  'nightly_rate_for_2_night_stay': null,
+  'nightly_rate_for_3_night_stay': null,
+  'nightly_rate_for_4_night_stay': null,
+  'nightly_rate_for_5_night_stay': null,
+  'nightly_rate_for_6_night_stay': null,
+  'nightly_rate_for_7_night_stay': null,
+  rental_type: 'Nightly'
 };
 
 const mockListingPartialRates = {
   id: 'test-listing-3',
-  'nightly_rate_1_night': null,
-  'nightly_rate_2_nights': 100,
-  'nightly_rate_3_nights': null,
-  'nightly_rate_4_nights': 90,
-  'nightly_rate_5_nights': null,
-  'nightly_rate_6_nights': 80,
-  'nightly_rate_7_nights': null,
-  'rental type': 'Nightly'
+  'nightly_rate_for_1_night_stay': null,
+  'nightly_rate_for_2_night_stay': 100,
+  'nightly_rate_for_3_night_stay': null,
+  'nightly_rate_for_4_night_stay': 90,
+  'nightly_rate_for_5_night_stay': null,
+  'nightly_rate_for_6_night_stay': 80,
+  'nightly_rate_for_7_night_stay': null,
+  rental_type: 'Nightly'
 };
 
 describe('Save Pricing Workflow Integration Tests', () => {
@@ -106,7 +106,7 @@ describe('Save Pricing Workflow Integration Tests', () => {
       // Verify host compensation is calculated from listing rates
       expect(result.pricingList.hostCompensation).toBeDefined();
       expect(result.pricingList.hostCompensation).toHaveLength(7);
-      // Index 1 (2 nights) should have value from nightly_rate_2_nights
+        // Index 1 (2 nights) should have value from nightly_rate_for_2_night_stay
       expect(result.pricingList.hostCompensation[1]).toBe(100);
     });
 
@@ -280,9 +280,9 @@ describe('Save Pricing Workflow Integration Tests', () => {
     it('should reject listings with no valid rates', async () => {
       const invalidListing = {
         id: 'invalid-listing',
-        'nightly_rate_1_night': null,
-        'nightly_rate_2_nights': null,
-        'rental type': 'Nightly'
+        'nightly_rate_for_1_night_stay': null,
+        'nightly_rate_for_2_night_stay': null,
+        rental_type: 'Nightly'
       };
 
       await expect(
@@ -389,8 +389,8 @@ describe('Save Pricing Workflow Integration Tests', () => {
     it('should propagate calculator errors', async () => {
       const invalidListing = {
         id: 'invalid',
-        'nightly_rate_2_nights': 'not a number',
-        'rental type': 'Nightly'
+        'nightly_rate_for_2_night_stay': 'not a number',
+        rental_type: 'Nightly'
       };
 
       await expect(
@@ -499,8 +499,8 @@ describe('Save Pricing Workflow Integration Tests', () => {
     it('should handle listing with minimum valid rates', async () => {
       const minListing = {
         id: 'min-listing',
-        'nightly_rate_2_nights': 50,
-        'rental type': 'Nightly'
+        'nightly_rate_for_2_night_stay': 50,
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({

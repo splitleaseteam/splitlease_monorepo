@@ -324,7 +324,7 @@ export async function handleSubmit(
       .from('user')
       .select('id')
       .eq('email', user_email.toLowerCase())
-      .single();
+      .maybeSingle();
 
     let userId: string | null = null;
 

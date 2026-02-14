@@ -34,10 +34,10 @@ import MapModal from 'islands/modals/MapModal';
 
 <MapModal
   listing={{
-    Name: 'Cozy Studio in Brooklyn',
-    'Location - Address': '123 Example St, Brooklyn, NY 11201',
-    'Location - Hood': 'Williamsburg',
-    'Location - Borough': 'Brooklyn',
+    listing_title: 'Cozy Studio in Brooklyn',
+    address_with_lat_lng_json: '123 Example St, Brooklyn, NY 11201',
+    primary_neighborhood_reference_id: 'Williamsburg',
+    borough: 'Brooklyn',
   }}
   onClose={() => setShowMap(false)}
 />
@@ -69,10 +69,10 @@ import MapModal from 'islands/modals/MapModal';
 export const Default = {
   args: {
     listing: {
-      Name: 'Sunny 1BR in Williamsburg',
-      'Location - Address': '456 Bedford Ave, Brooklyn, NY 11211',
-      'Location - Hood': 'Williamsburg',
-      'Location - Borough': 'Brooklyn',
+      listing_title: 'Sunny 1BR in Williamsburg',
+      address_with_lat_lng_json: '456 Bedford Ave, Brooklyn, NY 11211',
+      primary_neighborhood_reference_id: 'Williamsburg',
+      borough: 'Brooklyn',
     },
   },
 };
@@ -81,10 +81,10 @@ export const Default = {
 export const ManhattanListing = {
   args: {
     listing: {
-      Name: 'Modern Studio in Chelsea',
-      'Location - Address': '200 W 23rd St, New York, NY 10011',
-      'Location - Hood': 'Chelsea',
-      'Location - Borough': 'Manhattan',
+      listing_title: 'Modern Studio in Chelsea',
+      address_with_lat_lng_json: '200 W 23rd St, New York, NY 10011',
+      primary_neighborhood_reference_id: 'Chelsea',
+      borough: 'Manhattan',
     },
   },
 };
@@ -93,10 +93,10 @@ export const ManhattanListing = {
 export const QueensListing = {
   args: {
     listing: {
-      Name: 'Spacious 2BR in Astoria',
-      'Location - Address': '30-50 Steinway St, Astoria, NY 11103',
-      'Location - Hood': 'Astoria',
-      'Location - Borough': 'Queens',
+      listing_title: 'Spacious 2BR in Astoria',
+      address_with_lat_lng_json: '30-50 Steinway St, Astoria, NY 11103',
+      primary_neighborhood_reference_id: 'Astoria',
+      borough: 'Queens',
     },
   },
 };
@@ -105,9 +105,9 @@ export const QueensListing = {
 export const WithAddressOverride = {
   args: {
     listing: {
-      Name: 'Private Room near Central Park',
-      'Location - Hood': 'Upper West Side',
-      'Location - Borough': 'Manhattan',
+      listing_title: 'Private Room near Central Park',
+      primary_neighborhood_reference_id: 'Upper West Side',
+      borough: 'Manhattan',
     },
     address: '100 Central Park West, New York, NY 10023',
   },
@@ -124,7 +124,7 @@ export const WithAddressOverride = {
 export const MinimalData = {
   args: {
     listing: {
-      Name: 'Cozy Studio',
+      listing_title: 'Cozy Studio',
     },
     address: '123 Example Street, Brooklyn, NY',
   },
@@ -156,10 +156,10 @@ export const AddressOnly = {
 export const LongAddress = {
   args: {
     listing: {
-      Name: 'Charming Brownstone Apartment with Private Garden',
-      'Location - Address': 'Apartment 3B, 789 Prospect Place, Crown Heights, Brooklyn, New York, NY 11216',
-      'Location - Hood': 'Crown Heights',
-      'Location - Borough': 'Brooklyn',
+      listing_title: 'Charming Brownstone Apartment with Private Garden',
+      address_with_lat_lng_json: 'Apartment 3B, 789 Prospect Place, Crown Heights, Brooklyn, New York, NY 11216',
+      primary_neighborhood_reference_id: 'Crown Heights',
+      borough: 'Brooklyn',
     },
   },
   parameters: {
@@ -175,10 +175,10 @@ export const LongAddress = {
 export const MobileView = {
   args: {
     listing: {
-      Name: 'Sunny 1BR in Williamsburg',
-      'Location - Address': '456 Bedford Ave, Brooklyn, NY 11211',
-      'Location - Hood': 'Williamsburg',
-      'Location - Borough': 'Brooklyn',
+      listing_title: 'Sunny 1BR in Williamsburg',
+      address_with_lat_lng_json: '456 Bedford Ave, Brooklyn, NY 11211',
+      primary_neighborhood_reference_id: 'Williamsburg',
+      borough: 'Brooklyn',
     },
   },
   parameters: {

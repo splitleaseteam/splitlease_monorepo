@@ -8,7 +8,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ReportEmergencyPage from './islands/pages/ReportEmergencyPage/ReportEmergencyPage.jsx';
-import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 import './styles/main.css';
 
 createRoot(document.getElementById('root')).render(

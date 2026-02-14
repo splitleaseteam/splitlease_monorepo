@@ -8,7 +8,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ManageLeasesPaymentRecordsPage from './islands/pages/ManageLeasesPaymentRecordsPage/ManageLeasesPaymentRecordsPage.jsx';
 import { ToastProvider } from './islands/shared/Toast.jsx';
-import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 import './styles/main.css';
 
 const root = createRoot(document.getElementById('root'));

@@ -91,7 +91,7 @@ export async function handleCreate(
         .from('user')
         .select('id')
         .eq('email', user_email.toLowerCase())
-        .single();
+        .maybeSingle();
 
       if (userData) {
         listingData['host_user_id'] = userData.id;

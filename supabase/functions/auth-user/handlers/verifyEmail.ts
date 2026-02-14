@@ -87,7 +87,7 @@ export async function handleVerifyEmail(
       .update({ email_verified: true })
       .eq('email', emailLower)
       .select('id, email, email_verified')
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       console.error('[verifyEmail] Failed to update email_verified:', {

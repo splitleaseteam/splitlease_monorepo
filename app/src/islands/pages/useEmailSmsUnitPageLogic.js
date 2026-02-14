@@ -89,7 +89,7 @@ export default function useEmailSmsUnitPageLogic() {
 
   // Extract placeholders from the selected template
   const placeholders = useMemo(() => {
-    return extractPlaceholders(selectedTemplate?.Placeholder);
+    return extractPlaceholders(selectedTemplate?.placeholder);
   }, [selectedTemplate]);
 
   // Check if required fields are filled (at least one To email)
@@ -143,7 +143,7 @@ export default function useEmailSmsUnitPageLogic() {
     // Reset placeholder values for the new template
     if (templateId) {
       const template = templates.find(t => t.id === templateId);
-      const newPlaceholders = extractPlaceholders(template?.Placeholder);
+      const newPlaceholders = extractPlaceholders(template?.placeholder);
       const initialValues = {};
       const initialMultiEmails = {};
 
@@ -246,7 +246,7 @@ export default function useEmailSmsUnitPageLogic() {
       return;
     }
     const html = generatePreviewHtml(
-      selectedTemplate['Email Template JSON'],
+      selectedTemplate.email_template_json,
       placeholderValues
     );
     setPreviewHtml(html);

@@ -314,7 +314,6 @@ async function fetchListingInfo(
   let boroughName: string | null = null;
   if (data.borough) {
     const { data: boroughData } = await supabase
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
       .select('display_borough')
       .eq('id', data.borough)
@@ -326,7 +325,6 @@ async function fetchListingInfo(
   let hoodName: string | null = null;
   if (data.primary_neighborhood_reference_id) {
     const { data: hoodData } = await supabase
-      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
       .select('display')
       .eq('id', data.primary_neighborhood_reference_id)
@@ -392,7 +390,6 @@ async function fetchBoroughNamesMap(
   if (boroughIds.length === 0) return new Map();
 
   const { data, error } = await supabase
-    .schema('reference_table')
     .from('zat_geo_borough_toplevel')
     .select('id, display_borough')
     .in('id', boroughIds);
@@ -418,7 +415,6 @@ async function fetchHoodNamesMap(
   if (hoodIds.length === 0) return new Map();
 
   const { data, error } = await supabase
-    .schema('reference_table')
     .from('zat_geo_hood_mediumlevel')
     .select('id, display')
     .in('id', hoodIds);

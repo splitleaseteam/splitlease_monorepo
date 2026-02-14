@@ -55,7 +55,6 @@ export async function getBoroughByZipCode(
   try {
     // Query borough where zip_codes jsonb array contains the zip
     const { data, error } = await supabaseClient
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
       .select('id, display_borough')
       .contains('zip_codes', [cleanZip])
@@ -110,7 +109,6 @@ export async function getHoodByZipCode(
   try {
     // Query hood where zips jsonb array contains the zip
     const { data, error } = await supabaseClient
-      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
       .select('id, display, geo_borough')
       .contains('zips', [cleanZip])
@@ -166,7 +164,6 @@ export async function getGeoByZipCode(
     // Fetch borough display name
     try {
       const { data } = await supabaseClient
-        .schema('reference_table')
         .from('zat_geo_borough_toplevel')
         .select('id, display_borough')
         .eq('id', hood.boroughId)

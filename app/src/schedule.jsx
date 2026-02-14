@@ -9,7 +9,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ScheduleDashboard from './islands/pages/ScheduleDashboard/index.jsx';
 import { ToastProvider } from './islands/shared/Toast.jsx';
-import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 import './styles/main.css';
 import './styles/components/schedule-dashboard/index.css';
 

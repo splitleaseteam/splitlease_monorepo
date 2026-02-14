@@ -143,12 +143,10 @@ async function handleButtonClick(
 
   console.log(`[slack-callback] Admin ${adminUserName} (${adminUserId}) claiming request ${requestData.requestId}`);
 
-  // Fetch available co-hosts from reference_table schema
-  // Supabase client requires a separate client instance with schema option
+  // Fetch available co-hosts (tables now in public schema)
   const schemaClient = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    { db: { schema: 'reference_table' } }
   );
 
   const { data: cohostAdmins, error: cohostError } = await schemaClient

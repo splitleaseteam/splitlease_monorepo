@@ -7,6 +7,8 @@
  * Day indices use JavaScript 0-based standard (0=Sun, 1=Mon, ..., 6=Sat)
  */
 
+import { formatCurrency as sharedFormatCurrency } from '../../../lib/formatting/formatCurrency.js';
+
 /**
  * Day abbreviations (0-indexed: 0=Sun, 1=Mon, ..., 6=Sat)
  */
@@ -20,13 +22,7 @@ export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
  * @returns {string} Formatted currency string
  */
 export function formatCurrency(amount, showCents = false) {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num) || num === null || num === undefined) return '$0';
-
-  if (showCents) {
-    return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
-  return `$${Math.round(num).toLocaleString('en-US')}`;
+  return sharedFormatCurrency(amount, { showCents });
 }
 
 /**

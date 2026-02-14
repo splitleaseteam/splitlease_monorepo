@@ -195,7 +195,6 @@ export async function getCTAByName(
   ctaName: string
 ): Promise<CTARecord | null> {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from('os_messaging_cta')
     .select('*')
     .eq('name', ctaName)
@@ -221,7 +220,6 @@ export async function getCTAByDisplay(
   displayName: string
 ): Promise<CTARecord | null> {
   const { data, error } = await supabase
-    .schema('reference_table')
     .from('os_messaging_cta')
     .select('*')
     .eq('display', displayName)

@@ -55,12 +55,12 @@ vi.mock('../../lib/dataLookups.js', () => ({
   isInitialized: vi.fn(() => true),
   getLookupData: vi.fn(() => ({
     boroughs: [
-      { _id: 'borough-1', Name: 'Manhattan' },
-      { _id: 'borough-2', Name: 'Brooklyn' }
+      { id: 'borough-1', name: 'Manhattan' },
+      { id: 'borough-2', name: 'Brooklyn' }
     ],
     neighborhoods: [
-      { _id: 'hood-1', Name: 'SoHo', Borough: 'borough-1' },
-      { _id: 'hood-2', Name: 'Williamsburg', Borough: 'borough-2' }
+      { id: 'hood-1', name: 'SoHo', borough: 'borough-1' },
+      { id: 'hood-2', name: 'Williamsburg', borough: 'borough-2' }
     ]
   }))
 }));
@@ -444,18 +444,18 @@ describe('Property Search Integration Tests', () => {
 
     it('should filter neighborhoods by search term', () => {
       const neighborhoods = [
-        { _id: '1', Name: 'Williamsburg' },
-        { _id: '2', Name: 'SoHo' },
-        { _id: '3', Name: 'Tribeca' }
+        { id: '1', name: 'Williamsburg' },
+        { id: '2', name: 'SoHo' },
+        { id: '3', name: 'Tribeca' }
       ];
 
       const searchTerm = 'will';
       const filtered = neighborhoods.filter(
-        n => n.Name.toLowerCase().includes(searchTerm.toLowerCase())
+        n => n.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
       expect(filtered).toHaveLength(1);
-      expect(filtered[0].Name).toBe('Williamsburg');
+      expect(filtered[0].name).toBe('Williamsburg');
     });
   });
 });

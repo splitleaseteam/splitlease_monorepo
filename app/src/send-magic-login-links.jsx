@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import SendMagicLoginLinksPage from './islands/pages/SendMagicLoginLinksPage';
 import { ToastProvider } from './islands/shared/Toast';
-import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 
 const container = document.getElementById('root');
 const root = createRoot(container);

@@ -94,7 +94,7 @@ export async function handleCreateMockup(
       `
       )
       .eq("email", MOCK_GUEST_EMAIL)
-      .single();
+      .maybeSingle();
 
     if (guestError || !mockGuest) {
       console.warn(

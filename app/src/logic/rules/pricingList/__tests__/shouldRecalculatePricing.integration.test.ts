@@ -234,8 +234,8 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
     });
   });
 
-  describe('Bubble-style field name handling', () => {
-    it('should handle Bubble-style hostCompensation field name', () => {
+  describe('field name handling', () => {
+    it('should handle canonical hostCompensation field name', () => {
       const listing = {
         'nightly_rate_1_night': null,
         'nightly_rate_2_nights': 100,
@@ -247,7 +247,7 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
       };
 
       const pricingList = {
-        'Host Compensation': [null, 100, 95, 90, 85, 80, 75]
+        hostCompensation: [null, 100, 95, 90, 85, 80, 75]
       };
 
       const result = shouldRecalculatePricing({ listing, pricingList });
@@ -255,13 +255,13 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
       expect(result).toBe(false);
     });
 
-    it('should detect changes with Bubble-style field name', () => {
+    it('should detect changes with canonical field name', () => {
       const listing = {
         'nightly_rate_2_nights': 110
       };
 
       const pricingList = {
-        'Host Compensation': [null, 100, 95, 90, 85, 80, 75]
+        hostCompensation: [null, 100, 95, 90, 85, 80, 75]
       };
 
       const result = shouldRecalculatePricing({ listing, pricingList });
@@ -579,7 +579,7 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('should handle Bubble data format with string numbers', () => {
+    it('should handle canonical data format with string numbers', () => {
       const listing = {
         'nightly_rate_1_night': null,
         'nightly_rate_2_nights': '100',
@@ -591,8 +591,8 @@ describe('shouldRecalculatePricing - Integration Tests', () => {
       };
 
       const pricingList = {
-        'Host Compensation': [null, 100, 95, 90, 85, 80, 75],
-        'Nightly Price': [null, 117, 111, 105, 99, 94, 76]
+        hostCompensation: [null, 100, 95, 90, 85, 80, 75],
+        nightlyPrice: [null, 117, 111, 105, 99, 94, 76]
       };
 
       const result = shouldRecalculatePricing({ listing, pricingList });

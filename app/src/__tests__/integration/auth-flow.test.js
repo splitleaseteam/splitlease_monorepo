@@ -77,6 +77,7 @@ vi.mock('../../lib/secureStorage.js', () => {
 // Mock logger
 vi.mock('../../lib/logger.js', () => ({
   logger: {
+    info: vi.fn(),
     debug: vi.fn(),
     warn: vi.fn(),
     error: vi.fn()

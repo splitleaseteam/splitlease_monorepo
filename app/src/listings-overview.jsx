@@ -11,7 +11,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import ListingsOverviewPage from './islands/pages/ListingsOverviewPage/index.jsx';
-import { ErrorBoundary } from './islands/shared/ErrorBoundary.jsx';
+import { ErrorBoundary } from './islands/shared/ErrorBoundary';
 
 const root = createRoot(document.getElementById('root'));
 root.render(

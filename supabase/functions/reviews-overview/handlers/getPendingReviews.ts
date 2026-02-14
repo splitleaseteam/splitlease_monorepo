@@ -26,7 +26,7 @@ export async function handleGetPendingReviews(
     .from("user")
     .select("id, user_type")
     .eq("auth_user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.error("[getPendingReviews] User lookup error:", userError);
@@ -50,40 +50,35 @@ export async function handleGetPendingReviews(
       id,
       lease_id,
       listing_id,
-      check_in_date,
-      check_out_date,
-      week_number,
-      status,
-      host_id,
-      guest_id,
-      review_by_host_id,
-      review_by_guest_id,
+      checkin_night_date,
+      checkout_day_date,
+      week_number_in_lease,
+      stay_status,
+      host_user_id,
+      guest_user_id,
       listing:listing_id (
         id,
-        name,
-        cover_image_url
+        listing_title
       ),
       lease:lease_id (
         id,
-        host_id,
-        guest_id,
-        host:host_id ( id, first_name, last_name ),
-        guest:guest_id ( id, first_name, last_name )
+        host_user_id,
+        guest_user_id,
+        host:host_user_id ( id, first_name, last_name ),
+        guest:guest_user_id ( id, first_name, last_name )
       )
     `)
-    .eq("status", "completed")
-    .order("check_out_date", { ascending: false })
+    .eq("stay_status", "completed")
+    .order("checkout_day_date", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  // Filter by user type and pending review status
+  // Filter by user type
   if (userType === "Host") {
     query = query
-      .eq("host_id", userId)
-      .is("review_by_host_id", null);
+      .eq("host_user_id", userId);
   } else {
     query = query
-      .eq("guest_id", userId)
-      .is("review_by_guest_id", null);
+      .eq("guest_user_id", userId);
   }
 
   const { data: stays, error: queryError } = await query;
@@ -110,8 +105,8 @@ export async function handleGetPendingReviews(
 
   const pendingReviews = (stays || [])
     .filter(stay => {
-      if (!stay.check_out_date) return false;
-      const checkOut = new Date(stay.check_out_date);
+      if (!stay.checkout_day_date) return false;
+      const checkOut = new Date(stay.checkout_day_date);
       const daysSince = Math.floor((now.getTime() - checkOut.getTime()) / (1000 * 60 * 60 * 24));
       return daysSince <= REVIEW_WINDOW_DAYS;
     })
@@ -126,14 +121,14 @@ export async function handleGetPendingReviews(
 
       if (userType === "Host") {
         // Host reviews Guest
-        revieweeId = lease?.guest?.id || stay.guest_id;
+        revieweeId = lease?.guest?.id || stay.guest_user_id;
         revieweeName = lease?.guest
           ? `${lease.guest.first_name || ""} ${lease.guest.last_name || ""}`.trim()
           : "Guest";
         revieweeType = "guest";
       } else {
         // Guest reviews Host
-        revieweeId = lease?.host?.id || stay.host_id;
+        revieweeId = lease?.host?.id || stay.host_user_id;
         revieweeName = lease?.host
           ? `${lease.host.first_name || ""} ${lease.host.last_name || ""}`.trim()
           : "Host";
@@ -144,15 +139,15 @@ export async function handleGetPendingReviews(
         stay_id: stay.id,
         lease_id: stay.lease_id,
         listing_id: stay.listing_id,
-        listing_name: listing?.name || "Unknown Listing",
-        listing_image_url: listing?.cover_image_url || null,
-        check_in_date: stay.check_in_date,
-        check_out_date: stay.check_out_date,
-        week_number: stay.week_number,
+        listing_name: listing?.listing_title || "Unknown Listing",
+        listing_image_url: null,
+        check_in_date: stay.checkin_night_date,
+        check_out_date: stay.checkout_day_date,
+        week_number: stay.week_number_in_lease,
         reviewee_id: revieweeId,
         reviewee_name: revieweeName,
         reviewee_type: revieweeType,
-        days_until_expiry: calculateDaysUntilExpiry(stay.check_out_date)
+        days_until_expiry: calculateDaysUntilExpiry(stay.checkout_day_date)
       };
     });
 
@@ -160,12 +155,12 @@ export async function handleGetPendingReviews(
   let countQuery = supabase
     .from("lease_weekly_stay")
     .select("*", { count: "exact", head: true })
-    .eq("status", "completed");
+    .eq("stay_status", "completed");
 
   if (userType === "Host") {
-    countQuery = countQuery.eq("host_id", userId).is("review_by_host_id", null);
+    countQuery = countQuery.eq("host_user_id", userId);
   } else {
-    countQuery = countQuery.eq("guest_id", userId).is("review_by_guest_id", null);
+    countQuery = countQuery.eq("guest_user_id", userId);
   }
 
   const { count } = await countQuery;

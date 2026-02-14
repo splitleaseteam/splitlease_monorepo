@@ -1,6 +1,10 @@
 /**
  * Cleanup Action Handler
- * Removes all test data created during the simulation
+ * Removes all test data created during the simulation.
+ *
+ * Strategy: No tables have a `simulation_id` column, so we identify test users
+ * by the email pattern written by createTestGuest.ts, then delete related records
+ * by user ID.
  */
 
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -16,7 +20,6 @@ interface AuthUser {
 
 interface CleanupResult {
   deletedCounts: {
-    reviews: number;
     leases: number;
     proposals: number;
     guestRequests: number;
@@ -42,7 +45,6 @@ export async function handleCleanup(
   }
 
   const deletedCounts = {
-    reviews: 0,
     leases: 0,
     proposals: 0,
     guestRequests: 0,
@@ -51,104 +53,106 @@ export async function handleCleanup(
     users: 0,
   };
 
-  // Delete in order of dependencies (child tables first)
+  // Step 1: Find test users created for this simulation via email pattern
+  // createTestGuest.ts generates: test_guest_{simulationId}_{timestamp}@simulation.splitlease.com
+  const { data: testUsers, error: lookupError } = await supabase
+    .from('user')
+    .select('id')
+    .like('email', `test_guest_${simulationId}_%@simulation.splitlease.com`);
 
-  // 1. Delete reviews
-  try {
-    const { data: reviews } = await supabase
-      .from('review')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
-
-    deletedCounts.reviews = reviews?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.reviews, 'reviews');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete reviews:', _err);
+  if (lookupError) {
+    console.warn('[cleanup] Error looking up test users:', lookupError);
   }
 
-  // 2. Delete guest requests
-  try {
-    const { data: requests } = await supabase
-      .from('guest_requests')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
+  const testUserIds = testUsers?.map(u => u.id) || [];
+  console.log('[cleanup] Found', testUserIds.length, 'test users for simulation');
 
-    deletedCounts.guestRequests = requests?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.guestRequests, 'guest requests');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete guest requests:', _err);
-  }
+  if (testUserIds.length > 0) {
+    // Delete in order of dependencies (child tables first)
 
-  // 3. Delete leases
-  try {
-    const { data: leases } = await supabase
-      .from('booking_lease')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
+    // 2. Delete guest requests by guest user ID
+    try {
+      const { data: requests } = await supabase
+        .from('guest_requests')
+        .delete()
+        .in('guest_user_id', testUserIds)
+        .select('id');
 
-    deletedCounts.leases = leases?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.leases, 'leases');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete leases:', _err);
-  }
+      deletedCounts.guestRequests = requests?.length || 0;
+      console.log('[cleanup] Deleted', deletedCounts.guestRequests, 'guest requests');
+    } catch (_err) {
+      console.warn('[cleanup] Could not delete guest requests:', _err);
+    }
 
-  // 4. Delete virtual meetings
-  try {
-    const { data: meetings } = await supabase
-      .from('virtualmeetingschedulesandlinks')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
+    // 3. Delete leases by guest user ID
+    try {
+      const { data: leases } = await supabase
+        .from('booking_lease')
+        .delete()
+        .in('guest_user_id', testUserIds)
+        .select('id');
 
-    deletedCounts.virtualMeetings = meetings?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.virtualMeetings, 'virtual meetings');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete virtual meetings:', _err);
-  }
+      deletedCounts.leases = leases?.length || 0;
+      console.log('[cleanup] Deleted', deletedCounts.leases, 'leases');
+    } catch (_err) {
+      console.warn('[cleanup] Could not delete leases:', _err);
+    }
 
-  // 5. Delete proposals
-  try {
-    const { data: proposals } = await supabase
-      .from('booking_proposal')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
+    // 4. Delete virtual meetings by guest user ID
+    try {
+      const { data: meetings } = await supabase
+        .from('virtualmeetingschedulesandlinks')
+        .delete()
+        .in('guest_user_id', testUserIds)
+        .select('id');
 
-    deletedCounts.proposals = proposals?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.proposals, 'proposals');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete proposals:', _err);
-  }
+      deletedCounts.virtualMeetings = meetings?.length || 0;
+      console.log('[cleanup] Deleted', deletedCounts.virtualMeetings, 'virtual meetings');
+    } catch (_err) {
+      console.warn('[cleanup] Could not delete virtual meetings:', _err);
+    }
 
-  // 6. Delete guest accounts
-  try {
-    const { data: guestAccounts } = await supabase
-      .from('account_guest')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
+    // 5. Delete proposals by guest user ID
+    try {
+      const { data: proposals } = await supabase
+        .from('booking_proposal')
+        .delete()
+        .in('guest_user_id', testUserIds)
+        .select('id');
 
-    deletedCounts.guestAccounts = guestAccounts?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.guestAccounts, 'guest accounts');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete guest accounts:', _err);
-  }
+      deletedCounts.proposals = proposals?.length || 0;
+      console.log('[cleanup] Deleted', deletedCounts.proposals, 'proposals');
+    } catch (_err) {
+      console.warn('[cleanup] Could not delete proposals:', _err);
+    }
 
-  // 7. Delete test users (only simulation-created guest users)
-  try {
-    const { data: users } = await supabase
-      .from('user')
-      .delete()
-      .eq('simulation_id', simulationId)
-      .select('id');
+    // 6. Delete guest accounts by user reference
+    try {
+      const { data: guestAccounts } = await supabase
+        .from('account_guest')
+        .delete()
+        .in('user', testUserIds)
+        .select('id');
 
-    deletedCounts.users = users?.length || 0;
-    console.log('[cleanup] Deleted', deletedCounts.users, 'test users');
-  } catch (_err) {
-    console.warn('[cleanup] Could not delete test users:', _err);
+      deletedCounts.guestAccounts = guestAccounts?.length || 0;
+      console.log('[cleanup] Deleted', deletedCounts.guestAccounts, 'guest accounts');
+    } catch (_err) {
+      console.warn('[cleanup] Could not delete guest accounts:', _err);
+    }
+
+    // 7. Delete test users last (after all referencing records are gone)
+    try {
+      const { data: users } = await supabase
+        .from('user')
+        .delete()
+        .in('id', testUserIds)
+        .select('id');
+
+      deletedCounts.users = users?.length || 0;
+      console.log('[cleanup] Deleted', deletedCounts.users, 'test users');
+    } catch (_err) {
+      console.warn('[cleanup] Could not delete test users:', _err);
+    }
   }
 
   // Reset the host's usability tester status
@@ -156,7 +160,7 @@ export async function handleCleanup(
     .from('user')
     .select('id')
     .eq('supabase_user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (hostUser) {
     await supabase

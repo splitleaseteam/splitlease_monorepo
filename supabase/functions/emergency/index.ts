@@ -123,13 +123,29 @@ Deno.serve(async (req: Request) => {
         result = { status: 'healthy', timestamp: new Date().toISOString(), actions: VALID_ACTIONS };
         break;
 
-      case 'getAll':
+      case 'getAll': {
+        const user = await authenticateAdmin(req.headers, supabaseUrl, supabaseAnonKey, supabase);
+        if (!user) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Admin authentication required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         result = await handleGetAll(payload, supabase);
         break;
+      }
 
-      case 'getById':
+      case 'getById': {
+        const user = await authenticateAdmin(req.headers, supabaseUrl, supabaseAnonKey, supabase);
+        if (!user) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Admin authentication required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         result = await handleGetById(payload, supabase);
         break;
+      }
 
       case 'create':
         result = await handleCreate(payload, supabase);
@@ -207,13 +223,29 @@ Deno.serve(async (req: Request) => {
         break;
       }
 
-      case 'getMessages':
+      case 'getMessages': {
+        const user = await authenticateAdmin(req.headers, supabaseUrl, supabaseAnonKey, supabase);
+        if (!user) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Admin authentication required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         result = await handleGetMessages(payload, supabase);
         break;
+      }
 
-      case 'getEmails':
+      case 'getEmails': {
+        const user = await authenticateAdmin(req.headers, supabaseUrl, supabaseAnonKey, supabase);
+        if (!user) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Admin authentication required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         result = await handleGetEmails(payload, supabase);
         break;
+      }
 
       case 'getPresetMessages':
         result = await handleGetPresetMessages(payload, supabase);
@@ -223,9 +255,17 @@ Deno.serve(async (req: Request) => {
         result = await handleGetPresetEmails(payload, supabase);
         break;
 
-      case 'getTeamMembers':
+      case 'getTeamMembers': {
+        const user = await authenticateAdmin(req.headers, supabaseUrl, supabaseAnonKey, supabase);
+        if (!user) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Admin authentication required' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         result = await handleGetTeamMembers(supabase);
         break;
+      }
 
       default:
         throw new Error(`Unhandled action: ${action}`);
@@ -280,7 +320,7 @@ async function authenticateAdmin(
     .from('user')
     .select('id, is_admin, email, first_name, last_name')
     .eq('supabase_user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.log('[emergency] User lookup error:', userError?.message);

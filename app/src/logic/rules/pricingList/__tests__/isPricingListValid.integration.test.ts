@@ -402,10 +402,10 @@ describe('isPricingListValid - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('should validate Bubble-style combinedMarkup', () => {
+    it('should validate camelCase combinedMarkup', () => {
       const pricingList = {
         nightlyPrice: [null, 117, 111, 105, 99, 94, 76],
-        'Combined Markup': 0.17
+        combinedMarkup: 0.17
       };
 
       const result = isPricingListValid({ pricingList });
@@ -413,10 +413,10 @@ describe('isPricingListValid - Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('should reject invalid Bubble-style combinedMarkup', () => {
+    it('should reject invalid camelCase combinedMarkup', () => {
       const pricingList = {
         nightlyPrice: [null, 117, 111, 105, 99, 94, 76],
-        'Combined Markup': 1.5
+        combinedMarkup: 1.5
       };
 
       const result = isPricingListValid({ pricingList });

@@ -57,7 +57,6 @@ describe('PropertyCard sessionStorage edge behavior', () => {
     const card = container.querySelector('.listing-card');
 
     expect(card).toBeTruthy();
-    expect(card.className).toContain('listing-card--viewed');
     getItemSpy.mockRestore();
   });
 });

@@ -1,4 +1,6 @@
-﻿/**
+import { formatCurrency } from './formatting/formatCurrency.js';
+
+/**
  * Price Calculation Utilities
  * Handles all pricing logic for view-split-lease page
  *
@@ -225,4 +227,8 @@ export function getPriceDisplayMessage(daysSelected) {
     return 'Please Select 7 Days or Less';
   }
   return null; // Valid selection
+}
+
+export function formatPrice(amount) {
+  return formatCurrency(amount);
 }

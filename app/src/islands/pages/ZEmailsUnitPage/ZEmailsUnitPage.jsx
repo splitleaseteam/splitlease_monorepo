@@ -126,13 +126,13 @@ export default function ZEmailsUnitPage() {
               <option value="">Select a template</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id}>
-                  {template.Name || template.Description || template.id}
+                  {template.name || template.description || template.id}
                 </option>
               ))}
             </select>
             {selectedTemplate && (
               <p className="zeu-description">
-                {selectedTemplate.Description || 'No description available.'}
+                {selectedTemplate.description || 'No description available.'}
               </p>
             )}
           </div>

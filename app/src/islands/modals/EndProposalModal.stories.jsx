@@ -11,22 +11,22 @@ import EndProposalModal from './EndProposalModal';
 // Mock proposal data
 const mockProposal = {
   id: 'proposal-123',
-  guestName: 'Sarah Johnson',
+  guest: {
+    first_name: 'Sarah',
+    name: 'Sarah Johnson',
+  },
   _listing: {
-    Name: 'Cozy Chelsea Studio',
-    name: 'Cozy Chelsea Studio',
+    listing_title: 'Cozy Chelsea Studio',
   },
   listing: {
-    Name: 'Cozy Chelsea Studio',
-    name: 'Cozy Chelsea Studio',
+    listing_title: 'Cozy Chelsea Studio',
   },
 };
 
 // Mock listing data
 const mockListing = {
   id: 'listing-456',
-  Name: 'Sunny Williamsburg Loft',
-  name: 'Sunny Williamsburg Loft',
+  listing_title: 'Sunny Williamsburg Loft',
 };
 
 export default {

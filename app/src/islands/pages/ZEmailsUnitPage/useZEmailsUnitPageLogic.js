@@ -47,7 +47,7 @@ export default function useZEmailsUnitPageLogic() {
   }, [templates, selectedTemplateId]);
 
   const placeholders = useMemo(() => {
-    const extracted = extractPlaceholders(selectedTemplate?.Placeholder);
+    const extracted = extractPlaceholders(selectedTemplate?.placeholder);
     return extracted.filter((placeholder) => !RECIPIENT_PLACEHOLDERS.includes(placeholder.key));
   }, [selectedTemplate]);
 
@@ -69,7 +69,7 @@ export default function useZEmailsUnitPageLogic() {
     }
 
     const template = templates.find((item) => item.id === templateId);
-    const extracted = extractPlaceholders(template?.Placeholder);
+    const extracted = extractPlaceholders(template?.placeholder);
     const initialValues = {};
 
     extracted.forEach((placeholder) => {
@@ -131,7 +131,7 @@ export default function useZEmailsUnitPageLogic() {
     }
 
     const html = generatePreviewHtml(
-      selectedTemplate['Email Template JSON'],
+      selectedTemplate.email_template_json,
       placeholderValues
     );
     setPreviewHtml(html);

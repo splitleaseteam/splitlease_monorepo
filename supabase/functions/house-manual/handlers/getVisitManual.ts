@@ -281,7 +281,7 @@ export async function handleGetVisitManual(
     .from("user")
     .select("id, supabase_user_id")
     .eq("supabase_user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.error(`[getVisitManual] User not found for supabase ID:`, userError);

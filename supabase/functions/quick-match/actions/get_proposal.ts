@@ -222,7 +222,6 @@ async function fetchListingInfo(
   let boroughName: string | null = null;
   if (listing.borough) {
     const { data: boroughData } = await supabase
-      .schema('reference_table')
       .from('zat_geo_borough_toplevel')
       .select('display_borough')
       .eq('id', listing.borough)
@@ -235,7 +234,6 @@ async function fetchListingInfo(
   let hoodName: string | null = null;
   if (listing.primary_neighborhood_reference_id) {
     const { data: hoodData } = await supabase
-      .schema('reference_table')
       .from('zat_geo_hood_mediumlevel')
       .select('display')
       .eq('id', listing.primary_neighborhood_reference_id)

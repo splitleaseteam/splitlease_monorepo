@@ -94,7 +94,7 @@ export async function handleAcceptProposal(
     .from('user')
     .select('id')
     .eq('supabase_user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (hostUser) {
     await supabase

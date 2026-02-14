@@ -180,7 +180,7 @@ export async function handleGetMessages(
       .from('user')
       .select('first_name, last_name, profile_photo_url')
       .eq('legacy_platform_id', contactId)
-      .single();
+      .maybeSingle();
 
     if (!contactError && contact) {
       contactInfo = {

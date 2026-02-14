@@ -11,10 +11,10 @@ import VirtualMeetingModal from './VirtualMeetingModal';
 // Mock data
 const mockProposal = {
   id: 'proposal-123',
-  Guest: 'guest-user-456',
+  guest_user_id: 'guest-user-456',
   _listing: {
-    'Created By': 'host-user-789',
-    Name: 'Cozy Chelsea Studio',
+    created_by_user_id: 'host-user-789',
+    listing_title: 'Cozy Chelsea Studio',
   },
 };
 
@@ -26,18 +26,18 @@ const mockCurrentUser = {
 
 const mockVirtualMeeting = {
   id: 'vm-123',
-  'booked date': new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
-  'requested by': 'guest-user-456',
-  'meeting declined': false,
-  'confirmedBySplitLease': true,
-  'meeting link': 'https://meet.google.com/abc-defg-hij',
+  booked_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+  requested_by: 'guest-user-456',
+  meeting_declined: false,
+  confirmed_by_splitlease: true,
+  meeting_link: 'https://meet.google.com/abc-defg-hij',
 };
 
 const mockDeclinedMeeting = {
   ...mockVirtualMeeting,
-  'meeting declined': true,
-  'confirmedBySplitLease': false,
-  'meeting link': null,
+  meeting_declined: true,
+  confirmed_by_splitlease: false,
+  meeting_link: null,
 };
 
 export default {

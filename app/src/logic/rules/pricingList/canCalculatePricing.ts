@@ -51,7 +51,7 @@
  * // => false
  * ```
  */
-import type { CalculationPrerequisites, ListingRateField } from './types.js';
+import type { CalculationPrerequisites } from './types.js';
 
 export function canCalculatePricing({ listing }: CalculationPrerequisites): boolean {
   // No Fallback: Validate listing exists
@@ -75,14 +75,14 @@ export function canCalculatePricing({ listing }: CalculationPrerequisites): bool
   }
 
   // For Nightly rental type (or fallback): check for any valid nightly rate
-  const rateFields: ListingRateField[] = [
-    'nightly_rate_2_nights',
-    'nightly_rate_3_nights',
-    'nightly_rate_4_nights',
-    'nightly_rate_5_nights',
-    'nightly_rate_6_nights',
-    'nightly_rate_7_nights'
-  ];
+  const rateFields = [
+    'nightly_rate_for_2_night_stay',
+    'nightly_rate_for_3_night_stay',
+    'nightly_rate_for_4_night_stay',
+    'nightly_rate_for_5_night_stay',
+    'nightly_rate_for_6_night_stay',
+    'nightly_rate_for_7_night_stay'
+  ] as const;
 
   for (const field of rateFields) {
     const value = listingRecord[field];

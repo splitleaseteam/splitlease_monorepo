@@ -34,7 +34,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'nightly_rate_for_5_night_stay': 85,
         'nightly_rate_for_6_night_stay': 80,
         'nightly_rate_for_7_night_stay': 75,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -63,7 +63,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'markup-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const unitMarkup = 0.05; // 5%
@@ -84,7 +84,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'discount-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -104,7 +104,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'array-length-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -128,7 +128,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'nightly_rate_for_5_night_stay': 85,
         'nightly_rate_for_6_night_stay': 80,
         'nightly_rate_for_7_night_stay': 75,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -154,7 +154,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'nightly_rate_for_3_night_stay': 100,
         'nightly_rate_for_4_night_stay': null,
         'nightly_rate_for_5_night_stay': 95,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -224,7 +224,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'nightly_rate_for_5_night_stay': 85,
         'nightly_rate_for_6_night_stay': 80,
         'nightly_rate_for_7_night_stay': 75,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -248,7 +248,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'nightly_rate_for_5_night_stay': 85,
         'nightly_rate_for_6_night_stay': 80,
         'nightly_rate_for_7_night_stay': 75,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -270,7 +270,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'repeat-calc-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result1 = await savePricingWorkflow({
@@ -293,7 +293,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'force-recalc-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const existingPricing = {
@@ -322,7 +322,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'single-rate-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -339,7 +339,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'max-rate-test',
         'nightly_rate_for_7_night_stay': 75,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -355,7 +355,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'zero-markup-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -372,7 +372,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'high-markup-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const highMarkup = 0.50; // 50%
@@ -396,7 +396,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'precision-test',
         'nightly_rate_for_2_night_stay': 100.33,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -415,7 +415,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'nightly_rate_for_2_night_stay': 100.1,
         'nightly_rate_for_3_night_stay': 95.2,
         'nightly_rate_for_4_night_stay': 90.3,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -442,7 +442,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'structure-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -470,7 +470,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'result-structure-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const initResult = await initializePricingListWorkflow({
@@ -510,7 +510,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const nightlyListing = {
         id: 'nightly-type-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -525,7 +525,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'default-type-test',
         'nightly_rate_for_2_night_stay': 100
-        // No 'rental type' field
+        // No rental_type field
       };
 
       const result = await savePricingWorkflow({
@@ -545,7 +545,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'timestamp-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -563,7 +563,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'userid-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const userId = 'specific-user-456';
@@ -581,7 +581,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
       const listing = {
         id: 'no-userid-test',
         'nightly_rate_for_2_night_stay': 100,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -597,24 +597,13 @@ describe('Pricing Workflow Regression Integration Tests', () => {
   // HISTORICAL DATA COMPATIBILITY
   // ========================================
   describe('Historical Data Compatibility', () => {
-    it('should handle legacy listing data structure', async () => {
-      // Simulate legacy Bubble.io data structure
-      const legacyListing = {
-        'id': 'legacy-123',
-        'Nightly rate 1 night': null,
-        'Nightly rate 2 nights': 100,
-        'Nightly rate 3 nights': 95,
-        'Rental Type': 'Nightly'
-      };
-
-      // This would require a processor to transform field names
-      // For now, we test with standard structure
+    it('should handle historical listing rows with canonical pricing keys', async () => {
       const standardListing = {
         id: 'legacy-123',
         'nightly_rate_for_1_night_stay': null,
         'nightly_rate_for_2_night_stay': 100,
         'nightly_rate_for_3_night_stay': 95,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({
@@ -634,7 +623,7 @@ describe('Pricing Workflow Regression Integration Tests', () => {
         'cleaning_fee_amount': null,
         'damage_deposit_amount': null,
         'price_override': null,
-        'rental type': 'Nightly'
+        rental_type: 'Nightly'
       };
 
       const result = await savePricingWorkflow({

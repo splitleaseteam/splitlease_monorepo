@@ -135,7 +135,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       if (selectedPolicy) {
         setFormState((prev) => ({
           ...prev,
-          documentTitle: selectedPolicy.name || selectedPolicy.Name || ''
+          documentTitle: selectedPolicy.name || ''
         }));
       }
     }
@@ -183,7 +183,7 @@ export function useCreateDocumentPageLogic({ showToast }) {
       }
 
       // Create the document
-      const baseHostName = (selectedHost.first_name && selectedHost.last_name ? `${selectedHost.first_name} ${selectedHost.last_name}` : null) || selectedHost.name || selectedHost.Name || '';
+      const baseHostName = (selectedHost.first_name && selectedHost.last_name ? `${selectedHost.first_name} ${selectedHost.last_name}` : null) || selectedHost.name || '';
       const hostName = baseHostName ? `${baseHostName} Full` : '';
 
       const result = await callDocumentApi('create', {

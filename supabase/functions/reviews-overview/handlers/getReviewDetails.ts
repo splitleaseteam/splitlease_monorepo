@@ -27,7 +27,7 @@ export async function handleGetReviewDetails(
     .from("user")
     .select("id")
     .eq("auth_user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.error("[getReviewDetails] User lookup error:", userError);
@@ -59,17 +59,14 @@ export async function handleGetReviewDetails(
       created_at,
       status,
       stay:stay_id (
-        check_in_date,
-        check_out_date,
-        week_number,
-        review_by_host_id,
-        review_by_guest_id
+        checkin_night_date,
+        checkout_day_date,
+        week_number_in_lease
       ),
       listing:listing_id (
-        name,
-        cover_image_url,
-        address_city,
-        address_state
+        listing_title,
+        city,
+        state
       ),
       reviewer:reviewer_id (
         id,
@@ -125,12 +122,12 @@ export async function handleGetReviewDetails(
     stay_id: review.stay_id,
     lease_id: review.lease_id,
     listing_id: review.listing_id,
-    listing_name: listing?.name || "Unknown Listing",
-    listing_image_url: listing?.cover_image_url || null,
-    listing_location: listing ? `${listing.address_city || ""}, ${listing.address_state || ""}`.trim() : null,
-    check_in_date: stay?.check_in_date,
-    check_out_date: stay?.check_out_date,
-    week_number: stay?.week_number,
+    listing_name: listing?.listing_title || "Unknown Listing",
+    listing_image_url: null,
+    listing_location: listing ? `${listing.city || ""}, ${listing.state || ""}`.trim() : null,
+    check_in_date: stay?.checkin_night_date,
+    check_out_date: stay?.checkout_day_date,
+    week_number: stay?.week_number_in_lease,
     review_type: review.review_type,
     reviewer_id: review.reviewer_id,
     reviewer_name: reviewer

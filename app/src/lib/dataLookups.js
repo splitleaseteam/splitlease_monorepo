@@ -400,7 +400,7 @@ export function getPropertyTypeLabel(propertyTypeId) {
  * @param {string} amenityId - The amenity ID
  * @returns {object|null} The amenity data {name, icon} or null
  */
-export function getAmenity(amenityId) {
+function getAmenity(amenityId) {
   if (!amenityId) return null;
 
   const amenity = lookupCache.amenities.get(amenityId);
@@ -427,7 +427,7 @@ export function getAmenities(amenityIds) {
  * @param {string} safetyId - The safety feature ID
  * @returns {object|null} The safety feature data {name, icon} or null
  */
-export function getSafetyFeature(safetyId) {
+function getSafetyFeature(safetyId) {
   if (!safetyId) return null;
 
   const safety = lookupCache.safety.get(safetyId);
@@ -454,7 +454,7 @@ export function getSafetyFeatures(safetyIds) {
  * @param {string} ruleId - The house rule ID
  * @returns {object|null} The house rule data {name, icon} or null
  */
-export function getHouseRule(ruleId) {
+function getHouseRule(ruleId) {
   if (!ruleId) return null;
 
   const rule = lookupCache.houseRules.get(ruleId);
@@ -532,25 +532,6 @@ export function getAllParkingOptions() {
     options.push({ id, label: parking.label });
   });
   return options;
-}
-
-/**
- * Get all neighborhoods from cache, grouped by borough name.
- * Returns an array of { id, name, borough } sorted by borough then name.
- * Useful for building deduplicated borough dropdown filters.
- * @returns {Array<{id: string, name: string, borough: string|null}>}
- */
-export function getAllNeighborhoods() {
-  const results = [];
-  lookupCache.neighborhoods.forEach((hood, id) => {
-    results.push({ id, name: hood.name, borough: hood.borough });
-  });
-  return results.sort((a, b) => {
-    const aBoro = a.borough || '';
-    const bBoro = b.borough || '';
-    if (aBoro !== bBoro) return aBoro.localeCompare(bBoro);
-    return a.name.localeCompare(b.name);
-  });
 }
 
 /**
@@ -642,120 +623,6 @@ export async function fetchNeighborhoodDescription(neighborhoodId) {
     logger.error(`Failed to fetch neighborhood description ${neighborhoodId}:`, error);
     return '';
   }
-}
-
-/**
- * Fetch neighborhood name by ID from database (async)
- * Use this only if the cache doesn't have the value
- * @param {string} neighborhoodId - The neighborhood ID
- * @returns {Promise<string>} The neighborhood name
- */
-export async function fetchNeighborhoodName(neighborhoodId) {
-  if (!neighborhoodId) return '';
-
-  // Check cache first
-  const cached = lookupCache.neighborhoods.get(neighborhoodId);
-  if (cached) return cached.name;
-
-  try {
-    const { data, error } = await supabase
-      .from(DATABASE.TABLES.NEIGHBORHOOD)
-      .select('display, neighborhood_description, zips, geo_borough')
-      .eq('id', neighborhoodId)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    const name = data?.display || 'Unknown Neighborhood';
-    // Cache the result as object
-    lookupCache.neighborhoods.set(neighborhoodId, {
-      name,
-      description: data?.neighborhood_description || '',
-      zips: data?.zips || [],
-      borough: data?.geo_borough || null
-    });
-    return name;
-  } catch (error) {
-    logger.error(`Failed to fetch neighborhood ${neighborhoodId}:`, error);
-    return 'Unknown Neighborhood';
-  }
-}
-
-/**
- * Fetch borough name by ID from database (async)
- * Use this only if the cache doesn't have the value
- * @param {string} boroughId - The borough ID
- * @returns {Promise<string>} The borough name
- */
-export async function fetchBoroughName(boroughId) {
-  if (!boroughId) return '';
-
-  // Check cache first
-  const cached = lookupCache.boroughs.get(boroughId);
-  if (cached) return cached;
-
-  try {
-    const { data, error } = await supabase
-      .from(DATABASE.TABLES.BOROUGH)
-      .select('display_borough')
-      .eq('id', boroughId)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    const name = data?.display_borough || 'Unknown Borough';
-    // Cache the result
-    lookupCache.boroughs.set(boroughId, name);
-    return name;
-  } catch (error) {
-    logger.error(`Failed to fetch borough ${boroughId}:`, error);
-    return 'Unknown Borough';
-  }
-}
-
-// ============================================================================
-// Cache Management
-// ============================================================================
-
-/**
- * Clear all caches and re-initialize
- * @returns {Promise<void>}
- */
-export async function refreshLookups() {
-  lookupCache.neighborhoods.clear();
-  lookupCache.boroughs.clear();
-  lookupCache.propertyTypes.clear();
-  lookupCache.amenities.clear();
-  lookupCache.safety.clear();
-  lookupCache.houseRules.clear();
-  lookupCache.parking.clear();
-  lookupCache.cancellationPolicies.clear();
-  lookupCache.storage.clear();
-  lookupCache.guestCancellationReasons.clear();
-  lookupCache.hostCancellationReasons.clear();
-  lookupCache.initialized = false;
-  await initializeLookups();
-}
-
-/**
- * Get cache statistics for debugging
- * @returns {object} Cache statistics
- */
-export function getCacheStats() {
-  return {
-    neighborhoods: lookupCache.neighborhoods.size,
-    boroughs: lookupCache.boroughs.size,
-    propertyTypes: lookupCache.propertyTypes.size,
-    amenities: lookupCache.amenities.size,
-    safety: lookupCache.safety.size,
-    houseRules: lookupCache.houseRules.size,
-    parking: lookupCache.parking.size,
-    cancellationPolicies: lookupCache.cancellationPolicies.size,
-    storage: lookupCache.storage.size,
-    guestCancellationReasons: lookupCache.guestCancellationReasons.size,
-    hostCancellationReasons: lookupCache.hostCancellationReasons.size,
-    initialized: lookupCache.initialized
-  };
 }
 
 /**

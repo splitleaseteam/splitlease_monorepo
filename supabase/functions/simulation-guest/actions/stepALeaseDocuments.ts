@@ -62,7 +62,7 @@ export async function handleStepA(
     .from('booking_lease')
     .select('*')
     .eq('proposal_id', proposalId)
-    .single();
+    .maybeSingle();
 
   if (existingLease) {
     console.log('[step_a] Existing lease found, returning it');

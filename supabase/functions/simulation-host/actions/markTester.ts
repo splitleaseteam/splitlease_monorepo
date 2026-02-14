@@ -38,7 +38,7 @@ export async function handleMarkTester(
     .from('user')
     .select('id')
     .eq('supabase_user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (fetchError || !userData) {
     console.error('[markTester] Error fetching user:', fetchError);

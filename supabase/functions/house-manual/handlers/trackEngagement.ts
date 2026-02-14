@@ -90,7 +90,7 @@ export async function handleTrackEngagement(
     .from("user")
     .select("id, supabase_user_id")
     .eq("supabase_user_id", userId)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.error(`[trackEngagement] User not found for supabase ID:`, userError);

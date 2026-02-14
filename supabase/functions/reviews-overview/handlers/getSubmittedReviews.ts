@@ -25,7 +25,7 @@ export async function handleGetSubmittedReviews(
     .from("user")
     .select("id")
     .eq("auth_user_id", user.id)
-    .single();
+    .maybeSingle();
 
   if (userError || !userData) {
     console.error("[getSubmittedReviews] User lookup error:", userError);
@@ -57,12 +57,11 @@ export async function handleGetSubmittedReviews(
       created_at,
       status,
       stay:stay_id (
-        check_in_date,
-        check_out_date
+        checkin_night_date,
+        checkout_day_date
       ),
       listing:listing_id (
-        name,
-        cover_image_url
+        listing_title
       ),
       reviewee:reviewee_id (
         id,
@@ -106,10 +105,10 @@ export async function handleGetSubmittedReviews(
       review_id: review.id,
       stay_id: review.stay_id,
       lease_id: review.lease_id,
-      listing_name: listing?.name || "Unknown Listing",
-      listing_image_url: listing?.cover_image_url || null,
-      check_in_date: stay?.check_in_date,
-      check_out_date: stay?.check_out_date,
+      listing_name: listing?.listing_title || "Unknown Listing",
+      listing_image_url: null,
+      check_in_date: stay?.checkin_night_date,
+      check_out_date: stay?.checkout_day_date,
       review_type: review.review_type,
       reviewee_id: review.reviewee_id,
       reviewee_name: reviewee

@@ -16,7 +16,6 @@ const mockListing = {
   maxGuests: 4,
   bedrooms: 1,
   bathrooms: 1,
-  'Starting nightly price': 125,
   price: { starting: 125 },
   images: [
     'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800',
@@ -46,7 +45,6 @@ const newListing = {
   title: 'Sunny Williamsburg Loft',
   location: 'Williamsburg, Brooklyn',
   isNew: true,
-  'Starting nightly price': 165,
   price: { starting: 165 },
 };
 
@@ -58,7 +56,6 @@ const studioListing = {
   type: 'Private Room',
   bedrooms: 0,
   maxGuests: 2,
-  'Starting nightly price': 89,
   price: { starting: 89 },
   host: {
     name: 'John Smith',

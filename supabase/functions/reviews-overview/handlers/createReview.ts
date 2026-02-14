@@ -105,12 +105,10 @@ export async function handleCreateReview(
       id,
       lease_id,
       listing_id,
-      host_id,
-      guest_id,
-      status,
-      check_out_date,
-      review_by_host_id,
-      review_by_guest_id
+      host_user_id,
+      guest_user_id,
+      stay_status,
+      checkout_day_date
     `)
     .eq("id", payload.stayId)
     .single();
@@ -130,34 +128,24 @@ export async function handleCreateReview(
   let reviewType: string;
   let revieweeId: string;
 
-  if (userType === "Host" && stay.host_id === reviewerId) {
+  if (userType === "Host" && stay.host_user_id === reviewerId) {
     reviewType = "host_reviews_guest";
-    revieweeId = stay.guest_id;
-
-    // Check if already reviewed
-    if (stay.review_by_host_id) {
-      throw new ValidationError("You have already reviewed this stay");
-    }
-  } else if (userType === "Guest" && stay.guest_id === reviewerId) {
+    revieweeId = stay.guest_user_id;
+  } else if (userType === "Guest" && stay.guest_user_id === reviewerId) {
     reviewType = "guest_reviews_host";
-    revieweeId = stay.host_id;
-
-    // Check if already reviewed
-    if (stay.review_by_guest_id) {
-      throw new ValidationError("You have already reviewed this stay");
-    }
+    revieweeId = stay.host_user_id;
   } else {
     throw new ValidationError("You are not authorized to review this stay");
   }
 
   // 5. Check stay is completed
-  if (stay.status !== "completed") {
+  if (stay.stay_status !== "completed") {
     throw new ValidationError("Reviews can only be submitted for completed stays");
   }
 
   // 6. Check review window (14 days)
   const REVIEW_WINDOW_DAYS = 14;
-  const checkOutDate = new Date(stay.check_out_date);
+  const checkOutDate = new Date(stay.checkout_day_date);
   const now = new Date();
   const daysSinceCheckout = Math.floor((now.getTime() - checkOutDate.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -222,25 +210,8 @@ export async function handleCreateReview(
     collector.add(new Error(ratingError.message), "insert rating details");
   }
 
-  // 9. Update stay with review reference
-  const stayUpdate = reviewType === "host_reviews_guest"
-    ? { review_by_host_id: review.id, review_by_host_submitted_at: new Date().toISOString() }
-    : { review_by_guest_id: review.id, review_by_guest_submitted_at: new Date().toISOString() };
-
-  const { error: updateError } = await supabase
-    .from("lease_weekly_stay")
-    .update(stayUpdate)
-    .eq("id", payload.stayId);
-
-  if (updateError) {
-    console.error("[createReview] Stay update error:", {
-      code: updateError.code,
-      message: updateError.message,
-      details: updateError.details,
-      hint: updateError.hint
-    });
-    collector.add(new Error(updateError.message), "update stay reference");
-  }
+  // 9. Note: lease_weekly_stay does not have review_by_host_id/review_by_guest_id columns.
+  // Review linkage is tracked via the review table's stay_id foreign key.
 
   console.log("[createReview] Successfully created review for stay:", payload.stayId);
 

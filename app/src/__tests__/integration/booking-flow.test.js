@@ -38,7 +38,7 @@ vi.mock('../../lib/supabase.js', () => ({
 }));
 
 // Mock auth
-vi.mock('../../lib/auth.js', () => ({
+vi.mock('../../lib/auth/index.js', () => ({
   getAuthToken: vi.fn(() => 'test-token'),
   getSessionId: vi.fn(() => 'user-123'),
   getUserType: vi.fn(() => 'Guest'),

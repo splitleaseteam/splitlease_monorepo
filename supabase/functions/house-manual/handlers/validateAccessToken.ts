@@ -73,7 +73,7 @@ export async function handleValidateAccessToken(
       is_single_use
     `)
     .eq("access_token", accessToken)
-    .single();
+    .maybeSingle();
 
   if (visitError || !visit) {
     console.log(`[validateAccessToken] Token not found in database`);

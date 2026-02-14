@@ -374,7 +374,7 @@ function transformListingData(dbListing, photos = [], lookups = {}) {
     // Location
     location: {
       id: listingId,
-      address: locationAddress.address || dbListing['Not Found - Location - Address '] || '',
+      address: locationAddress.address || '',
       hoodsDisplay: dbListing.primary_neighborhood_reference_id || '',
       boroughDisplay: getBoroughForZipCode(dbListing.zip_code) || '',
       city: dbListing.city || '',

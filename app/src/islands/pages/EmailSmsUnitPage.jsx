@@ -102,7 +102,7 @@ export default function EmailSmsUnitPage() {
               <option value="">-- Select a template --</option>
               {templates.map(t => (
                 <option key={t.id} value={t.id}>
-                  {t.Name || t.Description || t.id}
+                  {t.name || t.description || t.id}
                 </option>
               ))}
             </select>
@@ -111,7 +111,7 @@ export default function EmailSmsUnitPage() {
           {/* Template Description */}
           {selectedTemplate && (
             <p style={styles.description}>
-              {selectedTemplate.Description || 'No description available'}
+              {selectedTemplate.description || 'No description available'}
             </p>
           )}
 

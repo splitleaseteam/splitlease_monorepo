@@ -100,6 +100,15 @@ Deno.serve(async (req: Request) => {
         const { handleGet } = await import("./actions/get.ts");
         console.log('[proposal] Get handler loaded');
 
+        // SECURITY: Optional auth - log authenticated user for audit trail
+        const authResult = await authenticateRequest(req.headers, config, undefined, { optional: true });
+        const user = authResult.ok ? authResult.value : null;
+        if (user) {
+          console.log(`[proposal:get] Authenticated user: ${user.email} (${user.id})`);
+        } else {
+          console.log('[proposal:get] No auth - proceeding as internal page request');
+        }
+
         result = await handleGet(payload, supabase);
         break;
       }
