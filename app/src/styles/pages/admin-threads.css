@@ -6,7 +6,7 @@
 /* ===== PAGE LAYOUT ===== */
 .admin-threads {
   min-height: 100vh;
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   padding: var(--spacing-lg, 24px);
   position: relative;
 }
@@ -36,7 +36,7 @@
 .admin-threads__logo-img {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .admin-threads__title-group {
@@ -50,7 +50,7 @@
   gap: 8px;
   font-size: 24px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0;
 }
 
@@ -80,11 +80,11 @@
   color: var(--color-text-secondary, #666);
   text-decoration: none;
   border-radius: var(--radius-md, 8px);
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .admin-threads__nav-link:hover {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   color: var(--color-primary, #6D31C2);
 }
 
@@ -152,7 +152,7 @@
 
 .admin-threads__filter-input {
   padding: 10px 14px;
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   font-size: 14px;
   transition: border-color 0.2s ease;
@@ -178,7 +178,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .admin-threads__filter-btn--search {
@@ -194,7 +194,7 @@
 .admin-threads__filter-btn--clear {
   background: transparent;
   color: var(--color-text-secondary, #666);
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
 }
 
 .admin-threads__filter-btn--clear:hover {
@@ -242,7 +242,7 @@
 .thread-card__subject {
   font-size: 16px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 8px 0;
 }
 
@@ -267,11 +267,11 @@
   cursor: pointer;
   color: var(--color-text-secondary, #666);
   border-radius: var(--radius-sm, 4px);
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .thread-card__expand-btn:hover {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   color: var(--color-primary, #6D31C2);
 }
 
@@ -295,8 +295,8 @@
 .thread-card__participant-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: var(--color-border, #e0e0e0);
+  border-radius: var(--rounded-full);
+  background: var(--color-border, var(--border-gray-light));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -331,7 +331,7 @@
 .thread-card__participant-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
 }
 
 .thread-card__participant-email,
@@ -359,7 +359,7 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .thread-card__action-btn--reminder {
@@ -387,7 +387,7 @@
 /* Messages Section */
 .thread-card__messages {
   padding: 20px;
-  border-top: 1px solid var(--color-border, #e0e0e0);
+  border-top: 1px solid var(--color-border, var(--border-gray-light));
 }
 
 .thread-card__messages-grid {
@@ -432,7 +432,7 @@
 }
 
 .thread-card__detail-value {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   padding: 2px 8px;
   border-radius: var(--radius-sm, 4px);
   font-family: monospace;
@@ -441,7 +441,7 @@
 
 /* ===== MESSAGE COLUMN ===== */
 .message-column {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   border-radius: var(--radius-md, 8px);
   padding: 16px;
 }
@@ -460,8 +460,8 @@
 }
 
 .message-column--host .message-column__title {
-  color: var(--color-success, #22c55e);
-  border-color: var(--color-success, #22c55e);
+  color: var(--color-success, var(--success-green));
+  border-color: var(--color-success, var(--success-green));
 }
 
 .message-column--guest .message-column__title {
@@ -523,12 +523,12 @@
   background: var(--color-error, #FF1356);
   color: white;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .message-column__message-body {
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   line-height: 1.4;
   word-break: break-word;
 }
@@ -557,9 +557,9 @@
 .admin-threads__loading-spinner {
   width: 48px;
   height: 48px;
-  border: 3px solid var(--color-border, #e0e0e0);
+  border: 3px solid var(--color-border, var(--border-gray-light));
   border-top-color: var(--color-primary, #6D31C2);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.8s linear infinite;
 }
 
@@ -594,7 +594,7 @@
 .admin-threads__empty-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 8px 0;
 }
 
@@ -640,7 +640,7 @@
 .admin-threads__error-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 8px 0;
 }
 
@@ -678,12 +678,12 @@
 
 .admin-threads__pagination-btn {
   background: var(--color-surface, white);
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   padding: 8px 16px;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .admin-threads__pagination-btn:hover:not(:disabled) {
@@ -743,7 +743,7 @@
   align-items: center;
   gap: 12px;
   padding: 20px;
-  border-bottom: 1px solid var(--color-border, #e0e0e0);
+  border-bottom: 1px solid var(--color-border, var(--border-gray-light));
 }
 
 .confirm-dialog__icon--danger {
@@ -771,7 +771,7 @@
 }
 
 .confirm-dialog__close:hover {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
 }
 
 .confirm-dialog__body {
@@ -790,7 +790,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 20px;
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   border-radius: 0 0 var(--radius-lg, 12px) var(--radius-lg, 12px);
 }
 
@@ -800,12 +800,12 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .confirm-dialog__btn--cancel {
   background: transparent;
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   color: var(--color-text-secondary, #666);
 }
 
@@ -861,7 +861,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px;
-  border-bottom: 1px solid var(--color-border, #e0e0e0);
+  border-bottom: 1px solid var(--color-border, var(--border-gray-light));
 }
 
 .reminder-modal__title {
@@ -880,7 +880,7 @@
 }
 
 .reminder-modal__close:hover {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
 }
 
 .reminder-modal__body {
@@ -888,7 +888,7 @@
 }
 
 .reminder-modal__thread-info {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   border-radius: var(--radius-md, 8px);
   padding: 16px;
   margin-bottom: 20px;
@@ -911,7 +911,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin-bottom: 12px;
 }
 
@@ -946,7 +946,7 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 20px;
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   border-radius: 0 0 var(--radius-lg, 12px) var(--radius-lg, 12px);
 }
 
@@ -959,7 +959,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .reminder-modal__btn:disabled {
@@ -969,7 +969,7 @@
 
 .reminder-modal__btn--cancel {
   background: transparent;
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   color: var(--color-text-secondary, #666);
 }
 

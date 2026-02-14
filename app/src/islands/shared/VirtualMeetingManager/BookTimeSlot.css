@@ -38,16 +38,16 @@
   font-size: 12px;
   cursor: pointer;
   padding: 4px 8px;
-  color: #6b7280;
-  transition: all 0.2s;
-  border-radius: 4px;
+  color: var(--text-gray);
+  transition: var(--transition-all-base);
+  border-radius: var(--rounded-sm);
   line-height: 1;
 }
 
 .vm-calendar-nav-btn:hover {
   color: #000;
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: var(--bg-light-gray);
+  border-color: var(--text-light-gray);
 }
 
 .vm-month-select {
@@ -77,7 +77,7 @@
   font-weight: 400;
   font-size: 12px;
   padding: 4px 0;
-  color: #6b7280;
+  color: var(--text-gray);
   width: 100%;
 }
 
@@ -103,8 +103,8 @@
   border: none;
   background: white;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.15s ease;
+  border-radius: var(--rounded-sm);
+  transition: var(--transition-all-fast);
   font-family: 'Alata', sans-serif;
   font-size: 13px;
   font-weight: 400;
@@ -168,9 +168,9 @@
 
 /* Legacy class for backwards compatibility */
 .vm-date-button-selected {
-  background: var(--color-primary, #31135d);
+  background: var(--color-primary, var(--primary-purple));
   color: white;
-  border-color: var(--color-primary, #31135d);
+  border-color: var(--color-primary, var(--primary-purple));
 }
 
 .vm-date-button-selected:hover {
@@ -203,7 +203,7 @@
   min-height: 40px;
   padding: 10px;
   background: rgb(247, 248, 249);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   border: none;
   justify-content: center;
   align-items: center;
@@ -211,12 +211,12 @@
 
 .vm-slot-badge {
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--rounded-2xl);
   padding: 4px 10px;
   font-family: 'Alata', sans-serif;
   font-size: 12px;
-  color: #374151;
+  color: var(--text-description);
   font-weight: 400;
   display: inline-flex;
   align-items: center;
@@ -236,14 +236,14 @@
 }
 
 .vm-slot-badge:hover {
-  background: #f9fafb;
+  background: var(--bg-light);
   border-color: #d1d5db;
 }
 
 .vm-remove-slot-btn {
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   cursor: pointer;
   font-size: 16px;
   padding: 0 4px;
@@ -265,13 +265,13 @@
   text-decoration: underline;
   font-family: 'Alata', sans-serif;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-gray);
   transition: color 0.2s;
   margin-bottom: 8px;
 }
 
 .vm-clear-button:hover:not(:disabled) {
-  color: #374151;
+  color: var(--text-description);
 }
 
 .vm-clear-button:disabled {
@@ -283,15 +283,15 @@
   margin-top: 8px;
   text-align: center;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-gray);
   padding: 8px;
-  background: #f9fafb;
-  border-radius: 4px;
+  background: var(--bg-light);
+  border-radius: var(--rounded-sm);
 }
 
 .vm-empty-slots {
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   font-size: 13px;
   padding: 12px;
   width: 100%;
@@ -305,8 +305,8 @@
   margin-top: 0;
   padding: 12px;
   background: white;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border-radius: var(--rounded-md);
+  border: 1px solid var(--border-color);
   transition: padding 0.2s ease;
 }
 
@@ -334,28 +334,28 @@
   font-size: 13px;
   font-weight: 400;
   margin-bottom: 8px;
-  color: #374151;
+  color: var(--text-description);
   text-align: left;
 }
 
 /* Toggle button styles */
 .vm-grid-toggle-btn {
   background: none;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--rounded-sm);
   padding: 4px 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  color: #6b7280;
+  transition: var(--transition-all-base);
+  color: var(--text-gray);
 }
 
 .vm-grid-toggle-btn:hover {
-  background: #f3f4f6;
+  background: var(--bg-light-gray);
   border-color: #d1d5db;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .vm-grid-toggle-btn:focus {
@@ -379,16 +379,16 @@
 
 .vm-time-slot-button {
   padding: 8px 4px;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--rounded-sm);
   background: white;
   cursor: pointer;
   text-align: center;
   font-family: 'Alata', sans-serif;
   font-size: 12px;
   font-weight: 400;
-  transition: all 0.15s ease;
-  color: #374151;
+  transition: var(--transition-all-fast);
+  color: var(--text-description);
   white-space: nowrap;
 }
 

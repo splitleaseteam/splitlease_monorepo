@@ -8,7 +8,7 @@
 /* ===== Container and Layout ===== */
 .mit-container {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   padding: 1.5rem;
 }
 
@@ -25,7 +25,7 @@
 
 .mit-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-gray);
   margin: 0;
 }
 
@@ -60,7 +60,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .mit-panel-title {
@@ -79,7 +79,7 @@
 /* ===== Search ===== */
 .mit-search-container {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .mit-search-input {
@@ -104,16 +104,16 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 1.5rem;
-  color: #6b7280;
+  color: var(--text-gray);
   gap: 1rem;
 }
 
 .mit-spinner {
   width: 2rem;
   height: 2rem;
-  border: 3px solid #e5e7eb;
+  border: 3px solid var(--border-color);
   border-top-color: #3b82f6;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: mit-spin 1s linear infinite;
 }
 
@@ -139,7 +139,7 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 1.5rem;
-  color: #6b7280;
+  color: var(--text-gray);
   gap: 1rem;
 }
 
@@ -155,14 +155,14 @@
 
 .mit-entry-card {
   padding: 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 0.375rem;
   background-color: #fafafa;
 }
 
 .mit-entry-card:hover {
   border-color: #d1d5db;
-  background-color: #f5f5f5;
+  background-color: var(--bg-lighter-gray);
 }
 
 .mit-entry-header {
@@ -209,7 +209,7 @@
 
 .mit-meta-text {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text-light-gray);
 }
 
 /* ===== Form Styles ===== */
@@ -225,7 +225,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
   margin-bottom: 0.375rem;
 }
 
@@ -237,7 +237,7 @@
 .mit-hint {
   display: block;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--text-gray);
   margin-bottom: 0.375rem;
 }
 
@@ -301,7 +301,7 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .mit-toggle input[type="checkbox"] {
@@ -315,13 +315,13 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 /* ===== Preview Panel ===== */
 .mit-device-tabs {
   display: flex;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .mit-device-tab {
@@ -329,17 +329,17 @@
   padding: 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-gray);
   background-color: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .mit-device-tab:hover {
-  color: #374151;
-  background-color: #f9fafb;
+  color: var(--text-description);
+  background-color: var(--bg-light);
 }
 
 .mit-device-tab-active {
@@ -351,7 +351,7 @@
   margin: 1.5rem;
   padding: 1rem;
   background-color: white;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -375,7 +375,7 @@
 }
 
 .mit-preview-content {
-  color: #374151;
+  color: var(--text-description);
   font-size: 0.875rem;
   line-height: 1.5;
 }
@@ -405,7 +405,7 @@
 
 .mit-content-status {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 .mit-status-item {
@@ -417,7 +417,7 @@
 
 .mit-status-label {
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .mit-status-green {
@@ -434,7 +434,7 @@
 
 .mit-status-gray {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--text-light-gray);
 }
 
 /* ===== Buttons ===== */
@@ -463,17 +463,17 @@
   padding: 0.625rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
   background-color: white;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .mit-btn-secondary:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
+  background-color: var(--bg-light);
+  border-color: var(--text-light-gray);
 }
 
 .mit-btn-secondary:disabled {
@@ -483,24 +483,24 @@
 
 .mit-btn-icon {
   padding: 0.5rem;
-  color: #6b7280;
+  color: var(--text-gray);
   background-color: transparent;
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .mit-btn-icon:hover {
-  color: #374151;
-  background-color: #f3f4f6;
+  color: var(--text-description);
+  background-color: var(--bg-light-gray);
 }
 
 .mit-btn-small {
   padding: 0.375rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
   background-color: white;
   border: 1px solid #d1d5db;
   border-radius: 0.25rem;
@@ -508,7 +508,7 @@
 }
 
 .mit-btn-small:hover {
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
 }
 
 .mit-btn-danger-small {

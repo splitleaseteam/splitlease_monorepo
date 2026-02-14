@@ -18,7 +18,7 @@
   display: flex;
   flex-direction: column;
   background: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 100%;
   max-width: 600px;
   max-height: 92vh; /* Protocol: 92vh max-height */
@@ -47,7 +47,7 @@
 .ai-signup-icon {
   width: 24px; /* Protocol: 24px desktop */
   height: 24px;
-  color: #31135D; /* Protocol: Primary Purple */
+  color: var(--primary-purple); /* Protocol: Primary Purple */
 }
 
 .ai-signup-title {
@@ -67,7 +67,7 @@
   flex-shrink: 0;
   background: none;
   border: none;
-  color: #31135D; /* Protocol: Primary Purple */
+  color: var(--primary-purple); /* Protocol: Primary Purple */
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -75,8 +75,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-base);
 }
 
 .ai-signup-close-button:hover {
@@ -103,7 +103,7 @@
   padding: 12px 16px;
   background: white; /* Protocol: white/transparent bg for danger */
   border: 1px solid #DC3545; /* Protocol: Emergency Red outlined */
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: #DC3545;
   font-size: 14px;
 }
@@ -130,7 +130,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 15px;
   font-family: inherit;
   resize: vertical;
@@ -140,7 +140,7 @@
 
 .freeform-textarea:focus {
   outline: none;
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 3px rgba(49, 19, 93, 0.1);
 }
 
@@ -162,12 +162,12 @@
   color: #49454F; /* Protocol: Ghost text color */
   background: #F7F2FA; /* Protocol: Light Purple Background */
   border: 1px solid #E7E0EC;
-  border-radius: 16px;
-  transition: all 0.3s ease;
+  border-radius: var(--rounded-2xl);
+  transition: var(--transition-all-slow);
 }
 
 .topic-chip.topic-detected {
-  color: #31135D; /* Protocol: Primary Purple */
+  color: var(--primary-purple); /* Protocol: Primary Purple */
   background: #F7F2FA; /* Protocol: Light Purple Background */
   border-color: #5B5FCF; /* Protocol: Positive/Action Purple */
 }
@@ -185,7 +185,7 @@
   padding: 12px;
   background: #F7F2FA; /* Protocol: Light Purple Background */
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-top: 8px;
 }
 
@@ -229,7 +229,7 @@
 .contact-label {
   font-size: 14px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .contact-required {
@@ -239,7 +239,7 @@
 .contact-input {
   padding: 10px 14px;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 15px;
   font-family: inherit;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -247,7 +247,7 @@
 
 .contact-input:focus {
   outline: none;
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 3px rgba(49, 19, 93, 0.1);
 }
 
@@ -282,7 +282,7 @@
   margin: 0 0 8px 0;
   font-size: 20px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .parsing-sub-message {
@@ -315,7 +315,7 @@
   margin: 0 0 8px 0;
   font-size: 20px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .loading-sub-message {
@@ -330,8 +330,8 @@
   width: 60px;
   height: 60px;
   border: 4px solid #E7E0EC;
-  border-top-color: #31135D;
-  border-radius: 50%;
+  border-top-color: var(--primary-purple);
+  border-radius: var(--rounded-full);
   animation: spinner-rotate 1s linear infinite;
   z-index: 0;
 }
@@ -365,7 +365,7 @@
   margin: 0 0 12px 0;
   font-size: 24px;
   font-weight: 700;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .final-message {
@@ -398,7 +398,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   font-family: inherit;
   display: flex;
   align-items: center;
@@ -414,13 +414,13 @@
 
 .nav-back-button:hover:not(:disabled) {
   background: #F7F2FA;
-  border-color: #31135D;
-  color: #31135D;
+  border-color: var(--primary-purple);
+  color: var(--primary-purple);
 }
 
 /* Next/Submit button - Primary style (Section 4B) */
 .nav-next-button {
-  background: #31135D; /* Protocol: Primary Purple */
+  background: var(--primary-purple); /* Protocol: Primary Purple */
   color: white;
   border: none;
 }
@@ -440,7 +440,7 @@
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.6s linear infinite;
 }
 
@@ -459,7 +459,7 @@
 
 .ai-signup-final-close-button {
   padding: 12px 32px;
-  background: #31135D;
+  background: var(--primary-purple);
   color: white;
   border: none;
   border-radius: 100px; /* Protocol: pill-shaped */

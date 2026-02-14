@@ -3,7 +3,7 @@
  * Updated to follow POPUP_REPLICATION_PROTOCOL.md design system
  *
  * Color Scheme: Monochromatic Purple - NO GREEN, NO YELLOW
- * Primary: #31135D
+ * Primary: var(--primary-purple)
  * Light BG: #F7F2FA
  * Border: #E7E0EC
  * Text: #1C1B1F (primary), #49454F (secondary), #79747E (muted)
@@ -49,7 +49,7 @@
    ============================================================================ */
 .notification-modal {
   background-color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 90%;
   max-width: 480px;
   max-height: 92vh;
@@ -100,7 +100,7 @@
 .notification-modal-icon {
   width: 24px;
   height: 24px;
-  color: #31135D;
+  color: var(--primary-purple);
   flex-shrink: 0;
 }
 
@@ -137,7 +137,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: #49454F;
   transition: background-color 0.2s ease;
   flex-shrink: 0;
@@ -210,8 +210,8 @@
   width: 24px;
   height: 24px;
   border: 3px solid #E7E0EC;
-  border-top-color: #31135D;
-  border-radius: 50%;
+  border-top-color: var(--primary-purple);
+  border-radius: var(--rounded-full);
   animation: notificationSpin 1s linear infinite;
   margin-right: 12px;
 }
@@ -246,7 +246,7 @@
 
 .notification-retry-btn {
   padding: 10px 24px;
-  background-color: #31135D;
+  background-color: var(--primary-purple);
   color: #FFFFFF;
   border: none;
   border-radius: 100px;
@@ -254,7 +254,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .notification-retry-btn:hover {
@@ -340,7 +340,7 @@
 }
 
 .notification-toggle-slider--checked {
-  background-color: #31135D;
+  background-color: var(--primary-purple);
 }
 
 .notification-toggle-slider--disabled {
@@ -356,7 +356,7 @@
   bottom: 2px;
   background-color: #FFFFFF;
   transition: transform 0.3s ease;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 

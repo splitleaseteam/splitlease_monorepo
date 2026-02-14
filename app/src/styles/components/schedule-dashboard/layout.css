@@ -12,7 +12,7 @@
    ============================================================================ */
 
 :root {
-  --schedule-primary: #31135D;
+  --schedule-primary: var(--primary-purple);
   --schedule-primary-light: #6D31C2;
   --schedule-accent: #5B5FCF;
   --schedule-success: #3B82F6;
@@ -210,7 +210,7 @@
   height: 48px;
   border: 4px solid var(--schedule-border);
   border-top-color: var(--schedule-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
 }
@@ -226,7 +226,7 @@
   height: 48px;
   background: var(--schedule-danger);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,7 +241,7 @@
   background: var(--schedule-primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   font-weight: 500;
 }
@@ -318,7 +318,7 @@
 .dashboard-mode-toggle {
   display: flex;
   background: var(--schedule-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 4px;
   gap: 4px;
 }
@@ -331,13 +331,13 @@
   gap: 0.5rem;
   padding: 0.625rem 0.75rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   background: transparent;
   color: var(--schedule-text-muted);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .dashboard-mode-toggle__btn:hover {
@@ -431,7 +431,7 @@
   border: 2px solid var(--schedule-border);
   border-radius: var(--schedule-radius);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   text-align: center;
 }
 
@@ -456,7 +456,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: var(--schedule-bg-white);
   color: var(--schedule-primary);
 }
@@ -518,7 +518,7 @@
 
 .request-confirmation__message {
   background: var(--schedule-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 0.75rem;
   margin-bottom: 1.25rem;
 }
@@ -546,11 +546,11 @@
 
 .request-confirmation__btn {
   padding: 0.625rem 1.25rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .request-confirmation__btn--cancel {
@@ -642,7 +642,7 @@
 .reservation-header__avatar {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: var(--schedule-primary-light);
   display: flex;
   align-items: center;
@@ -675,7 +675,7 @@
 .reservation-header__help {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   border: 1px solid var(--schedule-border);
   background: var(--schedule-bg-white);
   color: var(--schedule-text-muted);

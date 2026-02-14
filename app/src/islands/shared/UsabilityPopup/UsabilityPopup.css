@@ -7,7 +7,7 @@
  *
  * Color scheme matches Split Lease design system:
  * - Primary Blue: #1a4480 (Brand color)
- * - Success Green: #22C55E
+ * - Success Green: var(--success-green)
  * - Error Red: #EF4444
  * - Text Gray: #454444
  */
@@ -46,7 +46,7 @@
 
 .usability-popup {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 32px;
   max-width: 400px;
   width: 100%;
@@ -78,13 +78,13 @@
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: #6b7280;
+  color: var(--text-gray);
   transition: color 0.15s ease;
   line-height: 0;
 }
 
 .usability-popup-close:hover {
-  color: #374151;
+  color: var(--text-description);
 }
 
 .usability-popup-close svg {
@@ -124,7 +124,7 @@
 
 .usability-popup-description {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-gray);
   text-align: center;
   margin: 0 0 24px 0;
   line-height: 1.5;
@@ -155,7 +155,7 @@
   left: 12px;
   width: 20px;
   height: 20px;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   pointer-events: none;
 }
 
@@ -163,8 +163,8 @@
   width: 100%;
   padding: 14px 14px 14px 44px;
   font-size: 16px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--rounded-lg);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   font-family: inherit;
@@ -176,11 +176,11 @@
 }
 
 .usability-popup-input::placeholder {
-  color: #9ca3af;
+  color: var(--text-light-gray);
 }
 
 .usability-popup-input:disabled {
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   cursor: not-allowed;
 }
 
@@ -220,7 +220,7 @@
   color: #ffffff;
   background-color: #1a4480;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.1s ease;
   font-family: inherit;
@@ -235,7 +235,7 @@
 }
 
 .usability-popup-submit:disabled {
-  background-color: #9ca3af;
+  background-color: var(--text-light-gray);
   cursor: not-allowed;
 }
 
@@ -253,7 +253,7 @@
   height: 100%;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #ffffff;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: usability-popup-spin 0.8s linear infinite;
 }
 
@@ -277,14 +277,14 @@
   gap: 12px;
   padding: 20px;
   background-color: #f0fdf4;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 16px;
 }
 
 .usability-popup-check-icon {
   width: 24px;
   height: 24px;
-  color: #22C55E;
+  color: var(--success-green);
   flex-shrink: 0;
 }
 
@@ -300,7 +300,7 @@
 
 .usability-popup-footer {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   text-align: center;
   margin: 16px 0 0 0;
 }

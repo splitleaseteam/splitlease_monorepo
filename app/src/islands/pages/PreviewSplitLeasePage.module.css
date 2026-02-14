@@ -3,11 +3,11 @@
 
 /* CSS Custom Properties (Colors, Spacing, Radii, Shadows) */
 :root {
-  --color-primary: #31135d;
+  --color-primary: var(--primary-purple);
   --color-primary-hover: #1f0b38;
   --color-text-dark: #111827;
   --color-text-light: #6B7280;
-  --color-bg-light: #f3f4f6;
+  --color-bg-light: var(--bg-light-gray);
   --color-border: #E5E7EB;
   --color-success: #16a34a;
   --color-warning: #ea580c;
@@ -37,7 +37,7 @@
   margin-top: 8px;
   padding: 10px 12px;
   background: linear-gradient(135deg, #EDE9FE 0%, #F3E8FF 100%);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid #C4B5FD;
   font-size: 13px;
 }
@@ -86,7 +86,7 @@
   height: 60px;
   border: 4px solid var(--color-bg-light);
   border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 1s linear infinite;
 }
 
@@ -129,7 +129,7 @@
   background: var(--color-primary);
   color: white;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 600;
   transition: background 0.2s;
 }
@@ -148,7 +148,7 @@
 
 .photoGalleryMobileImage {
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
   height: 280px;
 }
@@ -167,7 +167,7 @@
   background: white;
   border: none;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   cursor: pointer;
   font-weight: 600;
@@ -209,7 +209,7 @@
 
 .photoGalleryImageWrapper {
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
   position: relative;
 }
@@ -236,7 +236,7 @@
   background: white;
   border: none;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   cursor: pointer;
   font-weight: 600;
@@ -665,7 +665,7 @@
 .hostPhoto {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
 }
 
@@ -717,7 +717,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -746,7 +746,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -827,7 +827,7 @@
 .cancellationSummary {
   margin-top: var(--spacing-md);
   padding-top: var(--spacing-md);
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 .cancellationSummaryTitle {
@@ -865,7 +865,7 @@
 .cancellationFooter {
   margin-top: var(--spacing-md);
   padding-top: var(--spacing-md);
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 /* ============================================================================
@@ -930,7 +930,7 @@
 .bookingPriceValue {
   font-size: 32px;
   font-weight: 800;
-  background: linear-gradient(135deg, #31135d 0%, #31135d 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -979,7 +979,7 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--color-text-dark);
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   cursor: pointer;
   background: white;
   box-shadow: var(--shadow-sm);
@@ -1025,7 +1025,7 @@
   background: linear-gradient(135deg, #f8f9ff 0%, #faf5ff 100%);
   border-radius: 10px;
   border: 1px solid #e9d5ff;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .bookingCheckboxWrapper:hover {
@@ -1068,7 +1068,7 @@
 .bookingScheduleWrapper {
   margin-bottom: 14px;
   padding: 12px;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-light-gray) 100%);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
 }
@@ -1139,7 +1139,7 @@
   color: var(--color-text-dark);
   background: white;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   appearance: none;
   box-shadow: var(--shadow-sm);
 }
@@ -1172,7 +1172,7 @@
 .bookingPriceBreakdown {
   margin-bottom: 12px;
   padding: 12px;
-  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--bg-light) 0%, #ffffff 100%);
   border-radius: 10px;
   border: 1px solid var(--color-border);
 }
@@ -1214,7 +1214,7 @@
 .bookingTotalAmount {
   font-size: 28px;
   font-weight: 800;
-  background: linear-gradient(135deg, #31135d 0%, #31135d 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1224,7 +1224,7 @@
 .bookingSubmitButton {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #31135d 0%, #31135d 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -1420,7 +1420,7 @@
   font-size: 2rem;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1545,7 +1545,7 @@
   background: white;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
   z-index: 9999;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
 }
 
 .mobileBookingBarExpanded {
@@ -1708,7 +1708,7 @@
 .mobileBookingScheduleWrapper {
   margin-bottom: 16px;
   padding: 12px;
-  background: #f9fafb;
+  background: var(--bg-light);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
 }
@@ -1761,7 +1761,7 @@
 .mobileBookingBreakdown {
   margin-bottom: 16px;
   padding: 12px;
-  background: #f9fafb;
+  background: var(--bg-light);
   border-radius: 10px;
   border: 1px solid var(--color-border);
 }
@@ -1925,7 +1925,7 @@
   align-self: flex-start;
   max-height: calc(100vh - 80px - 40px);
   overflow-y: auto;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 28px;
   background: white;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -1935,10 +1935,10 @@
 /* Buttons (legacy) */
 .buttonPrimary {
   padding: 0.75rem 1.5rem;
-  background: #31135d;
+  background: var(--primary-purple);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -1949,7 +1949,7 @@
 }
 
 .buttonPrimary:disabled {
-  background: #9ca3af;
+  background: var(--text-light-gray);
   cursor: not-allowed;
 }
 
@@ -1958,14 +1958,14 @@
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 1rem;
   transition: border-color 0.2s;
 }
 
 .formInput:focus {
   outline: none;
-  border-color: #31135d;
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 3px rgba(49, 19, 93, 0.1);
 }
 

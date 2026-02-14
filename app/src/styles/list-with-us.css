@@ -4,9 +4,9 @@
 
 /* Premium Gradient Variables */
 :root {
-  --gradient-purple-blue: linear-gradient(135deg, #31135D 0%, #4A2F7C 50%, #5B21B6 100%);
-  --gradient-purple-pink: linear-gradient(135deg, #31135D 0%, #6B21A8 50%, #A855F7 100%);
-  --brand-purple: #31135D;
+  --gradient-purple-blue: linear-gradient(135deg, var(--primary-purple) 0%, #4A2F7C 50%, #5B21B6 100%);
+  --gradient-purple-pink: linear-gradient(135deg, var(--primary-purple) 0%, #6B21A8 50%, #A855F7 100%);
+  --brand-purple: var(--primary-purple);
 }
 
 /* ========================================
@@ -24,7 +24,7 @@
 
 .list-hero-section .floating-person {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.15);
   border: 4px solid white;
@@ -101,7 +101,7 @@
   border-radius: 500px;
   font-size: 13px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 32px;
 }
 
@@ -115,7 +115,7 @@
 }
 
 .list-hero-title .highlight {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .list-hero-subtitle {
@@ -140,7 +140,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -162,8 +162,8 @@
 
 .cta-secondary {
   background: white;
-  color: #31135D;
-  border: 2px solid #31135D;
+  color: var(--primary-purple);
+  border: 2px solid var(--primary-purple);
 }
 
 .cta-secondary:hover {
@@ -185,7 +185,7 @@
 
 .list-how-it-works .gradient-blob {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   filter: blur(60px);
 }
 
@@ -240,9 +240,9 @@
   text-align: center;
   background: white;
   border: 1px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 40px 32px;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -257,7 +257,7 @@
   height: 72px;
   background: var(--gradient-purple-pink);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -293,8 +293,8 @@
 
 .list-lease-styles-section .outlined-bubble {
   position: absolute;
-  border-radius: 50%;
-  border: 3px solid #31135D;
+  border-radius: var(--rounded-full);
+  border: 3px solid var(--primary-purple);
   opacity: 0.12;
 }
 
@@ -327,7 +327,7 @@
 .list-lease-eyebrow {
   font-size: 12px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 16px;
@@ -359,16 +359,16 @@
 .list-lease-card {
   background: white;
   border: 2px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 40px 32px;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .list-lease-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 32px rgba(49, 19, 93, 0.15);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .list-lease-card-header {
@@ -379,7 +379,7 @@
 .list-lease-type {
   font-size: 28px;
   font-weight: 700;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 8px;
 }
 
@@ -396,7 +396,7 @@
   font-style: italic;
   padding: 12px;
   background: #F9FAFB;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 .list-lease-separator {
@@ -424,7 +424,7 @@
   content: "\2022";
   position: absolute;
   left: 8px;
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 700;
   font-size: 18px;
 }
@@ -442,7 +442,7 @@
 
 .list-pricing-calculator-section .gradient-blob {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   filter: blur(60px);
 }
 
@@ -477,7 +477,7 @@
 .list-pricing-calculator-eyebrow {
   font-size: 12px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 16px;
@@ -503,7 +503,7 @@
 .pricing-calculator-card {
   background: white;
   border: 2px solid #E5E7EB;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   padding: 40px 36px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
@@ -520,7 +520,7 @@
   display: block;
   font-size: 15px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-description);
   margin-bottom: 12px;
 }
 
@@ -534,7 +534,7 @@
 .calc-value-display {
   font-size: 15px;
   font-weight: 700;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 /* Base Input */
@@ -569,7 +569,7 @@
 }
 
 .pricing-calculator-card .base-input:focus {
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 /* Range Slider */
@@ -596,13 +596,13 @@
   height: 8px;
   cursor: pointer;
   background: #E5E7EB;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .calc-range-wrapper input[type="range"]::-webkit-slider-thumb {
   height: 26px;
   width: 26px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: var(--gradient-purple-blue);
   cursor: pointer;
   -webkit-appearance: none;
@@ -616,14 +616,14 @@
   height: 8px;
   cursor: pointer;
   background: #E5E7EB;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .calc-range-wrapper input[type="range"]::-moz-range-thumb {
   height: 20px;
   width: 20px;
-  border-radius: 50%;
-  background: #31135D;
+  border-radius: var(--rounded-full);
+  background: var(--primary-purple);
   cursor: pointer;
   border: 3px solid white;
   box-shadow: 0 2px 8px rgba(49, 19, 93, 0.3);
@@ -651,7 +651,7 @@
 }
 
 .calc-hint strong {
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 700;
 }
 
@@ -690,13 +690,13 @@
 }
 
 /* Gradient colors - dark grey to white */
-.pricing-calculator-card .palette-swatch.n1 { background: #374151; color: white; }
+.pricing-calculator-card .palette-swatch.n1 { background: var(--text-description); color: white; }
 .pricing-calculator-card .palette-swatch.n2 { background: #4B5563; color: white; }
 .pricing-calculator-card .palette-swatch.n3 { background: #6B7280; color: white; }
 .pricing-calculator-card .palette-swatch.n4 { background: #9CA3AF; color: white; }
-.pricing-calculator-card .palette-swatch.n5 { background: #D1D5DB; color: #374151; }
-.pricing-calculator-card .palette-swatch.n6 { background: #E5E7EB; color: #374151; }
-.pricing-calculator-card .palette-swatch.n7 { background: #F3F4F6; color: #374151; }
+.pricing-calculator-card .palette-swatch.n5 { background: #D1D5DB; color: var(--text-description); }
+.pricing-calculator-card .palette-swatch.n6 { background: #E5E7EB; color: var(--text-description); }
+.pricing-calculator-card .palette-swatch.n7 { background: #F3F4F6; color: var(--text-description); }
 
 .pricing-calculator-card .swatch-number {
   font-size: 10px;
@@ -742,7 +742,7 @@
   margin-top: 14px;
   padding: 14px 18px;
   background: #F9FAFB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
   display: flex;
   justify-content: space-between;
@@ -758,7 +758,7 @@
 .pricing-calculator-card .formula-total {
   font-size: 20px;
   font-weight: 800;
-  color: #374151;
+  color: var(--text-description);
 }
 
 /* Summary Row */
@@ -797,7 +797,7 @@
 .pricing-calculator-card .summary-value {
   font-size: 26px;
   font-weight: 800;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .pricing-calculator-card .summary-sub {
@@ -830,7 +830,7 @@
 }
 
 .pricing-calculator-card .pricing-details summary:hover {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .pricing-calculator-card .pricing-details summary::before {
@@ -866,8 +866,8 @@
 
 .list-pricing-policy-section .circle-accent {
   position: absolute;
-  border-radius: 50%;
-  background: #31135D;
+  border-radius: var(--rounded-full);
+  background: var(--primary-purple);
 }
 
 .list-pricing-policy-section .circle-accent-1 {
@@ -908,7 +908,7 @@
 
 .list-pricing-formula {
   font-size: 24px;
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 600;
   margin-top: 24px;
 }
@@ -923,24 +923,24 @@
 .list-pricing-card {
   background: white;
   border: 2px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 40px 32px;
   text-align: center;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .list-pricing-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(49, 19, 93, 0.12);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .list-pricing-card-icon {
   width: 64px;
   height: 64px;
   background: var(--gradient-purple-blue);
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -970,9 +970,9 @@
 
 .list-pricing-highlight {
   background: #ECFDF5;
-  border: 2px solid #10B981;
+  border: 2px solid var(--success-teal);
   padding: 32px;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   text-align: center;
   margin-top: 32px;
 }
@@ -1003,8 +1003,8 @@
 
 .list-cta-section .outlined-bubble {
   position: absolute;
-  border-radius: 50%;
-  border: 3px solid #31135D;
+  border-radius: var(--rounded-full);
+  border: 3px solid var(--primary-purple);
   opacity: 0.1;
 }
 

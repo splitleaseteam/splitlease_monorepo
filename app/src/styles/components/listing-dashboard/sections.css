@@ -8,7 +8,7 @@
   flex-direction: column;
   gap: 24px;
   background-color: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--ld-border-color);
 }
@@ -17,7 +17,7 @@
   .listing-dashboard-details {
     padding: 16px;
     margin: 12px;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     gap: 16px;
   }
 }
@@ -53,7 +53,7 @@
   gap: 12px;
   padding: 16px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 .listing-dashboard-details__safety {
@@ -85,9 +85,9 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   color: var(--ld-text-primary);
 }
@@ -104,7 +104,7 @@
   line-height: 1.7;
   color: var(--ld-text-secondary);
   margin: 0;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   padding: 20px;
   border-radius: 10px;
   border: 1px solid var(--ld-border-color);
@@ -126,7 +126,7 @@
   left: 0;
   right: 0;
   height: 2em;
-  background: linear-gradient(transparent, #f9fafb);
+  background: linear-gradient(transparent, var(--bg-light));
   pointer-events: none;
 }
 
@@ -157,7 +157,7 @@
   padding: 32px 24px;
   background-color: #faf9ff;
   border: 2px dashed #d4c8ef;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   min-height: 120px;
   text-align: center;
 }
@@ -212,9 +212,9 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   color: var(--ld-text-primary);
 }
@@ -236,17 +236,17 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   border: 1px dashed var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   color: var(--ld-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .listing-dashboard-amenities__empty-tag:hover {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
   border-color: var(--ld-accent-purple);
   color: var(--ld-accent-purple);
 }
@@ -319,17 +319,17 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   border: 1px dashed var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   color: var(--ld-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .listing-dashboard-details__empty-tag:hover {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
   border-color: var(--ld-accent-purple);
   color: var(--ld-accent-purple);
 }
@@ -403,9 +403,9 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   color: var(--ld-text-primary);
 }
@@ -439,17 +439,17 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   border: 1px dashed #d1d5db;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   color: #5f6470;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .listing-dashboard-rules__empty-tag:hover {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
   border-color: var(--ld-accent-purple);
   color: var(--ld-accent-purple);
 }
@@ -536,7 +536,7 @@
   width: 80px;
   padding: 10px 12px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   text-align: center;
 }
@@ -549,9 +549,9 @@
   width: 200px;
   padding: 10px 12px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
 }
 
 .listing-dashboard-availability__times {
@@ -575,7 +575,7 @@
 .listing-dashboard-availability__time-field select {
   padding: 10px 12px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   background-color: white;
   min-width: 140px;
@@ -636,7 +636,7 @@
   padding: 4px 8px;
   background-color: #fee2e2;
   color: #b91c1c;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   font-size: 12px;
   font-weight: 500;
 }
@@ -654,7 +654,7 @@
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: background-color 0.2s;
 }
 
@@ -673,14 +673,14 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   color: var(--ld-accent-purple);
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--rounded-sm);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .listing-dashboard-availability__more-dates-btn:hover {
@@ -692,7 +692,7 @@
 .listing-dashboard-availability__past-dates {
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px dashed #e5e7eb;
+  border-top: 1px dashed var(--border-color);
 }
 
 .listing-dashboard-availability__past-dates-toggle {
@@ -722,7 +722,7 @@
 }
 
 .listing-dashboard-availability__blocked-date--past {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   color: #5f6470;
 }
 
@@ -781,7 +781,7 @@
 .listing-dashboard-availability__day-headers {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   border-left: 1px solid var(--ld-border-color);
   border-right: 1px solid var(--ld-border-color);
 }
@@ -818,7 +818,7 @@
 }
 
 .listing-dashboard-availability__calendar-day:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
 }
 
 .listing-dashboard-availability__calendar-day:nth-child(7n) {
@@ -830,7 +830,7 @@
 }
 
 .listing-dashboard-availability__calendar-day--available {
-  background-color: #22c55e;
+  background-color: var(--success-green);
   color: #ffffff;
 }
 
@@ -840,7 +840,7 @@
 }
 
 .listing-dashboard-availability__calendar-day--other-month.listing-dashboard-availability__calendar-day--selectable:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
 }
 
 /* Blocked overflow days should still show blocked styling */
@@ -869,7 +869,7 @@
 }
 
 .listing-dashboard-availability__calendar-day--selectable:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   cursor: pointer;
 }
 
@@ -880,8 +880,8 @@
 }
 
 .listing-dashboard-availability__calendar-day--past {
-  color: #6b7280;
-  background-color: #e5e7eb;
+  color: var(--text-gray);
+  background-color: var(--border-color);
   cursor: not-allowed;
 }
 
@@ -948,7 +948,7 @@
 .listing-dashboard-availability__legend-dot {
   width: 12px;
   height: 12px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .listing-dashboard-availability__legend-dot--blocked {
@@ -956,7 +956,7 @@
 }
 
 .listing-dashboard-availability__legend-dot--available {
-  background-color: #22c55e;
+  background-color: var(--success-green);
 }
 
 .listing-dashboard-availability__legend-dot--booked {
@@ -964,7 +964,7 @@
 }
 
 .listing-dashboard-availability__legend-dot--past {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
 }
 
 /* Month Stats */
@@ -1066,7 +1066,7 @@
 .listing-dashboard-availability__calendar-day--drag-unblock {
   background-color: rgba(34, 197, 94, 0.2);
   color: #15803d;
-  outline: 1px dashed #22c55e;
+  outline: 1px dashed var(--success-green);
   outline-offset: -1px;
 }
 
@@ -1205,8 +1205,8 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background-color: #f3f4f6;
-  color: #9ca3af;
+  background-color: var(--bg-light-gray);
+  color: var(--text-light-gray);
   gap: 8px;
 }
 
@@ -1219,12 +1219,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
 }
 
 .listing-dashboard-photos__image-error::after {
   content: 'Failed to load';
-  color: #9ca3af;
+  color: var(--text-light-gray);
   font-size: 12px;
 }
 
@@ -1237,7 +1237,7 @@
   color: white;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   z-index: 2;
 }
 
@@ -1259,10 +1259,10 @@
   height: 40px;
   background-color: rgba(255, 255, 255, 0.95);
   border: 2px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   padding: 0;
 }
 
@@ -1316,7 +1316,7 @@
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   font-size: 13px;
   background-color: white;
 }
@@ -1329,9 +1329,9 @@
   justify-content: center;
   gap: 16px;
   padding: 48px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 2px dashed var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   text-align: center;
 }
 
@@ -1346,7 +1346,7 @@
   background-color: var(--ld-accent-purple);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -1376,16 +1376,16 @@
   height: 28px;
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   cursor: grab;
-  color: #6b7280;
+  color: var(--text-gray);
   z-index: 3;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .listing-dashboard-photos__drag-handle:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--bg-light-gray);
+  color: var(--text-description);
 }
 
 .listing-dashboard-photos__card:active .listing-dashboard-photos__drag-handle {
@@ -1399,10 +1399,10 @@
   flex-direction: column;
   gap: 8px;
   border: 2px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   overflow: hidden;
   cursor: grab;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   background-color: white;
 }
 
@@ -1446,7 +1446,7 @@
   color: white;
   cursor: pointer;
   padding: 8px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: background-color 0.2s;
   z-index: 1;
 }
@@ -1464,7 +1464,7 @@
   color: white;
   cursor: pointer;
   padding: 12px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: background-color 0.2s;
 }
 
@@ -1493,7 +1493,7 @@
   max-width: 100%;
   max-height: 85vh;
   object-fit: contain;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .listing-dashboard-lightbox__no-image {
@@ -1516,7 +1516,7 @@
 .listing-dashboard-lightbox__type {
   padding: 2px 10px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   font-size: 12px;
 }
 
@@ -1550,9 +1550,9 @@
   width: 100%;
   max-width: 400px;
   padding: 12px 16px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   cursor: pointer;
 }
@@ -1592,9 +1592,9 @@
 .listing-dashboard-cancellation__restrictions-input {
   width: 100%;
   padding: 12px 16px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
@@ -1613,7 +1613,7 @@
 }
 
 .listing-dashboard-cancellation__restrictions-input::placeholder {
-  color: #9ca3af;
+  color: var(--text-light-gray);
 }
 
 .listing-dashboard-cancellation__saving {

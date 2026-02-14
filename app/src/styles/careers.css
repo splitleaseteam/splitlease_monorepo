@@ -8,7 +8,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-  color: #1a1a1a;
+  color: var(--text-dark);
   background: white;
   min-height: 100vh;
   line-height: 1.6;
@@ -16,9 +16,9 @@ body {
 
 /* Premium Gradient Variables */
 :root {
-  --gradient-purple-blue: linear-gradient(135deg, #31135D 0%, #4A2F7C 50%, #5B21B6 100%);
-  --gradient-purple-pink: linear-gradient(135deg, #31135D 0%, #6B21A8 50%, #A855F7 100%);
-  --brand-purple: #31135D;
+  --gradient-purple-blue: linear-gradient(135deg, var(--primary-purple) 0%, #4A2F7C 50%, #5B21B6 100%);
+  --gradient-purple-pink: linear-gradient(135deg, var(--primary-purple) 0%, #6B21A8 50%, #A855F7 100%);
+  --brand-purple: var(--primary-purple);
 }
 
 /* Hero Section */
@@ -79,7 +79,7 @@ body {
   border-radius: 500px;
   font-size: 13px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 24px;
 }
 
@@ -100,7 +100,7 @@ body {
 }
 
 .hero-title .highlight {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .hero-subtitle {
@@ -133,7 +133,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
@@ -167,7 +167,7 @@ body {
 .section-label {
   font-size: 14px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 16px;
@@ -199,11 +199,11 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #31135D;
+  color: var(--primary-purple);
   text-decoration: none;
   font-weight: 600;
   font-size: 16px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .section-link:hover {
@@ -232,9 +232,9 @@ body {
 .example-card {
   background: white;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   border: 2px solid #E5E7EB;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   position: relative;
   height: 180px;
   display: flex;
@@ -242,7 +242,7 @@ body {
 }
 
 .example-card:hover {
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.1);
   transform: translateY(-2px);
 }
@@ -260,7 +260,7 @@ body {
   width: 48px;
   height: 48px;
   background: var(--gradient-purple-blue);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -350,7 +350,7 @@ body {
 .day-block {
   flex: 1;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   background: #E5E7EB;
 }
 
@@ -407,9 +407,9 @@ body {
 .value-item {
   padding: 32px;
   background: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   border: 1px solid #E5E7EB;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .alt-bg .value-item {
@@ -417,14 +417,14 @@ body {
 }
 
 .value-item:hover {
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.1);
   transform: translateY(-2px);
 }
 
 .value-icon {
   margin-bottom: 16px;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .value-icon svg {
@@ -457,7 +457,7 @@ body {
   margin-bottom: 32px;
   padding: 24px;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
 }
 
@@ -471,7 +471,7 @@ body {
   height: 48px;
   background: var(--gradient-purple-blue);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -510,7 +510,7 @@ body {
   gap: 16px;
   padding: 24px;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
 }
 
@@ -520,7 +520,7 @@ body {
 
 .resource-icon {
   flex-shrink: 0;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .resource-icon svg {
@@ -531,7 +531,7 @@ body {
 
 .resource-text {
   font-size: 16px;
-  color: #374151;
+  color: var(--text-description);
   line-height: 1.6;
 }
 
@@ -546,13 +546,13 @@ body {
 .role-card {
   background: white;
   padding: 40px;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   border: 2px solid #E5E7EB;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
 }
 
 .role-card:hover {
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 12px 32px rgba(49, 19, 93, 0.15);
   transform: translateY(-2px);
 }
@@ -606,7 +606,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   box-shadow: 0 2px 8px rgba(49, 19, 93, 0.2);
   border: none;
   cursor: pointer;
@@ -626,7 +626,7 @@ body {
 
 .role-description {
   font-size: 16px;
-  color: #374151;
+  color: var(--text-description);
   line-height: 1.7;
   margin-bottom: 32px;
 }
@@ -659,7 +659,7 @@ body {
 
 .video-player-container {
   background: #000;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   overflow: hidden;
   box-shadow: 0 12px 32px rgba(49, 19, 93, 0.15);
   position: relative;
@@ -686,12 +686,12 @@ body {
   width: 80px;
   height: 80px;
   background: rgba(49, 19, 93, 0.9);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   z-index: 10;
   pointer-events: auto;
 }
@@ -761,7 +761,7 @@ body {
   height: auto;
   max-height: calc(100vh - 120px);
   background: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   overflow: hidden;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
 }
@@ -780,18 +780,18 @@ body {
   height: 48px;
   background: white;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .modal-close:hover {
-  background: #f3f4f6;
+  background: var(--bg-light-gray);
   transform: scale(1.1);
 }
 
@@ -965,7 +965,7 @@ body {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     background: white;
-    border-radius: 16px;
+    border-radius: var(--rounded-2xl);
     border: 2px solid #E5E7EB;
     padding: 16px;
     display: flex;
@@ -975,7 +975,7 @@ body {
 
   .mobile-card-back {
     transform: rotateY(180deg);
-    border-color: #31135D;
+    border-color: var(--primary-purple);
     background: linear-gradient(180deg, #ffffff 0%, #faf9fc 100%);
   }
 
@@ -1028,7 +1028,7 @@ body {
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, rgba(49, 19, 93, 0.03) 0%, rgba(107, 33, 168, 0.06) 100%);
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     padding: 16px;
     margin: 4px 0;
     position: relative;
@@ -1048,7 +1048,7 @@ body {
   .example-review-text::before {
     content: '"';
     font-size: 32px;
-    color: #31135D;
+    color: var(--primary-purple);
     opacity: 0.6;
     position: absolute;
     top: 8px;
@@ -1060,7 +1060,7 @@ body {
   .example-review-text::after {
     content: '"';
     font-size: 32px;
-    color: #31135D;
+    color: var(--primary-purple);
     opacity: 0.6;
     position: absolute;
     bottom: 0;
@@ -1099,7 +1099,7 @@ body {
   }
 
   .swipe-hint.back {
-    color: #31135D;
+    color: var(--primary-purple);
   }
 
   .swipe-hint svg {
@@ -1157,7 +1157,7 @@ body {
     width: 100%;
     max-width: 100%;
     max-height: calc(100vh - 32px);
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     margin: 0 auto;
   }
 

@@ -47,7 +47,7 @@
   border-radius: 500px;
   font-size: 13px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 32px;
 }
 
@@ -70,7 +70,7 @@
 
 .dynamic-text {
   display: inline-block;
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 700;
   transition: opacity 0.3s ease;
 }
@@ -105,7 +105,7 @@
 .stat-value {
   font-size: 40px;
   font-weight: 700;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 8px;
 }
 
@@ -120,7 +120,7 @@
 /* Floating People in Hero */
 .success-hero .floating-person {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.15);
   border: 4px solid white;
@@ -234,7 +234,7 @@
 
 .stories-intro-section .gradient-blob {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   filter: blur(60px);
 }
 
@@ -265,7 +265,7 @@
 .stories-intro-eyebrow {
   font-size: 12px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 16px;
@@ -302,8 +302,8 @@
 
 .featured-stories-section .outlined-bubble {
   position: absolute;
-  border-radius: 50%;
-  border: 3px solid #31135D;
+  border-radius: var(--rounded-full);
+  border: 3px solid var(--primary-purple);
   opacity: 0.08;
 }
 
@@ -343,7 +343,7 @@
   align-items: center;
   background: white;
   border: 1px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 40px;
   margin-bottom: 48px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -359,7 +359,7 @@
 
 .story-feature-card:hover {
   box-shadow: 0 12px 32px rgba(49, 19, 93, 0.15);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 /* Alternate image position for even/odd cards */
@@ -374,7 +374,7 @@
 /* Story Feature Image */
 .story-feature-image {
   position: relative;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
   aspect-ratio: 4/3;
 }
@@ -396,7 +396,7 @@
   top: 16px;
   left: 16px;
   padding: 8px 16px;
-  background: #10B981;
+  background: var(--success-teal);
   color: white;
   border-radius: 500px;
   font-size: 13px;
@@ -419,9 +419,9 @@
 .story-feature-avatar {
   width: 72px;
   height: 72px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
-  border: 3px solid #31135D;
+  border: 3px solid var(--primary-purple);
   box-shadow: 0 4px 12px rgba(49, 19, 93, 0.15);
 }
 
@@ -434,7 +434,7 @@
 
 .story-role {
   font-size: 14px;
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 600;
   margin: 0 0 2px 0;
 }
@@ -448,11 +448,11 @@
 .story-quote {
   font-size: 18px;
   font-style: italic;
-  color: #374151;
+  color: var(--text-description);
   line-height: 1.7;
   margin: 0 0 20px 0;
   padding-left: 20px;
-  border-left: 3px solid #31135D;
+  border-left: 3px solid var(--primary-purple);
 }
 
 .story-full {
@@ -476,24 +476,24 @@
 }
 
 .story-location svg {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .story-cta-button {
   padding: 14px 32px;
-  background: linear-gradient(135deg, #31135D 0%, #4A2F7C 50%, #5B21B6 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #4A2F7C 50%, #5B21B6 100%);
   color: white;
   border: none;
   border-radius: 500px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .story-cta-button:hover {
-  background: linear-gradient(135deg, #31135D 0%, #6B21A8 50%, #A855F7 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #6B21A8 50%, #A855F7 100%);
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.4);
   transform: translateY(-2px);
 }
@@ -512,8 +512,8 @@
 
 .success-stats-section .circle-accent {
   position: absolute;
-  border-radius: 50%;
-  background: #31135D;
+  border-radius: var(--rounded-full);
+  background: var(--primary-purple);
 }
 
 .success-stats-section .circle-accent-1 {
@@ -555,7 +555,7 @@
 .success-stats-eyebrow {
   font-size: 12px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 16px;
@@ -578,23 +578,23 @@
 .success-stat-card {
   background: white;
   border: 1px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 40px 32px;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .success-stat-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 32px rgba(49, 19, 93, 0.15);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .success-stat-value {
   font-size: 48px;
   font-weight: 700;
-  color: #31135D;
+  color: var(--primary-purple);
   line-height: 1;
   margin-bottom: 12px;
 }
@@ -610,7 +610,7 @@
    ============================================================================ */
 
 .success-final-cta {
-  background: linear-gradient(135deg, #31135d 0%, #4a1d85 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #4a1d85 100%);
   padding: 100px 32px;
   margin: 0;
   position: relative;
@@ -619,7 +619,7 @@
 
 .success-final-cta .gradient-circle {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: linear-gradient(135deg, rgba(138, 92, 246, 0.3) 0%, rgba(96, 52, 174, 0.15) 100%);
   filter: blur(40px);
 }
@@ -686,7 +686,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -694,7 +694,7 @@
   border: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   background: white;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .success-final-cta .cta-button.cta-primary:hover {
@@ -918,7 +918,7 @@
 
 .story-cta-button:focus,
 .success-final-cta .cta-button.cta-primary:focus {
-  outline: 2px solid #31135D;
+  outline: 2px solid var(--primary-purple);
   outline-offset: 3px;
 }
 

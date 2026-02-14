@@ -31,7 +31,7 @@
 /* Card */
 .host-experience-review__card {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 2rem;
   margin-bottom: 1.5rem;
@@ -41,7 +41,7 @@
 .host-experience-review__error-banner {
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 1rem;
   margin-bottom: 1rem;
   display: flex;
@@ -71,7 +71,7 @@
 
 .host-experience-review__success-card {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   padding: 3rem;
   text-align: center;
@@ -81,8 +81,8 @@
 .host-experience-review__success-icon {
   width: 80px;
   height: 80px;
-  background: #22c55e;
-  border-radius: 50%;
+  background: var(--success-green);
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;

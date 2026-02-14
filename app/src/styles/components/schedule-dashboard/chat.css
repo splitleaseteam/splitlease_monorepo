@@ -28,7 +28,7 @@
   max-height: 400px;
   padding: 0.5rem;
   background: var(--schedule-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 1rem;
 }
 
@@ -61,7 +61,7 @@
 
 .chat-bubble__content {
   padding: 0.75rem 1rem;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -99,7 +99,7 @@
   padding: 0.625rem;
   background: #FEF3C7;
   border-left: 3px solid #F59E0B;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .chat-bubble__context-text {
@@ -116,11 +116,11 @@
 
 .chat-bubble__action-btn {
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   border: 1px solid transparent;
 }
 
@@ -159,12 +159,12 @@
 /* Legacy button styles (deprecated) */
 .chat-bubble__btn {
   padding: 0.4rem 0.6rem;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 0.75rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .chat-bubble__btn--accept {
@@ -195,7 +195,7 @@
 .chat-bubble__request-amount {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .chat-bubble--sent .chat-bubble__request-amount {
@@ -254,9 +254,9 @@
   font-size: 0.8rem;
   background: white;
   border: 1px solid var(--schedule-border);
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .chat-thread__quick-btn:hover {

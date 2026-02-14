@@ -7,7 +7,7 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem;
-  background-color: var(--color-gray-100, #f3f4f6);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
   border-radius: 0.75rem;
   margin-bottom: 1.5rem;
 }
@@ -26,11 +26,11 @@
   font-weight: 500;
   color: var(--color-gray-600, #4b5563);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .reviews-tab-nav__tab:hover {
-  background-color: var(--color-gray-200, #e5e7eb);
+  background-color: var(--color-gray-200, var(--border-color));
 }
 
 .reviews-tab-nav__tab--active {

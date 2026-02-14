@@ -28,6 +28,7 @@
  * ```
  */
 import type { CalculateLowestNightlyPriceParams } from './types.js';
+import { roundToTwoDecimals } from './utils/rounding.js';
 
 export function calculateLowestNightlyPrice({ nightlyPrices }: CalculateLowestNightlyPriceParams): number | null {
   // No Fallback: Validate input
@@ -51,13 +52,4 @@ export function calculateLowestNightlyPrice({ nightlyPrices }: CalculateLowestNi
   const lowestPrice = Math.min(...validPrices);
 
   return roundToTwoDecimals(lowestPrice);
-}
-
-/**
- * Round a number to 2 decimal places (for currency).
- * @param value - The value to round.
- * @returns Rounded value.
- */
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
 }

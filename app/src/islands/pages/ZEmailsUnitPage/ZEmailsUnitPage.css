@@ -40,7 +40,7 @@
   flex: 0 0 560px;
   background: #F8FAFC;
   border: 1px solid #E5E7EB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 24px;
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
@@ -72,7 +72,7 @@
 .zeu-textarea {
   width: 100%;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid #D1D5DB;
   background: #FFFFFF;
   font-size: 14px;
@@ -95,7 +95,7 @@
   margin: 12px 0 0;
   padding: 12px 14px;
   background: #FFFFFF;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid #E5E7EB;
   color: #6B7280;
   font-size: 13px;
@@ -129,7 +129,7 @@
   width: 34px;
   height: 34px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 18px;
   font-weight: 700;
   display: inline-flex;
@@ -162,7 +162,7 @@
 .zeu-button {
   flex: 1;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: none;
   font-size: 14px;
   font-weight: 600;
@@ -239,7 +239,7 @@
 .zeu-preview-frame {
   flex: 1;
   min-height: 900px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
   background: #FFFFFF;
   overflow: hidden;
@@ -284,7 +284,7 @@
 
 .zeu-state-card {
   padding: 20px 24px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
   background: #F9FAFB;
   color: #111827;

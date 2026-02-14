@@ -17,7 +17,7 @@
 /* Modal */
 .check-flow-modal {
   background: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 100%;
   max-width: 480px;
   max-height: 90vh;
@@ -98,13 +98,13 @@
   gap: 8px;
   padding: 20px;
   border: 2px solid #E5E5E5;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   background: white;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   color: #4D4D4D;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .check-flow__action-btn:hover {
@@ -122,12 +122,12 @@
 }
 
 .check-flow__action-btn--here:hover {
-  border-color: #10B981;
+  border-color: var(--success-teal);
   background: #ECFDF5;
 }
 
 .check-flow__action-btn--here:hover svg {
-  color: #10B981;
+  color: var(--success-teal);
 }
 
 .check-flow__message-section {
@@ -146,7 +146,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   resize: vertical;
   font-family: inherit;
@@ -190,7 +190,7 @@
 .check-flow__photo-type-toggle {
   display: flex;
   background: #F7F8F9;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 4px;
 }
 
@@ -198,13 +198,13 @@
   flex: 1;
   padding: 10px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   background: transparent;
   font-size: 14px;
   font-weight: 500;
   color: #6B6B6B;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .check-flow__toggle-btn.active {
@@ -232,10 +232,10 @@
   gap: 8px;
   padding: 32px;
   border: 2px dashed #E5E5E5;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   cursor: pointer;
   color: #6B6B6B;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .check-flow__file-label:hover {
@@ -254,7 +254,7 @@
 .check-flow__photo-item {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   overflow: hidden;
 }
 
@@ -275,7 +275,7 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.6);
   border: none;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   color: white;
   cursor: pointer;
 }

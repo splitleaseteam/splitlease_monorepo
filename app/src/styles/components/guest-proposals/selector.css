@@ -50,9 +50,9 @@
   padding: 16px 20px;
   background: var(--gp-white);
   border: 1px solid var(--gp-border);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .proposal-row:hover {
@@ -100,7 +100,7 @@
   color: var(--gp-text-muted);
   padding: 5px 12px;
   background: var(--gp-border-light);
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   white-space: nowrap;
 }
 

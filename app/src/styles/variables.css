@@ -195,6 +195,11 @@
   --transition-slow: 0.3s;
   --transition-slower: 0.4s;
 
+  /* Shorthand Transitions */
+  --transition-all-fast: all 0.15s ease;
+  --transition-all-base: all 0.2s ease;
+  --transition-all-slow: all 0.3s ease;
+
   --easing-ease: ease;
   --easing-ease-in: ease-in;
   --easing-ease-out: ease-out;

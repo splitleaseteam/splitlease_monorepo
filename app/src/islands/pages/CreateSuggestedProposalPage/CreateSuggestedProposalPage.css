@@ -11,7 +11,7 @@
 
 .csp-main {
   min-height: calc(100vh - 200px);
-  background-color: #f5f5f5;
+  background-color: var(--bg-lighter-gray);
   padding: 30px 0;
   padding-top: 100px; /* Account for fixed header */
 }
@@ -80,13 +80,13 @@
 .csp-step-indicator {
   width: 35px;
   height: 35px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: #E0E0E0;
   border: 4px solid #E0E0E0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s;
+  transition: var(--transition-all-slow);
 }
 
 .csp-step.active .csp-step-indicator,
@@ -258,12 +258,12 @@
 .csp-thumbnail {
   width: 50px;
   height: 50px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   object-fit: cover;
 }
 
 .csp-user-thumbnail {
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .csp-search-result-info h4 {
@@ -316,14 +316,14 @@
 .csp-item-photo {
   width: 60px;
   height: 60px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   object-fit: cover;
 }
 
 .csp-user-avatar {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -388,7 +388,7 @@
   font-size: 14px;
   font-weight: 700;
   color: #FFFFFF;
-  background-color: #31135D;
+  background-color: var(--primary-purple);
   border: none;
   border-radius: 3px;
   cursor: pointer;
@@ -552,9 +552,9 @@
   color: #4D4D4D;
   background-color: #FFFFFF;
   border: 2px solid #E0E0E0;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -588,8 +588,8 @@
 .csp-checkin-checkout-display {
   margin-top: 12px;
   padding: 12px;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-  border-radius: 8px;
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-light-gray) 100%);
+  border-radius: var(--rounded-lg);
   border: 1px solid #E5E7EB;
 }
 
@@ -600,7 +600,7 @@
 }
 
 .csp-schedule-summary strong {
-  color: #31135d;
+  color: var(--primary-purple);
 }
 
 .csp-check-dates {
@@ -693,7 +693,7 @@
   gap: 10px;
   padding: 12px;
   background-color: #FFF8E1;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   margin-bottom: 15px;
   color: #F57C00;
   font-size: 13px;
@@ -775,7 +775,7 @@
 .csp-summary-avatar {
   width: 50px;
   height: 50px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
 }
 
@@ -805,7 +805,7 @@
 .csp-confirmation-panel {
   background-color: #E8F5E9;
   border: 1px solid #A5D6A7;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 20px;
   margin: 20px auto;
   max-width: 600px;
@@ -851,7 +851,7 @@
 
 .csp-btn-primary {
   color: #FFFFFF;
-  background-color: #31135D;
+  background-color: var(--primary-purple);
 }
 
 .csp-btn-primary:hover:not(:disabled) {
@@ -1011,7 +1011,7 @@
   height: 40px;
   border: 4px solid #E0E0E0;
   border-top-color: #8A2BE2;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: csp-spin 1s linear infinite;
   margin-bottom: 15px;
 }
@@ -1094,7 +1094,7 @@
 
 .csp-search-results::-webkit-scrollbar-thumb {
   background: #C9C9C9;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .csp-search-results::-webkit-scrollbar-thumb:hover {
@@ -1117,12 +1117,12 @@
   padding: 12px 16px;
   background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
   border: 1px solid #C084FC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
   color: #7C3AED;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .csp-transcription-toggle:hover:not(.disabled) {
@@ -1193,7 +1193,7 @@
   margin: 12px 0;
   background-color: #FEF2F2;
   border: 1px solid #FECACA;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 13px;
   color: #DC2626;
 }
@@ -1225,7 +1225,7 @@
   height: 14px;
   border: 2px solid #FFFFFF;
   border-top-color: transparent;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: csp-spin 0.8s linear infinite;
   margin-right: 8px;
   vertical-align: middle;

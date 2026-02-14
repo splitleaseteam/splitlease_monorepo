@@ -64,7 +64,7 @@
 ### fetchLookupTables()
 [INTENT]: Fetch all reference tables to resolve IDs to names/icons
 [OUTPUT]: Object with amenities, safetyFeatures, houseRules, listingTypes, parkingOptions, storageOptions
-[TABLES]: zat_features_amenity, zfut_safetyfeatures, zat_features_houserule, zat_features_listingtype, zat_features_parkingoptions, zat_features_storageoptions
+[TABLES]: zat_features_amenity, zat_features_safetyfeature, zat_features_houserule, zat_features_listingtype, zat_features_parkingoptions, zat_features_storageoptions
 [USAGE]: Passed to transformListingData to resolve ID arrays to name/icon objects
 
 ### safeParseJsonArray()
@@ -104,7 +104,7 @@
 ## URL_PARAMETERS
 
 [LISTING_ID]: ?id={id}
-[USAGE]: Fetches listing by id (listing_trial) or id (listing)
+[USAGE]: Fetches listing by id from listing table
 
 ---
 

@@ -14,7 +14,7 @@
 
 .proposals-section--suggested {
   background: linear-gradient(135deg, rgba(109, 49, 194, 0.03) 0%, rgba(109, 49, 194, 0.08) 100%);
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   padding: 20px;
   margin-bottom: 32px;
 }
@@ -45,7 +45,7 @@
 .vm-section-card {
   background: var(--gp-white);
   border: 1px solid var(--gp-border);
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   overflow: hidden;
 }
 
@@ -63,7 +63,7 @@
 .vm-section-profile-icon {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   flex-shrink: 0;
   background: var(--gp-border-light);
@@ -134,7 +134,7 @@
   font-weight: 600;
   color: var(--gp-text);
   padding: 10px 16px;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   border: 1px solid var(--gp-border);
 }
 
@@ -157,7 +157,7 @@
   border-radius: 10px;
   border: 1px solid var(--gp-border);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
   min-height: var(--gp-min-touch-target);
 }
 
@@ -181,7 +181,7 @@
   font-size: var(--gp-font-size-label);
   font-weight: 600;
   padding: 6px 12px;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   white-space: nowrap;
 }
 
@@ -216,7 +216,7 @@
   border-radius: 10px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
   min-height: var(--gp-min-touch-target);
   min-width: 100px;
 }
@@ -326,7 +326,7 @@
   background: var(--gp-white);
   border: 1px solid var(--gp-border-light);
   border-radius: 10px;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   width: 50%;
   min-width: 320px;
   max-width: 100%;
@@ -418,12 +418,12 @@
   font-size: 12px;
   font-weight: 600;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   border: 1px solid var(--gp-purple-action);
   background: transparent;
   color: var(--gp-purple-action);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -468,7 +468,7 @@
   font-size: 11px;
   font-weight: 500;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   background: var(--gp-white);
   border: 1px solid var(--gp-border);
   color: var(--gp-text);
@@ -808,7 +808,7 @@
   height: 20px;
   border: 2px solid var(--gp-border);
   border-top-color: var(--gp-purple-action);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 1s linear infinite;
 }
 
@@ -1163,7 +1163,7 @@
   .proposal-details-modal {
     max-width: 100%;
     margin: 16px;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
   }
 
   .proposal-details-header {
@@ -1364,7 +1364,7 @@
 @media (prefers-contrast: high) {
   :root {
     --gp-border: #000;
-    --gp-text-muted: #374151;
+    --gp-text-muted: var(--text-description);
   }
 
   .epc-card {

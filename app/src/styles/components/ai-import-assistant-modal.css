@@ -5,14 +5,14 @@
 
 /* Protocol Color Variables */
 :root {
-  --ai-import-primary-purple: #31135D;
+  --ai-import-primary-purple: var(--primary-purple);
   --ai-import-secondary-purple: #6D31C2;
   --ai-import-positive-purple: #5B5FCF;
   --ai-import-light-purple-bg: #F7F2FA;
   --ai-import-border: #E7E0EC;
   --ai-import-text-primary: #1a202c;
   --ai-import-text-secondary: #49454F;
-  --ai-import-text-muted: #6b7280;
+  --ai-import-text-muted: var(--text-gray);
   --ai-import-emergency-red: #DC3545;
 }
 
@@ -39,7 +39,7 @@
   display: flex;
   flex-direction: column;
   background-color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 100%;
   max-width: 480px;
   max-height: 92vh; /* Protocol: 92vh max-height */
@@ -129,9 +129,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: var(--ai-import-primary-purple); /* Protocol: Primary Purple */
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .ai-import-close-btn:hover {
@@ -190,8 +190,8 @@
   padding: 12px 16px;
   background: var(--ai-import-light-purple-bg); /* Protocol: Light Purple Background */
   border: 1px solid var(--ai-import-border);
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-slow);
 }
 
 .ai-import-task--pending {
@@ -224,7 +224,7 @@
   width: 20px;
   height: 20px;
   background: var(--ai-import-border);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .ai-import-task--loading .ai-import-task-icon {
@@ -302,7 +302,7 @@
   width: 100%;
   background: var(--ai-import-light-purple-bg); /* Protocol: Light Purple Background */
   border: 1px solid var(--ai-import-border);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -352,7 +352,7 @@
   border: none;
   border-radius: 100px; /* Protocol: pill-shaped */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -529,7 +529,7 @@
 }
 
 .ai-import-confetti--circle {
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .ai-import-confetti--square {

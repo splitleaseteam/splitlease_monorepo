@@ -34,7 +34,7 @@
 .step-progress__dot {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   border: 2px solid #e2e8f0;
   background: #ffffff;
   color: #94a3b8;
@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .step-progress__dot--completed {

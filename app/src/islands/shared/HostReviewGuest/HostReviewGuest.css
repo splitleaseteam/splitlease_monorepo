@@ -9,16 +9,16 @@
    ============================================ */
 
 :root {
-  --hrg-primary: var(--color-primary, #31135d);
+  --hrg-primary: var(--color-primary, var(--primary-purple));
   --hrg-primary-hover: var(--color-primary-hover, #1f0b38);
   --hrg-success: #059669;
   --hrg-error: #dc2626;
   --hrg-star-filled: #fbbf24;
   --hrg-star-empty: #d1d5db;
   --hrg-overlay-bg: rgba(0, 0, 0, 0.5);
-  --hrg-border-color: #e5e7eb;
+  --hrg-border-color: var(--border-color);
   --hrg-text-primary: #1f2937;
-  --hrg-text-secondary: #6b7280;
+  --hrg-text-secondary: var(--text-gray);
 }
 
 /* ============================================
@@ -42,7 +42,7 @@
 
 .hrg-container {
   background: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 24px 32px;
   width: 100%;
   max-width: 560px;
@@ -107,8 +107,8 @@
 
 .hrg-progress__bar {
   height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
+  background: var(--border-color);
+  border-radius: var(--rounded-sm);
   overflow: hidden;
   margin-bottom: 8px;
 }
@@ -116,7 +116,7 @@
 .hrg-progress__fill {
   height: 100%;
   background: var(--hrg-primary);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: width 0.3s ease;
 }
 
@@ -133,7 +133,7 @@
   background: #fee2e2;
   color: var(--hrg-error);
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -151,8 +151,8 @@
 
 .hrg-rating-category {
   padding: 16px;
-  background: #f9fafb;
-  border-radius: 12px;
+  background: var(--bg-light);
+  border-radius: var(--rounded-xl);
 }
 
 .hrg-rating-category--disabled {
@@ -179,7 +179,7 @@
   color: var(--hrg-primary);
   background: rgba(49, 19, 93, 0.1);
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .hrg-rating-category__question {
@@ -227,7 +227,7 @@
 .hrg-star:focus {
   outline: 2px solid var(--hrg-primary);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 /* ============================================
@@ -250,7 +250,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid var(--hrg-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
@@ -263,7 +263,7 @@
 }
 
 .hrg-feedback__input::placeholder {
-  color: #9ca3af;
+  color: var(--text-light-gray);
 }
 
 /* ============================================
@@ -276,7 +276,7 @@
   align-items: center;
   padding: 16px;
   background: linear-gradient(135deg, rgba(49, 19, 93, 0.05), rgba(49, 19, 93, 0.1));
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   margin-bottom: 20px;
 }
 
@@ -306,7 +306,7 @@
   background: var(--hrg-primary);
   color: white;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: none;
   font-size: 14px;
   font-weight: 600;
@@ -319,7 +319,7 @@
 }
 
 .hrg-button-primary:disabled {
-  background: #9ca3af;
+  background: var(--text-light-gray);
   cursor: not-allowed;
 }
 
@@ -327,16 +327,16 @@
   background: white;
   color: var(--hrg-text-secondary);
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--hrg-border-color);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .hrg-button-secondary:hover:not(:disabled) {
-  background: #f9fafb;
+  background: var(--bg-light);
   border-color: #d1d5db;
 }
 
@@ -375,7 +375,7 @@
 .hrg-success-score {
   background: #f0fdf4;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   margin-bottom: 24px;
 }
 
@@ -403,7 +403,7 @@
 
   .hrg-container {
     padding: 16px;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     margin-top: 10px;
   }
 

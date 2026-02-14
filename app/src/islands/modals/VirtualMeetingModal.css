@@ -8,14 +8,14 @@
 :root {
   --vmm-bg-primary: #FFFFFF;
   --vmm-bg-secondary: #fafafa;
-  --vmm-text-primary: #1a1a1a;
+  --vmm-text-primary: var(--text-dark);
   --vmm-text-secondary: #4b5563;
-  --vmm-text-muted: #6b7280;
-  --vmm-text-header: #31135D;
+  --vmm-text-muted: var(--text-gray);
+  --vmm-text-header: var(--primary-purple);
   --vmm-border-color: #e5e5e5;
   --vmm-border-light: #f0f0f0;
   --vmm-primary-color: #6B4EFF;
-  --vmm-primary-hover: #31135D;
+  --vmm-primary-hover: var(--primary-purple);
   --vmm-primary-bg: #f3f0ff;
   --vmm-success-color: #16a34a;
   --vmm-success-bg: #f0fdf4;
@@ -110,7 +110,7 @@
   width: 36px;
   height: 36px;
   background: var(--vmm-primary-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,8 +138,8 @@
   border: none;
   cursor: pointer;
   color: var(--vmm-text-muted);
-  border-radius: 8px;
-  transition: all 0.15s ease;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-fast);
   flex-shrink: 0;
 }
 
@@ -334,7 +334,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   min-width: 100px;
 }
 

@@ -7,11 +7,11 @@
    ============================================================ */
 :root {
   /* Primary Purple Palette (from protocol) */
-  --sc-purple-primary: #31135D;
-  --sc-purple-deep: #31135D;
+  --sc-purple-primary: var(--primary-purple);
+  --sc-purple-deep: var(--primary-purple);
   --sc-purple-border: #E7E0EC;
   --sc-purple-light: #F7F2FA;
-  --sc-purple-text: #31135D;
+  --sc-purple-text: var(--primary-purple);
   --sc-purple-hover: #4A2F7C;
   --sc-purple-accent: #6D31C2;
   --sc-white: #FFFFFF;
@@ -29,7 +29,7 @@
 
   /* Co-host Progress Bar (purple tones) */
   --sc-progress-inactive: #E7E0EC;
-  --sc-progress-active: #31135D;
+  --sc-progress-active: var(--primary-purple);
   --sc-progress-dot-size: 22px;
   --sc-progress-bar-height: 5px;
 
@@ -37,8 +37,8 @@
   --sc-details-bg: #F7F2FA;
   --sc-details-border: #E7E0EC;
   --sc-star-unselected: #E7E0EC;
-  --sc-star-selected: #31135D;
-  --sc-focus-purple: #31135D;
+  --sc-star-selected: var(--primary-purple);
+  --sc-focus-purple: var(--primary-purple);
   /* Positive Action Purple (replaces green per protocol) */
   --sc-action-positive: #5B5FCF;
 }
@@ -84,7 +84,7 @@
 .schedule-cohost-modal {
   position: relative;
   background-color: var(--sc-white);
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 0;
   width: 100%;
   max-width: 580px;
@@ -127,7 +127,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: var(--sc-text-medium);
   transition: background-color 0.2s ease;
   flex-shrink: 0;
@@ -167,7 +167,7 @@
   height: 48px;
   border: 4px solid #f3f3f3;
   border-top: 4px solid var(--sc-purple-deep);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: schedule-cohost-spin 1s linear infinite;
 }
 
@@ -218,7 +218,7 @@
 .schedule-cohost-icon-img {
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 /* Feather SVG icon replacement per popup redesign protocol */
@@ -272,7 +272,7 @@
   gap: 10px;
   padding: 12px 16px;
   margin: 15px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-family: 'Lato', sans-serif;
   animation: schedule-cohost-slide-in 0.3s ease-out;
@@ -327,7 +327,7 @@
 .schedule-cohost-avatar {
   width: 38px;
   height: 38px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   border: 2px solid var(--sc-white);
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
@@ -378,7 +378,7 @@
   cursor: pointer;
   padding: 8px;
   color: var(--sc-text-dark);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: background-color 0.2s;
 }
 
@@ -429,7 +429,7 @@
   color: #434343;
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   cursor: pointer;
   transition: background-color 0.05s, color 0.05s;
   line-height: 1.25;
@@ -518,13 +518,13 @@
 .schedule-cohost-clear-btn {
   background: none;
   border: 1px solid var(--sc-border-gray);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   padding: 6px 12px;
   font-size: 12px;
   font-family: 'Lato', sans-serif;
   color: var(--sc-text-medium);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .schedule-cohost-clear-btn:hover {
@@ -540,7 +540,7 @@
   padding: 10px 12px;
   background-color: var(--sc-alert-yellow);
   border: 1px dashed var(--sc-purple-border);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   margin-bottom: 12px;
   font-family: 'Lato', sans-serif;
   font-size: 13px;
@@ -564,7 +564,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   white-space: nowrap;
   text-align: center;
 }
@@ -619,7 +619,7 @@
   gap: 10px;
   padding: 10px 12px;
   background-color: var(--sc-purple-light);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-family: 'Lato', sans-serif;
   font-size: 14px;
 }
@@ -686,7 +686,7 @@
   font-weight: 400;
   color: #252525;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .schedule-cohost-subject-tag:hover {
@@ -710,7 +710,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid var(--sc-purple-border);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   font-family: 'Lato', sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -766,7 +766,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   min-width: 200px;
   white-space: nowrap;
   display: inline-flex;
@@ -810,7 +810,7 @@
   height: 64px;
   background-color: var(--sc-action-positive);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -841,7 +841,7 @@
 .schedule-cohost-selected-time {
   background-color: var(--sc-background-light);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 8px;
   font-family: 'Lato', sans-serif;
   font-size: 14px;
@@ -851,7 +851,7 @@
 .schedule-cohost-submitted-subject {
   background-color: var(--sc-tag-bg);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 16px;
   font-family: 'Lato', sans-serif;
   font-size: 14px;
@@ -877,7 +877,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -900,7 +900,7 @@
   margin: 0 20px 20px;
   padding: 12px 16px;
   background-color: var(--sc-background-light);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 13px;
   display: flex;
   justify-content: space-between;
@@ -1060,7 +1060,7 @@
   gap: 12px;
   padding: 14px 40px 14px 16px;
   background-color: var(--sc-white);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border-left: 4px solid;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: schedule-cohost-toast-in 0.3s ease-out;
@@ -1203,7 +1203,7 @@
 .schedule-cohost-details-subject {
   background-color: var(--sc-tag-bg);
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 16px;
   font-family: 'Lato', sans-serif;
   font-size: 14px;
@@ -1215,7 +1215,7 @@
    ============================================================ */
 .schedule-cohost-assigned-info {
   background: linear-gradient(135deg, var(--sc-purple-primary) 0%, var(--sc-purple-deep) 100%);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 20px;
   margin: 16px 20px 24px;
   color: var(--sc-white);
@@ -1255,10 +1255,10 @@
   font-size: 14px;
   font-weight: 600;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   text-decoration: none;
   margin-top: 8px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .schedule-cohost-meet-link:hover {
@@ -1314,7 +1314,7 @@
 .schedule-cohost-progress-dot {
   width: var(--sc-progress-dot-size);
   height: var(--sc-progress-dot-size);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: var(--sc-progress-inactive);
   flex-shrink: 0;
   transition: background-color 0.3s ease;
@@ -1360,7 +1360,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #686B6B;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   font-family: 'Lato', sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -1397,7 +1397,7 @@
   color: var(--sc-action-positive);
   cursor: pointer;
   margin-top: 16px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   white-space: nowrap;
 }
 

@@ -52,9 +52,9 @@
   padding: 1rem 2rem;
   font-size: 1.125rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -80,7 +80,7 @@
 
 .host-success-story-card {
   background-color: var(--white);
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 2.5rem;
   margin-bottom: 2.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -109,7 +109,7 @@
 .host-success-story-avatar {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
   border: 3px solid var(--primary-purple);
 }
@@ -143,7 +143,7 @@
 
 .host-success-story-cta {
   background-color: var(--light-gray);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 2rem;
   margin-top: 2rem;
   text-align: center;
@@ -163,9 +163,9 @@
   padding: 0.875rem 2rem;
   font-size: 1.125rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
 }
 
 .host-success-btn-secondary:hover {

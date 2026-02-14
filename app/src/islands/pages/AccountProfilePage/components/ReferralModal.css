@@ -42,7 +42,7 @@
    ============================================================================ */
 .referral-modal {
   background-color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 90%;
   max-width: 520px;
   max-height: 92vh;
@@ -97,7 +97,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: #49454F;
   transition: background-color 0.2s ease;
   flex-shrink: 0;
@@ -163,19 +163,19 @@
   color: #1C1B1F;
   background: #F7F2FA;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 .referral-share-link input:focus {
   outline: none;
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 2px rgba(49, 19, 93, 0.15);
 }
 
 .referral-share-link button {
   height: 44px;
   padding: 0 20px;
-  background-color: #31135D;
+  background-color: var(--primary-purple);
   color: #FFFFFF;
   border: 2px solid transparent;
   border-radius: 100px;
@@ -183,7 +183,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   white-space: nowrap;
 }
 
@@ -211,23 +211,23 @@
   gap: 8px;
   background: transparent;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: #1C1B1F;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .referral-secondary-btn:hover {
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   background-color: #F7F2FA;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .referral-secondary-btn svg {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 /* ============================================================================
@@ -241,7 +241,7 @@
   margin: 16px 20px;
   background: #F7F2FA;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   text-align: center;
 }
 
@@ -250,7 +250,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 20px;
   font-weight: 700;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .referral-reward-item span {
@@ -277,7 +277,7 @@
 
 .referral-modal-footer a {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #31135D;
+  color: var(--primary-purple);
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
@@ -294,7 +294,7 @@
   max-width: 414px;
   aspect-ratio: 1.75 / 1;
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   position: relative;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -309,7 +309,7 @@
   right: 0;
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, #31135D 0%, #6D31C2 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #6D31C2 100%);
   border-radius: 0 12px 0 100%;
   opacity: 0.1;
 }
@@ -325,14 +325,14 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .host-referral-card__amount {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 32px;
   font-weight: 800;
-  color: #31135D;
+  color: var(--primary-purple);
   line-height: 1;
 }
 
@@ -381,9 +381,9 @@
 }
 
 .host-referral-card__badge {
-  background: linear-gradient(135deg, #31135D 0%, #6D31C2 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #6D31C2 100%);
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .host-referral-card__badge-text {

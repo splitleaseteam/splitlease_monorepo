@@ -4,7 +4,7 @@
  * Table and mobile card format for payment records with status badges.
  */
 
-@import '../../../styles/design-tokens.css';
+@import '../../../styles/variables.css';
 
 /* =============================================================
    CONTAINER

@@ -32,7 +32,7 @@
   cursor: pointer;
 
   /* Animation */
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 /* Glowing pulse animation on the button */

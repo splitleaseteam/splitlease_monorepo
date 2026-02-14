@@ -1,5 +1,3 @@
-> [!WARNING] This file needs a full rewrite.
-
 # SuggestedProposals Component
 
 A shared island component that displays AI-suggested rental proposals to guests in a floating popup interface.
@@ -31,20 +29,18 @@ SuggestedProposals/
 
 ## Data Model
 
-This component uses **native Supabase field names** (no mapping layer). Key fields:
+This component uses **snake_case Supabase field names**. Key fields:
 
 ### Proposal Fields (from `proposal` table)
 - `id` - Unique identifier
-- `Status` - Proposal status string
-- `'proposal nightly price'` - Per-night cost (numeric)
-- `'Total Price for Reservation (guest)'` - Total reservation cost (numeric)
-- `'Move in range start'` - Start date (ISO string)
-- `'Reservation Span (Weeks)'` - Duration in weeks
-- `'Check In Day'` - Day name (e.g., "Monday")
-- `'Check Out Day'` - Day name
-- `Guest` - Guest user ID
-- `Listing` - Listing ID
-- `Deleted` - Soft delete flag
+- `proposal_workflow_status` - Proposal status string
+- `calculated_nightly_price` - Per-night cost (numeric)
+- `total_reservation_price_for_guest` - Total reservation cost (numeric)
+- `move_in_range_start_date` - Start date (ISO string)
+- `reservation_span_in_weeks` - Duration in weeks
+- `guest_user_id` - Guest user ID
+- `is_deleted` - Soft delete flag
+- `_dismissed` - Client-side dismissed tracking
 
 ### Enriched Fields (from `loadProposalDetails`)
 - `_listing` - Full listing object
@@ -53,23 +49,21 @@ This component uses **native Supabase field names** (no mapping layer). Key fiel
 - `_negotiationSummaries` - Array of AI-generated summaries (if available)
 
 ### Listing Fields (from `_listing`)
-- `'Name'` - Property name
-- `'Features - Photos'` - Array of photo URLs (may contain IDs that need resolution)
-- `'Location - Address'` - JSONB object `{ address: string, lat: number, lng: number }` - **Note**: Contains embedded coordinates
-- `'Location - Coordinates'` - `{ lat, lng }` coordinates (fallback if not in Location - Address)
-- `'Location - Borough'` - Borough name (e.g., "Manhattan")
-- `'Location - Hood'` - Neighborhood name (e.g., "Financial District")
-- `'Features - Qty Bedrooms'` - Number of bedrooms (integer)
-- `'Features - Qty Bathrooms'` - Number of bathrooms (numeric)
-- `'Features - Qty Beds'` - Number of beds (integer)
-- `'Features - Qty Guests'` - Max guests (integer)
-- `'Features - Type of Space'` - **FK ID** to `reference_table.zat_features_listingtype` - Must be resolved to display label
+- `listing_title` - Property name
+- `photos_with_urls_captions_and_sort_order_json` - Photo data (JSONB)
+- `address_with_lat_lng_json` - JSONB object `{ address: string, lat: number, lng: number }`
+- `borough` - Borough name (e.g., "Manhattan")
+- `primary_neighborhood_reference_id` / `neighborhood_name_entered_by_host` - Neighborhood
+- `bedroom_count` - Number of bedrooms (integer)
+- `bathroom_count` - Number of bathrooms (numeric)
+- `max_guest_count` - Max guests (integer)
+- `space_type` - Space type (may be FK ID requiring resolution)
 
 ### Data Transformation Notes
 
-**Location - Address**: May be stored as stringified JSON. Always parse before accessing:
+**address_with_lat_lng_json**: May be stored as stringified JSON. Always parse before accessing:
 ```javascript
-const rawAddressData = listing['Location - Address'];
+const rawAddressData = listing.address_with_lat_lng_json;
 const addressData = typeof rawAddressData === 'string'
   ? JSON.parse(rawAddressData)
   : rawAddressData;
@@ -77,8 +71,9 @@ const address = addressData?.address || '';
 const geoPoint = { lat: addressData?.lat, lng: addressData?.lng };
 ```
 
-**Features - Type of Space**: Contains legacy FK IDs like `1569530331984x152755544104023800`.
+**space_type**: May contain legacy FK IDs like `1569530331984x152755544104023800`.
 Use `SPACE_TYPE_ID_TO_LABEL` mapping in AmenityIcons.jsx to resolve to human-readable labels.
+Also uses `BOROUGH_ID_TO_LABEL` for borough FK ID resolution.
 
 ## Status Filtering
 
@@ -112,7 +107,6 @@ function MyPage({ currentUser }) {
   } = useSuggestedProposals({
     userId: currentUser.id,
     onInterested: async (proposal) => {
-      // Called after successful interest action
       showToast({ title: 'Interest recorded!', type: 'success' });
     },
     onRemove: async (proposal) => {
@@ -122,8 +116,6 @@ function MyPage({ currentUser }) {
 
   return (
     <>
-      {/* Page content */}
-
       {totalCount > 0 && (
         <SuggestedProposalTrigger
           onClick={show}

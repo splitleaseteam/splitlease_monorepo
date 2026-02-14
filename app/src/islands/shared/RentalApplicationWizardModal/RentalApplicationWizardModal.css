@@ -23,7 +23,7 @@
 
 .rental-wizard-modal {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 100%;
   max-width: 650px;
   max-height: 90vh;
@@ -76,13 +76,13 @@
   padding: 8px;
   cursor: pointer;
   color: #9CA3AF;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-base);
 }
 
 .rental-wizard-close:hover {
   background: #F3F4F6;
-  color: #374151;
+  color: var(--text-description);
 }
 
 /* ============================================================================
@@ -122,8 +122,8 @@
   gap: 4px;
   cursor: pointer;
   padding: 4px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-base);
 }
 
 .step-indicator__step:hover {
@@ -133,13 +133,13 @@
 .step-indicator__dot {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .step-indicator__step--pending .step-indicator__dot {
@@ -155,9 +155,9 @@
 }
 
 .step-indicator__step--completed .step-indicator__dot {
-  background: #10B981;
+  background: var(--success-teal);
   color: #ffffff;
-  border: 2px solid #10B981;
+  border: 2px solid var(--success-teal);
 }
 
 .step-indicator__label {
@@ -226,7 +226,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -251,7 +251,7 @@
 
 .wizard-btn--secondary {
   background: #F3F4F6;
-  color: #374151;
+  color: var(--text-description);
   border: 1px solid #E5E7EB;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .wizard-btn--ghost:hover {
-  color: #374151;
+  color: var(--text-description);
   background: #F9FAFB;
 }
 
@@ -293,7 +293,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
   margin-bottom: 6px;
 }
 
@@ -311,7 +311,7 @@
   font-size: 14px;
   color: #111827;
   background: #FFFFFF;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .wizard-input:focus,
@@ -331,7 +331,7 @@
 }
 
 .wizard-input--valid {
-  border-color: #10B981;
+  border-color: var(--success-teal);
 }
 
 .wizard-input--signature {
@@ -370,7 +370,7 @@
   text-align: center;
   padding: 32px;
   background: #F9FAFB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 2px dashed #E5E7EB;
 }
 
@@ -391,7 +391,7 @@
 
 .occupant-card {
   background: #F9FAFB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 16px;
   border: 1px solid #E5E7EB;
 }
@@ -406,7 +406,7 @@
 .occupant-card__number {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .occupant-card__remove {
@@ -415,8 +415,8 @@
   padding: 4px;
   cursor: pointer;
   color: #9CA3AF;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-sm);
+  transition: var(--transition-all-base);
 }
 
 .occupant-card__remove:hover {
@@ -452,9 +452,9 @@
   padding: 24px;
   background: #F9FAFB;
   border: 2px dashed #E5E7EB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   color: #6B7280;
 }
 
@@ -508,7 +508,7 @@
   text-decoration: none;
   cursor: pointer;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   transition: background-color 0.2s ease;
 }
 
@@ -522,7 +522,7 @@
 }
 
 .file-upload-box__check {
-  color: #10B981;
+  color: var(--success-teal);
 }
 
 .file-upload-box__remove {
@@ -531,8 +531,8 @@
   padding: 4px;
   cursor: pointer;
   color: #9CA3AF;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-sm);
+  transition: var(--transition-all-base);
 }
 
 .file-upload-box__remove:hover {
@@ -548,13 +548,13 @@
   margin-bottom: 24px;
   padding: 16px;
   background: #F9FAFB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .review-step__progress-bar {
   height: 8px;
   background: #E5E7EB;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   overflow: hidden;
   margin-bottom: 8px;
 }
@@ -562,7 +562,7 @@
 .review-step__progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--sl-primary, #5B21B6), #7C3AED);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: width 0.3s ease;
 }
 
@@ -583,7 +583,7 @@
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #10B981;
+  color: var(--success-teal);
 }
 
 .review-step__incomplete {
@@ -614,7 +614,7 @@
 .review-section__title {
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-description);
   margin: 0;
 }
 
@@ -628,8 +628,8 @@
   font-size: 12px;
   color: var(--sl-primary, #5B21B6);
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-sm);
+  transition: var(--transition-all-base);
 }
 
 .review-section__edit:hover {
@@ -696,7 +696,7 @@
   height: 40px;
   border: 3px solid #E5E7EB;
   border-top-color: var(--sl-primary, #5B21B6);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.8s linear infinite;
 }
 
@@ -731,7 +731,7 @@
   height: 20px;
   border: 2px solid #E5E7EB;
   border-top-color: var(--sl-primary, #5B21B6);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.8s linear infinite;
 }
 

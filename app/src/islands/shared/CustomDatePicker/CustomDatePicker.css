@@ -38,18 +38,18 @@
   font-weight: 500;
   color: #111827;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   text-align: left;
 }
 
 .custom-date-picker__input:hover {
-  border-color: #31135d;
+  border-color: var(--primary-purple);
   box-shadow: 0 4px 6px rgba(49, 19, 93, 0.1);
 }
 
 .custom-date-picker__input--active {
-  border-color: #31135d;
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 4px rgba(49, 19, 93, 0.15);
 }
 
@@ -83,7 +83,7 @@
   right: 0;
   background-color: #ffffff;
   border: 1px solid #E5E7EB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 8px 32px rgba(49, 19, 93, 0.15);
   padding: 12px;
   z-index: 1000;
@@ -114,16 +114,16 @@
   width: 24px;
   height: 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   background: transparent;
   color: #6B7280;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .custom-date-picker__nav:hover {
   background: #F3F4F6;
-  color: #31135d;
+  color: var(--primary-purple);
 }
 
 .custom-date-picker__nav svg {
@@ -168,13 +168,13 @@
   width: 100%;
   aspect-ratio: 1;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: transparent;
   font-size: 12px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   padding: 0;
 }
 
@@ -188,7 +188,7 @@
 }
 
 .custom-date-picker__day--today {
-  color: #31135d;
+  color: var(--primary-purple);
   font-weight: 600;
   position: relative;
 }
@@ -201,12 +201,12 @@
   transform: translateX(-50%);
   width: 3px;
   height: 3px;
-  border-radius: 50%;
-  background: #31135d;
+  border-radius: var(--rounded-full);
+  background: var(--primary-purple);
 }
 
 .custom-date-picker__day--selected {
-  background: #31135d;
+  background: var(--primary-purple);
   color: white;
 }
 

@@ -15,7 +15,7 @@
 /* Delete Modal Content */
 .delete-modal-content {
   background-color: #FFFFFF;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 24px;
   max-width: 400px;
   width: 90%;
@@ -60,7 +60,7 @@
   width: 48px;
   height: 48px;
   background-color: #FED7D7;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   margin: 0 auto 16px;
 }
 
@@ -87,7 +87,7 @@
   margin-bottom: 24px;
   padding: 8px;
   background-color: #F7FAFC;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   word-break: break-all;
 }
 
@@ -103,9 +103,9 @@
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   border: none;
 }
 

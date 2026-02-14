@@ -4,7 +4,7 @@
  * Table format with row hover effects and action buttons.
  */
 
-@import '../../../styles/design-tokens.css';
+@import '../../../styles/variables.css';
 
 /* =============================================================
    CONTAINER

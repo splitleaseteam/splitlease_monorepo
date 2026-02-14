@@ -30,7 +30,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+  border-bottom: 1px solid var(--color-gray-200, var(--border-color));
 }
 
 .create-review-modal__header h2 {
@@ -42,7 +42,7 @@
 
 .create-review-modal__subtitle {
   font-size: 0.875rem;
-  color: var(--color-gray-500, #6b7280);
+  color: var(--color-gray-500, var(--text-gray));
 }
 
 .create-review-modal__close {
@@ -54,13 +54,13 @@
   background: none;
   border: none;
   border-radius: 0.375rem;
-  color: var(--color-gray-400, #9ca3af);
+  color: var(--color-gray-400, var(--text-light-gray));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .create-review-modal__close:hover {
-  background-color: var(--color-gray-100, #f3f4f6);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
   color: var(--color-gray-600, #4b5563);
 }
 
@@ -73,7 +73,7 @@
 .create-review-modal__context {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: var(--color-gray-50, #f9fafb);
+  background-color: var(--color-gray-50, var(--bg-light));
   border-radius: 0.5rem;
 }
 
@@ -121,7 +121,7 @@
 .star-rating-input {
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+  border-bottom: 1px solid var(--color-gray-100, var(--bg-light-gray));
 }
 
 .star-rating-input:last-child {
@@ -141,7 +141,7 @@
 .star-rating-input__question {
   margin: 0 0 0.5rem 0;
   font-size: 0.8125rem;
-  color: var(--color-gray-500, #6b7280);
+  color: var(--color-gray-500, var(--text-gray));
 }
 
 .star-rating-input__stars {
@@ -159,7 +159,7 @@
   border: none;
   color: var(--color-gray-300, #d1d5db);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .star-rating-input__star:hover {
@@ -178,7 +178,7 @@
   margin-left: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-gray-700, var(--text-description));
 }
 
 /* Comment Section */
@@ -216,7 +216,7 @@
   display: block;
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: var(--color-gray-400, #9ca3af);
+  color: var(--color-gray-400, var(--text-light-gray));
   text-align: right;
 }
 
@@ -246,13 +246,13 @@
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: white;
-  border: 2px solid var(--color-gray-200, #e5e7eb);
+  border: 2px solid var(--color-gray-200, var(--border-color));
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-gray-600, #4b5563);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .create-review-modal__recommend-btn:hover {
@@ -260,7 +260,7 @@
 }
 
 .create-review-modal__recommend-btn--yes {
-  border-color: var(--color-green-500, #22c55e);
+  border-color: var(--color-green-500, var(--success-green));
   background-color: var(--color-green-50, #f0fdf4);
   color: var(--color-green-700, #15803d);
 }
@@ -277,7 +277,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--color-gray-200, #e5e7eb);
+  border-top: 1px solid var(--color-gray-200, var(--border-color));
 }
 
 .create-review-modal__btn {
@@ -286,17 +286,17 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .create-review-modal__btn--secondary {
   background: white;
   border: 1px solid var(--color-gray-300, #d1d5db);
-  color: var(--color-gray-700, #374151);
+  color: var(--color-gray-700, var(--text-description));
 }
 
 .create-review-modal__btn--secondary:hover:not(:disabled) {
-  background-color: var(--color-gray-50, #f9fafb);
+  background-color: var(--color-gray-50, var(--bg-light));
 }
 
 .create-review-modal__btn--primary {

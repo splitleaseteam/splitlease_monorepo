@@ -13,7 +13,7 @@
   /* ===== SPLIT LEASE DESIGN SYSTEM - Purple Monochromatic ===== */
 
   /* Primary Purple Palette (NO GREEN, NO BLUE) */
-  --color-primary: #31135D;           /* Primary Purple - headers, buttons, icons */
+  --color-primary: var(--primary-purple);           /* Primary Purple - headers, buttons, icons */
   --color-primary-hover: #250F4A;     /* Darker for hover states */
   --color-primary-action: #5B5FCF;    /* Action Purple - success/positive states */
   --color-primary-secondary: #6D31C2; /* Secondary Purple - accents, focus rings */
@@ -22,7 +22,7 @@
 
   /* Text Colors (WCAG AAA compliant) */
   --color-text: #111111;              /* Primary body text */
-  --color-text-secondary: #374151;    /* Supporting content */
+  --color-text-secondary: var(--text-description);    /* Supporting content */
   --color-text-muted: #4b5563;        /* Meta information */
   --color-text-ghost: #49454F;        /* Ghost button text */
 
@@ -39,8 +39,8 @@
   --color-gray-300: #D1D5DB;
   --color-gray-400: #9CA3AF;
   --color-gray-500: #4b5563;          /* Maps to text-muted */
-  --color-gray-600: #374151;          /* Maps to text-secondary */
-  --color-gray-700: #374151;
+  --color-gray-600: var(--text-description);          /* Maps to text-secondary */
+  --color-gray-700: var(--text-description);
   --color-gray-800: #1F2937;
   --color-gray-900: #111111;          /* Maps to text */
 
@@ -695,7 +695,7 @@
   font-weight: 500;
   color: var(--color-gray-500);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
   flex-shrink: 0;
 }
 
@@ -1346,7 +1346,7 @@
 @media (prefers-contrast: high) {
   .hep-container {
     --color-border: #000;
-    --color-text-muted: #374151;
+    --color-text-muted: var(--text-description);
   }
 
   .hep-btn {
@@ -1367,7 +1367,7 @@
    ======================================== */
 
 .hep-header--accept .hep-header-icon--success {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--success-teal) 0%, #059669 100%);
   color: var(--color-white);
 }
 
@@ -1396,7 +1396,7 @@
 }
 
 .hep-footer--accept .hep-btn-success {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--success-teal) 0%, #059669 100%);
   color: var(--color-white);
   border: none;
 }

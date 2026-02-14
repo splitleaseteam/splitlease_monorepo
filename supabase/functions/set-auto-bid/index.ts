@@ -12,6 +12,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { BiddingService } from "../_shared/bidding/index.ts";
 import { ValidationError } from "../_shared/errors.ts";
+import { authenticateFromHeaders } from "../_shared/biddingAuth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -50,7 +51,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Require authentication for all actions
-    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey);
+    const user = await authenticateFromHeaders(req.headers, supabaseUrl, supabaseAnonKey, 'set-auto-bid');
     if (!user) {
       return new Response(
         JSON.stringify({ success: false, error: 'Authentication required' }),
@@ -121,47 +122,5 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
-
-// Authentication helper (same pattern as proposal/index.ts)
-async function authenticateFromHeaders(
-  headers: Headers,
-  supabaseUrl: string,
-  supabaseAnonKey: string
-): Promise<{ id: string; email: string } | null> {
-  const authHeader = headers.get('Authorization');
-  if (!authHeader) {
-    console.log('[set-auto-bid:auth] No Authorization header');
-    return null;
-  }
-
-  try {
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error } = await authClient.auth.getUser();
-    if (error || !user) {
-      console.error('[set-auto-bid:auth] getUser failed:', error?.message);
-      return null;
-    }
-
-    // Lookup application user ID by email
-    const { data: appUser, error: appUserError } = await authClient
-      .from('user')
-      .select('id')
-      .eq('email', user.email?.toLowerCase())
-      .maybeSingle();
-
-    if (appUserError || !appUser) {
-      console.error('[set-auto-bid:auth] User lookup failed:', appUserError?.message);
-      return null;
-    }
-
-    return { id: appUser.id, email: user.email ?? '' };
-  } catch (err) {
-    console.error('[set-auto-bid:auth] Exception:', (err as Error).message);
-    return null;
-  }
-}
 
 console.log("[set-auto-bid] Edge Function ready");

@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: background var(--protocol-transition);
   flex-shrink: 0;
 }
@@ -108,7 +108,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: background var(--protocol-transition);
   flex-shrink: 0;
 }
@@ -251,7 +251,7 @@
   width: 24px;
   height: 24px;
   background: var(--protocol-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -545,7 +545,7 @@
 .not-interested-icon-container {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: var(--protocol-surface);
   display: flex;
   align-items: center;
@@ -623,7 +623,7 @@
   height: 16px;
   border: 2px solid currentColor;
   border-top-color: transparent;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: protocolSpin 0.8s linear infinite;
 }
 

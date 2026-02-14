@@ -31,6 +31,7 @@
  * ```
  */
 import type { CalculateSlopeParams } from './types.js';
+import { roundToFourDecimals } from './utils/rounding.js';
 
 export function calculateSlope({ nightlyPrices }: CalculateSlopeParams): number | null {
   // No Fallback: Validate input
@@ -74,13 +75,4 @@ export function calculateSlope({ nightlyPrices }: CalculateSlopeParams): number 
   const slope = priceDifference / indexDifference;
 
   return roundToFourDecimals(slope);
-}
-
-/**
- * Round a number to 4 decimal places.
- * @param value - The value to round.
- * @returns Rounded value.
- */
-function roundToFourDecimals(value: number): number {
-  return Math.round(value * 10000) / 10000;
 }

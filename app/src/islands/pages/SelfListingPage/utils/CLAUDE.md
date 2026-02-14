@@ -1,6 +1,6 @@
 # SelfListingPage Utils - LLM Reference
 
-**GENERATED**: 2025-12-11
+**GENERATED**: 2025-12-11 | **UPDATED**: 2026-02-13
 **SCOPE**: Service modules for fetching lookup data from Supabase
 
 ---
@@ -19,6 +19,7 @@
 [INTENT]: Fetch amenity options from Supabase database
 [EXPORTS]: getAllAmenitiesByType, getAllInUnitAmenities, getAllBuildingAmenities, getCommonAmenitiesByType, getCommonInUnitAmenities, getCommonBuildingAmenities, Amenity (interface)
 [TABLE]: zat_features_amenity
+[COLUMNS]: name, type_amenity_categories, pending
 [USAGE]: Section 2 (Features) populates amenity checkboxes
 
 ### neighborhoodService.ts
@@ -30,7 +31,8 @@
 ### safetyService.ts
 [INTENT]: Fetch safety feature options from Supabase database
 [EXPORTS]: getCommonSafetyFeatures, SafetyFeature (interface)
-[TABLE]: zfut_safetyfeatures
+[TABLE]: zat_features_safetyfeature
+[COLUMNS]: name, is_preset
 [USAGE]: Section 7 (Review) populates safety feature checkboxes
 
 ---
@@ -41,8 +43,8 @@
 [INTENT]: Fetch all amenities for a given category
 [PARAMETERS]: type (string) - "In Unit" or "In Building"
 [RETURNS]: Promise<string[]> - Array of amenity names
-[QUERY]: SELECT Name WHERE "Type - Amenity Categories" = type AND pending = false
-[ORDER]: Alphabetical by Name
+[QUERY]: SELECT name WHERE type_amenity_categories = type AND pending = false
+[ORDER]: Alphabetical by name
 [ERROR_HANDLING]: Returns empty array on error
 
 ### getAllInUnitAmenities()
@@ -57,9 +59,9 @@
 [INTENT]: Fetch only pre-set (common) amenities for a category
 [PARAMETERS]: type (string) - "In Unit", "In Building", or "In Room"
 [RETURNS]: Promise<string[]> - Array of amenity names
-[QUERY]: SELECT Name WHERE "pre-set?" = true AND "Type - Amenity Categories" = type
+[QUERY]: SELECT name WHERE is_preset = true AND type_amenity_categories = type
 [DIFFERENCE]: Filters to only pre-defined options (excludes custom/rare amenities)
-[ORDER]: Alphabetical by Name
+[ORDER]: Alphabetical by name
 [ERROR_HANDLING]: Returns empty array on error
 
 ### getCommonInUnitAmenities()
@@ -74,10 +76,10 @@
 ```typescript
 interface Amenity {
   id: string;
-  Name: string;
-  'Type - Amenity Categories': string;
-  Icon?: string;
-  'pre-set?'?: boolean;
+  name: string;
+  type_amenity_categories: string;
+  icon?: string;
+  is_preset?: boolean;
 }
 ```
 
@@ -119,8 +121,8 @@ interface Neighborhood {
 ### getCommonSafetyFeatures()
 [INTENT]: Fetch pre-defined safety feature options
 [RETURNS]: Promise<string[]> - Array of safety feature names
-[QUERY]: SELECT Name WHERE "pre-set?" = true
-[ORDER]: Alphabetical by Name
+[QUERY]: SELECT name WHERE is_preset = true
+[ORDER]: Alphabetical by name
 [ERROR_HANDLING]: Returns empty array on error
 [CONSOLE_LOGGING]: Logs query response and warnings
 
@@ -128,9 +130,9 @@ interface Neighborhood {
 ```typescript
 interface SafetyFeature {
   id: string;
-  Name: string;
-  Icon?: string;
-  'pre-set?'?: boolean;
+  name: string;
+  icon?: string;
+  is_preset?: boolean;
 }
 ```
 
@@ -139,19 +141,20 @@ interface SafetyFeature {
 ## DATA_SOURCE_TABLES
 
 ### zat_features_amenity
-[COLUMNS]: id, Name, 'Type - Amenity Categories', Icon, 'pre-set?', pending
+[COLUMNS]: id, name, type_amenity_categories, icon, is_preset, pending
 [CATEGORIES]: "In Unit", "In Building", "In Room"
-[PRE_SET]: Boolean flag indicating common/standard amenities
+[IS_PRESET]: Boolean flag indicating common/standard amenities
 [PENDING]: Boolean flag indicating awaiting approval
 
 ### zat_geo_hood_mediumlevel
 [COLUMNS]: Display, 'Neighborhood Description', Zips (JSONB array)
 [LOOKUP_METHOD]: RPC function get_neighborhood_by_zip
 [JSONB_FIELD]: Zips contains array of ZIP codes as strings
+[NOTE]: RPC function returns Bubble-era column names; service maps to clean properties
 
-### zfut_safetyfeatures
-[COLUMNS]: id, Name, Icon, 'pre-set?'
-[PRE_SET]: Boolean flag indicating common safety features
+### zat_features_safetyfeature
+[COLUMNS]: id, name, icon, is_preset
+[IS_PRESET]: Boolean flag indicating common safety features
 
 ---
 
@@ -227,17 +230,16 @@ useEffect(() => {
 
 ## SUPABASE_QUERY_PATTERNS
 
-### Column Name Quoting
-[ISSUE]: Columns with special characters need quoting
-[SOLUTION]: Use double quotes: .eq('"pre-set?"', true)
-[EXAMPLE]: .eq('"Type - Amenity Categories"', type)
+### Column Names
+[FORMAT]: All columns use snake_case (post-migration)
+[EXAMPLE]: .eq('type_amenity_categories', type)
 
 ### Boolean Filtering
-[PATTERN]: .eq('pending', false) or .eq('"pre-set?"', true)
+[PATTERN]: .eq('pending', false) or .eq('is_preset', true)
 [PURPOSE]: Filter to active/approved/common items only
 
 ### Ordering
-[PATTERN]: .order('Name', { ascending: true })
+[PATTERN]: .order('name', { ascending: true })
 [PURPOSE]: Alphabetical presentation in UI
 
 ### RPC Function Usage
@@ -285,11 +287,10 @@ useEffect(() => {
 
 ## DATABASE_FIELD_NAMING
 
-### Convention Issues
-[PROBLEM]: Some legacy database field names use spaces and special characters
-[EXAMPLES]: "Type - Amenity Categories", "pre-set?", "Neighborhood Description"
-[SOLUTION]: Quote field names in Supabase queries
-[TYPESCRIPT]: Interface properties also use quoted names
+### Convention
+[FORMAT]: All columns migrated to snake_case (R19/R20 migration)
+[EXAMPLES]: type_amenity_categories, is_preset, name
+[EXCEPTION]: zat_geo_hood_mediumlevel RPC returns legacy names (Display, Neighborhood Description, Zips) — mapped by neighborhoodService
 
 ---
 

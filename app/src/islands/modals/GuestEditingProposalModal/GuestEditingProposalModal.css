@@ -12,19 +12,19 @@
   /* Guest Editing Proposal Colors - V5 Purple Theme with WCAG AAA Compliance */
   --gep-bg-primary: #FFFFFF;
   --gep-bg-secondary: #fafafa;
-  --gep-bg-surface: #31135D;
+  --gep-bg-surface: var(--primary-purple);
 
   /* WCAG AAA Compliant Text Colors (4.5:1 contrast ratio minimum) */
   --gep-text-primary: #111111;      /* Near black for primary text */
-  --gep-text-secondary: #374151;    /* Dark gray for secondary text */
+  --gep-text-secondary: var(--text-description);    /* Dark gray for secondary text */
   --gep-text-muted: #4b5563;        /* Medium gray for muted text */
-  --gep-text-header: #31135D;
+  --gep-text-header: var(--primary-purple);
 
   --gep-border-color: #e5e5e5;
   --gep-border-light: #f0f0f0;
   --gep-border-destructive: #DC2626;
-  --gep-primary-color: #31135D;     /* Main purple per design system */
-  --gep-primary-hover: #31135D;
+  --gep-primary-color: var(--primary-purple);     /* Main purple per design system */
+  --gep-primary-hover: var(--primary-purple);
   --gep-primary-bg: #f8f5ff;
   --gep-destructive-color: #b91c1c; /* Darker red for better contrast */
   --gep-destructive-hover: #991b1b;
@@ -69,8 +69,8 @@
   --rpb-bg-primary: #fafafa;
   --rpb-bg-white: #FFFFFF;
   --rpb-text-primary: #111111;      /* Near black */
-  --rpb-text-secondary: #374151;    /* Dark gray */
-  --rpb-text-header: #31135D;
+  --rpb-text-secondary: var(--text-description);    /* Dark gray */
+  --rpb-text-header: var(--primary-purple);
   --rpb-border-color: #e5e5e5;
   --rpb-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -177,9 +177,9 @@
   background: transparent !important;
   border: none !important;
   cursor: pointer !important;
-  color: #31135D !important;
-  border-radius: 50% !important;
-  transition: all 0.15s ease !important;
+  color: var(--primary-purple) !important;
+  border-radius: var(--rounded-full) !important;
+  transition: var(--transition-all-fast) !important;
   flex-shrink: 0 !important;
   padding: 8px !important;
 }
@@ -189,7 +189,7 @@
   margin-left: auto !important;
 }
 
-/* Ensure SVG icon inside buttons is visible - PROTOCOL: 24px, #31135D */
+/* Ensure SVG icon inside buttons is visible - PROTOCOL: 24px, var(--primary-purple) */
 .gep-close-button svg,
 .gep-back-button svg {
   width: 24px !important;
@@ -197,8 +197,8 @@
   min-width: 24px !important;
   min-height: 24px !important;
   display: block !important;
-  color: #31135D !important;
-  stroke: #31135D !important;
+  color: var(--primary-purple) !important;
+  stroke: var(--primary-purple) !important;
   stroke-width: 2 !important;
   fill: none !important;
 }
@@ -206,7 +206,7 @@
 .gep-back-button:hover,
 .gep-close-button:hover {
   background-color: #F7F2FA !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
 }
 
 .gep-back-button:focus-visible,
@@ -231,11 +231,11 @@
   min-width: 32px !important;
   min-height: 32px !important;
   background: #F7F2FA !important;
-  border-radius: 8px !important;
+  border-radius: var(--rounded-lg) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   flex-shrink: 0 !important;
 }
 
@@ -245,14 +245,14 @@
   min-width: 40px !important;
   min-height: 40px !important;
   background: transparent !important;
-  border-radius: 50% !important;
+  border-radius: var(--rounded-full) !important;
   border: none !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  transition: var(--transition-all-fast) !important;
   flex-shrink: 0 !important;
   padding: 8px !important;
 }
@@ -263,26 +263,26 @@
   min-width: 24px !important;
   min-height: 24px !important;
   display: block !important;
-  color: #31135D !important;
-  stroke: #31135D !important;
+  color: var(--primary-purple) !important;
+  stroke: var(--primary-purple) !important;
   stroke-width: 2 !important;
   fill: none !important;
 }
 
 .gep-header-back-btn:hover {
   background: #F7F2FA !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
 }
 
 .gep-header-back-btn:focus-visible {
-  outline: 2px solid #31135D !important;
+  outline: 2px solid var(--primary-purple) !important;
   outline-offset: 2px !important;
 }
 
 .gep-header-title-text {
   font-size: 16px !important;
   font-weight: 600 !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   line-height: 1.2 !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -523,7 +523,7 @@ dd.gep-detail-value {
   min-width: var(--gep-min-touch-target);
   min-height: var(--gep-min-touch-target);
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: all var(--gep-transition-fast);
 }
 
@@ -823,10 +823,10 @@ dd.gep-detail-value {
 }
 
 .gep-button--primary {
-  background-color: #31135D !important;
+  background-color: var(--primary-purple) !important;
   color: white !important;
   border: none !important;
-  border-color: #31135D !important;
+  border-color: var(--primary-purple) !important;
   border-radius: 100px !important;
 }
 
@@ -836,21 +836,21 @@ dd.gep-detail-value {
 }
 
 .gep-button--primary:focus-visible {
-  outline-color: #31135D !important;
+  outline-color: var(--primary-purple) !important;
 }
 
 /* Secondary button: outline style per design system */
 .gep-button--secondary {
   background-color: transparent !important;
-  color: #31135D !important;
-  border: 2px solid #31135D !important;
+  color: var(--primary-purple) !important;
+  border: 2px solid var(--primary-purple) !important;
   border-radius: 100px !important;
 }
 
 .gep-button--secondary:hover {
   background-color: #F7F2FA !important;
-  border-color: #31135D !important;
-  color: #31135D !important;
+  border-color: var(--primary-purple) !important;
+  color: var(--primary-purple) !important;
 }
 
 /* Ghost button: light border, muted text per design system */
@@ -864,13 +864,13 @@ dd.gep-detail-value {
 .gep-button--ghost:hover {
   background-color: #F7F2FA !important;
   border-color: #E7E0EC !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
 }
 
 .gep-button--outline {
   background-color: transparent !important;
-  color: #31135D !important;
-  border: 2px solid #31135D !important;
+  color: var(--primary-purple) !important;
+  border: 2px solid var(--primary-purple) !important;
   border-radius: 100px !important;
 }
 
@@ -923,7 +923,7 @@ dd.gep-detail-value {
   min-width: 44px;
   min-height: 44px;
   border: 2px solid #E7E0EC;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   background: var(--gep-bg-primary);
   font-size: 15px;
   font-weight: 700;
@@ -937,24 +937,24 @@ dd.gep-detail-value {
 }
 
 .dns-day-btn:hover {
-  border-color: #31135D;
-  color: #31135D;
+  border-color: var(--primary-purple);
+  color: var(--primary-purple);
 }
 
 .dns-day-btn:focus-visible {
-  outline: var(--gep-focus-outline-width) solid #31135D;
+  outline: var(--gep-focus-outline-width) solid var(--primary-purple);
   outline-offset: var(--gep-focus-outline-offset);
 }
 
 /* Selected state: Primary Purple background per design system */
 .dns-day-btn--selected {
-  background: #31135D;
-  border-color: #31135D;
+  background: var(--primary-purple);
+  border-color: var(--primary-purple);
   color: white;
 }
 
 .dns-day-btn--selected:focus-visible {
-  outline-color: #31135D;
+  outline-color: var(--primary-purple);
 }
 
 /* Schedule info container - combines check-in, check-out, and summary */
@@ -966,7 +966,7 @@ dd.gep-detail-value {
   margin-top: 10px;
   padding: 10px 12px;
   background: var(--gep-bg-secondary);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 .dns-schedule-info-row {
@@ -1047,7 +1047,7 @@ dd.gep-detail-value {
   border: none;
   cursor: pointer;
   color: var(--gep-text-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .cpm-close-button:hover {
@@ -1159,7 +1159,7 @@ dd.gep-detail-value {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   min-width: 100px;
 }
 
@@ -1473,7 +1473,7 @@ dd.gep-detail-value {
     min-width: 48px;
     min-height: 48px;
     font-size: 15px;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
   }
 
   .dns-day-grid {
@@ -1596,7 +1596,7 @@ dd.gep-detail-value {
   color: white;
   font-weight: 600;
   font-size: var(--gep-font-size-base);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   z-index: 1000;
   text-decoration: none;
 }
@@ -1639,7 +1639,7 @@ dd.gep-detail-value {
   :root {
     --gep-border-color: #000;
     --gep-border-light: #333;
-    --gep-text-muted: #374151;
+    --gep-text-muted: var(--text-description);
   }
 
   .gep-button {

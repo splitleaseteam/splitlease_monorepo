@@ -4,7 +4,7 @@
  * Matches hybrid-charles-paula.html design specification.
  */
 
-@import '../../../styles/design-tokens.css';
+@import '../../../styles/variables.css';
 
 /* =============================================================
    LEASE CARD CONTAINER

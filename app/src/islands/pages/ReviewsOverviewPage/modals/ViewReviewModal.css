@@ -30,7 +30,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+  border-bottom: 1px solid var(--color-gray-200, var(--border-color));
 }
 
 .view-review-modal__header h2 {
@@ -49,13 +49,13 @@
   background: none;
   border: none;
   border-radius: 0.375rem;
-  color: var(--color-gray-400, #9ca3af);
+  color: var(--color-gray-400, var(--text-light-gray));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .view-review-modal__close:hover {
-  background-color: var(--color-gray-100, #f3f4f6);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
   color: var(--color-gray-600, #4b5563);
 }
 
@@ -69,7 +69,7 @@
 .view-review-modal__context {
   margin-bottom: 1.25rem;
   padding: 1rem;
-  background-color: var(--color-gray-50, #f9fafb);
+  background-color: var(--color-gray-50, var(--bg-light));
   border-radius: 0.5rem;
 }
 
@@ -109,7 +109,7 @@
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+  border-bottom: 1px solid var(--color-gray-100, var(--bg-light-gray));
 }
 
 .view-review-modal__person-avatar {
@@ -118,9 +118,9 @@
   justify-content: center;
   width: 3rem;
   height: 3rem;
-  border-radius: 50%;
-  background-color: var(--color-gray-100, #f3f4f6);
-  color: var(--color-gray-400, #9ca3af);
+  border-radius: var(--rounded-full);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
+  color: var(--color-gray-400, var(--text-light-gray));
   overflow: hidden;
 }
 
@@ -137,7 +137,7 @@
 
 .view-review-modal__person-label {
   font-size: 0.75rem;
-  color: var(--color-gray-500, #6b7280);
+  color: var(--color-gray-500, var(--text-gray));
 }
 
 .view-review-modal__person-name {
@@ -148,7 +148,7 @@
 
 .view-review-modal__person-date {
   font-size: 0.8125rem;
-  color: var(--color-gray-500, #6b7280);
+  color: var(--color-gray-500, var(--text-gray));
 }
 
 /* Overall Rating */
@@ -162,7 +162,7 @@
 .view-review-modal__overall-label {
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-gray-700, var(--text-description));
 }
 
 /* Recommend */
@@ -205,8 +205,8 @@
   font-size: 0.9375rem;
   font-style: italic;
   line-height: 1.6;
-  color: var(--color-gray-700, #374151);
-  background-color: var(--color-gray-50, #f9fafb);
+  color: var(--color-gray-700, var(--text-description));
+  background-color: var(--color-gray-50, var(--bg-light));
   border-radius: 0.5rem;
   border-left: 3px solid var(--color-primary, #6366f1);
 }
@@ -228,7 +228,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  background-color: var(--color-gray-50, #f9fafb);
+  background-color: var(--color-gray-50, var(--bg-light));
   border-radius: 0.5rem;
 }
 
@@ -267,7 +267,7 @@
 .view-review-modal__breakdown-value {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-gray-700, var(--text-description));
   min-width: 1rem;
   text-align: right;
 }
@@ -277,23 +277,23 @@
   display: flex;
   justify-content: flex-end;
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--color-gray-200, #e5e7eb);
+  border-top: 1px solid var(--color-gray-200, var(--border-color));
 }
 
 .view-review-modal__btn {
   padding: 0.625rem 1.5rem;
-  background-color: var(--color-gray-100, #f3f4f6);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
   border: none;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-gray-700, var(--text-description));
   cursor: pointer;
   transition: background-color 0.15s;
 }
 
 .view-review-modal__btn:hover {
-  background-color: var(--color-gray-200, #e5e7eb);
+  background-color: var(--color-gray-200, var(--border-color));
 }
 
 /* Mobile responsive */

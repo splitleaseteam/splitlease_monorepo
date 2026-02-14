@@ -12,6 +12,7 @@
  * @throws {Error} If required parameters are missing or invalid.
  */
 import type { CalculateProratedNightlyRateParams } from './types.js';
+import { roundToTwoDecimals } from './utils/rounding.js';
 
 export function calculateProratedNightlyRate(params: CalculateProratedNightlyRateParams): number {
   const { rentalType, selectedNights } = params;
@@ -65,8 +66,4 @@ export function calculateProratedNightlyRate(params: CalculateProratedNightlyRat
     default:
       throw new Error(`calculateProratedNightlyRate: Unknown rentalType "${String(rentalType)}"`);
   }
-}
-
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
 }

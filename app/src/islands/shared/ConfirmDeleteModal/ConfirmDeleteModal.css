@@ -33,7 +33,7 @@
    ============================================================================ */
 .confirm-delete-modal-container {
   background-color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 90%;
   max-width: 420px;
   max-height: 92vh;
@@ -131,7 +131,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: #49454F;
   transition: background-color 0.2s ease;
   flex-shrink: 0;
@@ -173,7 +173,7 @@
   padding: 12px;
   background: #F7F2FA;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 16px;
 }
 
@@ -181,7 +181,7 @@
   width: 48px;
   height: 48px;
   background: #FFFFFF;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,7 +191,7 @@
 .confirm-delete-modal-item-icon svg {
   width: 24px;
   height: 24px;
-  stroke: #31135D;
+  stroke: var(--primary-purple);
   stroke-width: 2;
   fill: none;
 }
@@ -244,7 +244,7 @@
   padding: 12px;
   background: #FEF2F2;
   border: 1px solid #FECACA;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 .confirm-delete-modal-warning-icon {
@@ -300,7 +300,7 @@
   border: 2px solid transparent;
   border-radius: 100px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -311,12 +311,12 @@
 /* Secondary Button - Outline Purple */
 .confirm-delete-modal-btn--secondary {
   background: transparent;
-  border-color: #31135D;
-  color: #31135D;
+  border-color: var(--primary-purple);
+  color: var(--primary-purple);
 }
 
 .confirm-delete-modal-btn--secondary:hover:not(:disabled) {
-  background-color: #31135D;
+  background-color: var(--primary-purple);
   color: #FFFFFF;
 }
 
@@ -356,7 +356,7 @@
   height: 16px;
   border: 2px solid rgba(220, 53, 69, 0.3);
   border-top-color: #DC3545;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: confirmDeleteSpin 0.8s linear infinite;
 }
 

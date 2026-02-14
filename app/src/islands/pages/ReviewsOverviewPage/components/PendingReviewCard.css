@@ -8,7 +8,7 @@
   padding: 1rem;
   background-color: white;
   border-radius: 0.75rem;
-  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border: 1px solid var(--color-gray-200, var(--border-color));
   transition: box-shadow 0.2s, border-color 0.2s;
 }
 
@@ -23,7 +23,7 @@
   height: 5rem;
   border-radius: 0.5rem;
   overflow: hidden;
-  background-color: var(--color-gray-100, #f3f4f6);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
 }
 
 .pending-review-card__image img {
@@ -38,7 +38,7 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: var(--color-gray-400, #9ca3af);
+  color: var(--color-gray-400, var(--text-light-gray));
 }
 
 .pending-review-card__content {
@@ -73,7 +73,7 @@
 
 .pending-review-card__week {
   padding: 0.125rem 0.5rem;
-  background-color: var(--color-gray-100, #f3f4f6);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
   border-radius: 9999px;
   font-size: 0.75rem;
 }
@@ -88,7 +88,7 @@
 }
 
 .pending-review-card__reviewee-type {
-  color: var(--color-gray-400, #9ca3af);
+  color: var(--color-gray-400, var(--text-light-gray));
   margin-left: 0.25rem;
 }
 

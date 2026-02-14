@@ -4,9 +4,9 @@
 
 /* Premium Gradient Variables (shared with list-with-us) */
 :root {
-  --gradient-purple-blue: linear-gradient(135deg, #31135D 0%, #4A2F7C 50%, #5B21B6 100%);
-  --gradient-purple-pink: linear-gradient(135deg, #31135D 0%, #6B21A8 50%, #A855F7 100%);
-  --brand-purple: #31135D;
+  --gradient-purple-blue: linear-gradient(135deg, var(--primary-purple) 0%, #4A2F7C 50%, #5B21B6 100%);
+  --gradient-purple-pink: linear-gradient(135deg, var(--primary-purple) 0%, #6B21A8 50%, #A855F7 100%);
+  --brand-purple: var(--primary-purple);
 }
 
 /* ========================================
@@ -24,7 +24,7 @@
 
 .guarantee-hero-section .floating-person {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.15);
   border: 4px solid white;
@@ -101,7 +101,7 @@
   border-radius: 500px;
   font-size: 13px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 32px;
 }
 
@@ -115,7 +115,7 @@
 }
 
 .guarantee-hero-title .highlight {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .guarantee-hero-subtitle {
@@ -128,7 +128,7 @@
 }
 
 .guarantee-hero-subtitle strong {
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 700;
 }
 
@@ -145,7 +145,7 @@
 
 .guarantee-comparison-section .gradient-blob {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   filter: blur(60px);
 }
 
@@ -187,7 +187,7 @@
 /* Comparison Table */
 .comparison-table {
   background: white;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   border: 1px solid #E5E7EB;
@@ -196,7 +196,7 @@
 .comparison-header-row {
   display: grid;
   grid-template-columns: 1fr 140px 140px;
-  background: linear-gradient(135deg, #31135D 0%, #4A2F7C 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, #4A2F7C 100%);
   padding: 24px 32px;
   gap: 16px;
 }
@@ -239,7 +239,7 @@
   background: #F9FAFB;
   font-size: 16px;
   font-weight: 700;
-  color: #374151;
+  color: var(--text-description);
   border-top: 1px solid #E5E7EB;
 }
 
@@ -251,7 +251,7 @@
 .section-icon {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,7 +308,7 @@
 .check-icon {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,8 +339,8 @@
 
 .guarantee-info-section .outlined-bubble {
   position: absolute;
-  border-radius: 50%;
-  border: 3px solid #31135D;
+  border-radius: var(--rounded-full);
+  border: 3px solid var(--primary-purple);
   opacity: 0.12;
 }
 
@@ -386,16 +386,16 @@
 .guarantee-info-card {
   background: white;
   border: 2px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 32px;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .guarantee-info-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 32px rgba(49, 19, 93, 0.15);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .guarantee-info-card.airbnb-card {
@@ -415,7 +415,7 @@
   display: inline-block;
   padding: 4px 12px;
   background: rgba(49, 19, 93, 0.08);
-  color: #31135D;
+  color: var(--primary-purple);
   border-radius: 500px;
   font-size: 12px;
   font-weight: 600;
@@ -453,9 +453,9 @@
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .guarantee-info-link:hover {
@@ -493,8 +493,8 @@
 
 .guarantee-faq-section .circle-accent {
   position: absolute;
-  border-radius: 50%;
-  background: #31135D;
+  border-radius: var(--rounded-full);
+  background: var(--primary-purple);
 }
 
 .guarantee-faq-section .circle-accent-1 {
@@ -536,7 +536,7 @@
 /* FAQ Accordion */
 .guarantee-faq-accordion {
   background: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   margin-bottom: 48px;
@@ -557,7 +557,7 @@
   align-items: center;
   gap: 16px;
   background-color: white;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .guarantee-accordion-header:hover {
@@ -566,7 +566,7 @@
 }
 
 .guarantee-accordion-header:hover h3 {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .guarantee-accordion-header h3 {
@@ -580,7 +580,7 @@
 }
 
 .guarantee-accordion-icon {
-  color: #31135D;
+  color: var(--primary-purple);
   width: 20px;
   height: 20px;
   display: flex;
@@ -608,7 +608,7 @@
 }
 
 .guarantee-accordion-item.active .guarantee-accordion-header h3 {
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 600;
 }
 
@@ -653,7 +653,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -675,8 +675,8 @@
 
 .cta-secondary {
   background: white;
-  color: #31135D;
-  border: 2px solid #31135D;
+  color: var(--primary-purple);
+  border: 2px solid var(--primary-purple);
 }
 
 .cta-secondary:hover {

@@ -43,7 +43,7 @@
 .spinner {
   border: 4px solid var(--gp-border);
   border-top: 4px solid var(--gp-purple-action);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   width: 50px;
   height: 50px;
   animation: spin 1s linear infinite;
@@ -67,7 +67,7 @@
 .error-icon {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: var(--gp-purple-bg);
   color: var(--gp-danger);
   font-size: 2rem;
@@ -96,7 +96,7 @@
   border-radius: var(--gp-border-radius-pill);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .retry-button:hover {
@@ -112,7 +112,7 @@
   padding: 48px 24px;
   background: var(--gp-white);
   border: 2px solid var(--gp-border);
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
 }
 
 .empty-state h2 {
@@ -142,7 +142,7 @@
   height: 80px;
   margin: 0 auto 24px;
   background: var(--gp-purple-bg);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,11 +160,11 @@
 
 .btn {
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   font-size: 0.875rem;
 }
 
@@ -226,7 +226,7 @@
   text-decoration: none;
   font-weight: 600;
   font-size: var(--gp-font-size-base);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   z-index: 1000;
   transition: top var(--gp-transition-fast);
 }

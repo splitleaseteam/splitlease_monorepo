@@ -31,7 +31,7 @@
 
 .proposal-header {
   padding: 25px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-gray-light);
   position: sticky;
   top: 0;
   background: white;
@@ -111,7 +111,7 @@
 .edit-link:hover {
   color: #004999;
   background: #f0f7ff;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   text-decoration: underline;
 }
 
@@ -132,7 +132,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   font-family: inherit;
 }
@@ -171,7 +171,7 @@
 .warning-message {
   background-color: #fff3f3;
   border: 1px solid #ffcccc;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   padding: 12px;
   color: #cc0000;
   font-size: 14px;
@@ -207,10 +207,10 @@
   padding: 10px 15px;
   border: 2px solid #ddd;
   background: white;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   min-width: 40px;
 }
 
@@ -227,7 +227,7 @@
 .pricing-section {
   background-color: #f9f9f9;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-top: 25px;
   width: 100%;
 }
@@ -237,7 +237,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-gray-light);
 }
 
 .price-row:last-child {
@@ -262,7 +262,7 @@
   justify-content: space-between;
   gap: 15px;
   padding: 25px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-gray-light);
   background: white;
   position: sticky;
   bottom: 0;
@@ -274,7 +274,7 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .nav-button.back {
@@ -284,7 +284,7 @@
 }
 
 .nav-button.back:hover {
-  background: #f5f5f5;
+  background: var(--bg-lighter-gray);
 }
 
 .nav-button.next {
@@ -321,7 +321,7 @@
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: button-spin 0.8s linear infinite;
 }
 
@@ -335,14 +335,14 @@
 }
 
 .divider {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-gray-light);
   margin: 15px 0;
 }
 
 .price-highlight {
   background: #f5f5ff;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-top: 10px;
 }
 
@@ -358,7 +358,7 @@
   align-items: center;
   gap: 15px;
   padding: 15px 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-gray-light);
 }
 
 .review-label {
@@ -395,7 +395,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
@@ -447,7 +447,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   transition: border-color 0.2s;
 }
@@ -461,7 +461,7 @@
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   transition: border-color 0.2s;
 }
@@ -490,7 +490,7 @@
   width: 100%;
   padding: 12px 12px 12px 40px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   background: white;
   cursor: pointer;
@@ -513,7 +513,7 @@
   padding: 15px;
   background: #fff9f9;
   border: 1px solid #ffdddd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
 }
 
 .blocked-dates-notice h4 {
@@ -557,8 +557,8 @@
 .selection-summary {
   margin-top: 15px;
   padding: 12px;
-  background: #f5f5f5;
-  border-radius: 6px;
+  background: var(--bg-lighter-gray);
+  border-radius: var(--rounded-md);
 }
 
 .selection-summary p {
@@ -571,7 +571,7 @@
   padding: 15px;
   background: #fff9e6;
   border: 1px solid #ffe6b3;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
 }
 
 .confirmation-checkboxes .checkbox-label {
@@ -585,7 +585,7 @@
   margin-top: 15px;
   padding: 12px;
   background: #f0f7ff;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
 }
 
 .pricing-display p {

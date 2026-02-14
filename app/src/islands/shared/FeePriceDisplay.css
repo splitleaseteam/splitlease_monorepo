@@ -4,7 +4,7 @@
 
 .fee-price-display {
   background: var(--bg-white, #ffffff);
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: var(--rounded-lg, 12px);
   padding: var(--padding-lg, 20px);
   margin-bottom: var(--spacing-lg, 20px);
@@ -21,7 +21,7 @@
 
 .info-icon {
   cursor: pointer;
-  color: var(--text-light-gray, #9ca3af);
+  color: var(--text-light-gray, var(--text-light-gray));
   transition: color 0.2s;
 }
 
@@ -37,7 +37,7 @@
 }
 
 .price-row-total {
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--border-color));
   margin-top: var(--spacing-sm, 8px);
   padding-top: var(--spacing-md, 16px);
   font-weight: 700;
@@ -46,7 +46,7 @@
 }
 
 .price-row-savings {
-  color: var(--success-green, #10b981);
+  color: var(--success-green, var(--success-teal));
   font-size: var(--text-sm, 12px);
   font-weight: 500;
   background: #f0fdf4;
@@ -72,7 +72,7 @@
   padding: 0;
   margin-top: var(--spacing-sm, 8px);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .fee-breakdown-toggle:hover {
@@ -83,7 +83,7 @@
 .expanded-breakdown {
   margin-top: var(--spacing-md, 16px);
   padding: var(--spacing-md, 16px);
-  background: var(--bg-light, #f9fafb);
+  background: var(--bg-light, var(--bg-light));
   border-radius: var(--rounded-md, 8px);
   font-size: var(--text-sm, 12px);
 }
@@ -92,7 +92,7 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: var(--spacing-xs, 4px);
-  color: var(--text-gray, #6b7280);
+  color: var(--text-gray, var(--text-gray));
 }
 
 .breakdown-item:last-of-type {
@@ -109,7 +109,7 @@
 .why-link {
   background: none;
   border: none;
-  color: var(--text-gray, #6b7280);
+  color: var(--text-gray, var(--text-gray));
   font-size: var(--text-xs, 11px);
   display: flex;
   align-items: center;

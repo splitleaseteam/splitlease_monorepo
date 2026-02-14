@@ -6,7 +6,7 @@
 /* ===== PAGE LAYOUT ===== */
 .leases-overview {
   min-height: 100vh;
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   padding: var(--spacing-lg, 24px);
   position: relative;
 }
@@ -29,7 +29,7 @@
 .leases-overview__title {
   font-size: 28px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 4px 0;
 }
 
@@ -56,7 +56,7 @@
   display: block;
   font-size: 24px;
   font-weight: 700;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
 }
 
 .leases-overview__stat-label {
@@ -68,7 +68,7 @@
 }
 
 .leases-overview__stat--active .leases-overview__stat-value {
-  color: var(--color-success, #22c55e);
+  color: var(--color-success, var(--success-green));
 }
 
 .leases-overview__stat--completed .leases-overview__stat-value {
@@ -86,14 +86,14 @@
 
 .leases-overview__sort-order {
   background: var(--color-surface, white);
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   padding: 10px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .leases-overview__sort-order:hover {
@@ -125,17 +125,17 @@
   gap: var(--spacing-md, 16px);
   margin-top: var(--spacing-xl, 32px);
   padding-top: var(--spacing-lg, 24px);
-  border-top: 1px solid var(--color-border, #e0e0e0);
+  border-top: 1px solid var(--color-border, var(--border-gray-light));
 }
 
 .leases-overview__pagination-btn {
   background: var(--color-surface, white);
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   padding: 8px 16px;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .leases-overview__pagination-btn:hover:not(:disabled) {
@@ -170,9 +170,9 @@
 .leases-overview__loading-spinner {
   width: 48px;
   height: 48px;
-  border: 3px solid var(--color-border, #e0e0e0);
+  border: 3px solid var(--color-border, var(--border-gray-light));
   border-top-color: var(--color-primary, #7c3aed);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.8s linear infinite;
 }
 
@@ -202,7 +202,7 @@
 .search-box__input {
   width: 100%;
   padding: 10px 36px 10px 40px;
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   font-size: 14px;
   background: var(--color-surface, white);
@@ -235,7 +235,7 @@
 }
 
 .search-box__clear:hover {
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
 }
 
 /* ===== DROPDOWN ===== */
@@ -258,7 +258,7 @@
 .lease-dropdown__select {
   appearance: none;
   background: var(--color-surface, white);
-  border: 1px solid var(--color-border, #e0e0e0);
+  border: 1px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   padding: 10px 36px 10px 12px;
   font-size: 14px;
@@ -322,7 +322,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px 16px 12px 44px;
-  border-bottom: 1px solid var(--color-border, #e0e0e0);
+  border-bottom: 1px solid var(--color-border, var(--border-gray-light));
 }
 
 .lease-card__id-group {
@@ -334,7 +334,7 @@
 .lease-card__agreement-number {
   font-weight: 600;
   font-size: 15px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
 }
 
 .lease-card__id {
@@ -372,13 +372,13 @@
 }
 
 .lease-card__status--draft {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--bg-light-gray);
+  color: var(--text-description);
 }
 
 .lease-card__status--unknown {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: var(--bg-light-gray);
+  color: var(--text-gray);
 }
 
 .lease-card__content {
@@ -395,7 +395,7 @@
 }
 
 .lease-card__row--highlight {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
   margin: 8px -16px;
   padding: 10px 16px;
 }
@@ -405,7 +405,7 @@
 }
 
 .lease-card__value {
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   font-weight: 500;
   text-align: right;
 }
@@ -419,7 +419,7 @@
 
 .lease-card__value--money {
   font-family: var(--font-mono, monospace);
-  color: var(--color-success, #22c55e);
+  color: var(--color-success, var(--success-green));
 }
 
 .lease-card__footer {
@@ -427,8 +427,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-top: 1px solid var(--color-border, #e0e0e0);
-  background: var(--color-background, #f5f5f5);
+  border-top: 1px solid var(--color-border, var(--border-gray-light));
+  background: var(--color-background, var(--bg-lighter-gray));
 }
 
 .lease-card__created {
@@ -481,14 +481,14 @@
   background: none;
   border: none;
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   cursor: pointer;
   text-align: left;
   transition: background 0.2s ease;
 }
 
 .lease-card__menu-item:hover {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
 }
 
 .lease-card__menu-item svg {
@@ -507,7 +507,7 @@
 
 .lease-card__menu-divider {
   height: 1px;
-  background: var(--color-border, #e0e0e0);
+  background: var(--color-border, var(--border-gray-light));
   margin: 4px 0;
   border: none;
 }
@@ -570,7 +570,7 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .bulk-toolbar__btn:hover {
@@ -620,14 +620,14 @@
   background: none;
   border: none;
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   cursor: pointer;
   text-align: left;
   transition: background 0.2s ease;
 }
 
 .bulk-toolbar__menu-item:hover {
-  background: var(--color-background, #f5f5f5);
+  background: var(--color-background, var(--bg-lighter-gray));
 }
 
 /* ===== LOADING STATE ===== */
@@ -643,9 +643,9 @@
 .loading-state__spinner {
   width: 48px;
   height: 48px;
-  border: 3px solid var(--color-border, #e0e0e0);
+  border: 3px solid var(--color-border, var(--border-gray-light));
   border-top-color: var(--color-primary, #7c3aed);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.8s linear infinite;
 }
 
@@ -675,7 +675,7 @@
 .empty-state__title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 8px 0;
 }
 
@@ -722,7 +722,7 @@
 .error-state__title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 8px 0;
 }
 
@@ -778,7 +778,7 @@
   width: 56px;
   height: 56px;
   margin: 0 auto var(--spacing-md, 16px);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -802,7 +802,7 @@
 .confirm-dialog__title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-text-primary, var(--text-dark));
   margin: 0 0 8px 0;
 }
 
@@ -827,7 +827,7 @@
 .confirm-dialog__input {
   width: 100%;
   padding: 10px 12px;
-  border: 2px solid var(--color-border, #e0e0e0);
+  border: 2px solid var(--color-border, var(--border-gray-light));
   border-radius: var(--radius-md, 8px);
   font-size: 14px;
   text-align: center;
@@ -852,18 +852,18 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   border: none;
   min-width: 100px;
 }
 
 .confirm-dialog__btn--cancel {
-  background: var(--color-background, #f5f5f5);
-  color: var(--color-text-primary, #1a1a1a);
+  background: var(--color-background, var(--bg-lighter-gray));
+  color: var(--color-text-primary, var(--text-dark));
 }
 
 .confirm-dialog__btn--cancel:hover {
-  background: var(--color-border, #e0e0e0);
+  background: var(--color-border, var(--border-gray-light));
 }
 
 .confirm-dialog__btn--warning {

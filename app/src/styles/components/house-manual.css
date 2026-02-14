@@ -12,16 +12,16 @@
   --hm-primary: #6366f1;
   --hm-primary-hover: #4f46e5;
   --hm-primary-light: #e0e7ff;
-  --hm-gray-50: #f9fafb;
-  --hm-gray-100: #f3f4f6;
-  --hm-gray-200: #e5e7eb;
+  --hm-gray-50: var(--bg-light);
+  --hm-gray-100: var(--bg-light-gray);
+  --hm-gray-200: var(--border-color);
   --hm-gray-300: #d1d5db;
-  --hm-gray-400: #9ca3af;
-  --hm-gray-500: #6b7280;
+  --hm-gray-400: var(--text-light-gray);
+  --hm-gray-500: var(--text-gray);
   --hm-gray-600: #4b5563;
-  --hm-gray-700: #374151;
+  --hm-gray-700: var(--text-description);
   --hm-gray-800: #1f2937;
-  --hm-border-radius: 8px;
+  --hm-border-radius: var(--rounded-lg);
   --hm-border-radius-lg: 12px;
 }
 
@@ -211,7 +211,7 @@
   height: 40px;
   border: 3px solid var(--hm-gray-200);
   border-top-color: var(--hm-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: house-manual-spin 1s linear infinite;
 }
 

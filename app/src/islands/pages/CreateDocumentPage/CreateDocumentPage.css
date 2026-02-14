@@ -1,6 +1,6 @@
 .create-document-page {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   padding: 2rem;
   font-family: "DM Sans", sans-serif;
 }
@@ -17,9 +17,9 @@
 .create-document-page__spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid var(--border-color);
   border-top-color: #6366f1;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: create-document-spin 1s linear infinite;
 }
 
@@ -38,7 +38,7 @@
 
 .create-document-page__subtitle {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--text-gray);
   margin: 0;
 }
 

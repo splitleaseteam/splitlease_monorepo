@@ -102,11 +102,3 @@ Desktop-first in some components, mobile-first in others:
 
 Common adjustments: grid columns reduce (4 -> 2 -> 1), reduced spacing, hamburger nav, full-width modals on mobile.
 
----
-
-## DEPRECATED_FILES
-
-- `create-listing-modal (1).css` -- Duplicate, likely obsolete
-- `search-page-old.css` -- Legacy search design, replaced by `search-page.css`
-
-Verify these are not referenced, then remove.

@@ -17,7 +17,7 @@
   width: 48px;
   height: 48px;
   background: var(--sl-primary-soft, #F3F0FF);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,7 +52,7 @@
   margin-top: 10px;
   padding: 4px 10px;
   background: var(--sl-bg-subtle, #F9FAFB);
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   font-size: 12px;
   color: var(--sl-text-tertiary, #6B7280);
 }
@@ -73,14 +73,14 @@
   flex: 1;
   height: 8px;
   background: var(--sl-border-subtle, #E5E7EB);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   overflow: hidden;
 }
 
 .rental-app-card__progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--sl-primary, #5B21B6), #7C3AED);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: width 0.3s ease;
 }
 
@@ -161,11 +161,11 @@
   width: 48px;
   height: 48px;
   background: #ECFDF5;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #10B981;
+  color: var(--success-teal);
 }
 
 .rental-app-card__success-content {

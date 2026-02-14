@@ -28,6 +28,7 @@
  */
 import { PRICING_CONSTANTS } from '../../constants/pricingConstants.js';
 import type { CalculateUnusedNightsDiscountArrayParams } from './types.js';
+import { roundToFourDecimals } from './utils/rounding.js';
 
 export function calculateUnusedNightsDiscountArray({
   selectedNights: _selectedNights = [],
@@ -63,13 +64,4 @@ export function calculateUnusedNightsDiscountArray({
   }
 
   return discountArray;
-}
-
-/**
- * Round a number to 4 decimal places.
- * @param value - The value to round.
- * @returns Rounded value.
- */
-function roundToFourDecimals(value: number): number {
-  return Math.round(value * 10000) / 10000;
 }

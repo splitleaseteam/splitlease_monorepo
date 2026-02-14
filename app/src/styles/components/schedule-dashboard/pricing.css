@@ -103,7 +103,7 @@
 .pricing-settings {
   width: 100%;
   background: var(--pricing-bg);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid var(--pricing-border);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
   color: var(--pricing-text);
@@ -161,7 +161,7 @@
   height: 100%;
   padding: 16px;
   background: var(--pricing-surface);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid var(--pricing-border);
 }
 
@@ -207,7 +207,7 @@
   color: var(--pricing-accent);
   padding: 2px 8px;
   background: var(--pricing-accent-light);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   margin-bottom: 0;
   flex-shrink: 0;
 }
@@ -249,9 +249,9 @@
   padding: 12px 8px;
   background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
   border: 2px solid var(--pricing-border);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   min-height: 60px;
 }
 
@@ -296,7 +296,7 @@
   margin-top: 12px;
   padding: 10px 12px;
   background: var(--pricing-surface);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   border: 1px solid var(--pricing-border);
 }
 
@@ -326,9 +326,9 @@
   padding: 12px 14px;
   background: var(--pricing-surface);
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .cost-card:hover {
@@ -370,7 +370,7 @@
   color: var(--pricing-accent);
   background: var(--pricing-accent-dim, rgba(0, 217, 255, 0.15));
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .cost-card--selected .cost-card__percentage {
@@ -406,7 +406,7 @@
   align-items: center;
   background: var(--pricing-bg);
   border: 1px solid var(--pricing-border);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   padding: 6px 10px;
 }
 
@@ -449,9 +449,9 @@
   padding: 10px 12px;
   background: var(--pricing-surface);
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .notice-step:hover {
@@ -511,9 +511,9 @@
   padding: 12px 14px;
   background: var(--pricing-surface);
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .edge-segment:hover {
@@ -561,7 +561,7 @@
   margin-top: 24px;
   padding: 16px 24px;
   background: var(--pricing-surface);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--pricing-border);
   display: flex;
   align-items: center;
@@ -602,7 +602,7 @@
   gap: 8px;
   padding: 8px 16px;
   background: var(--pricing-bg);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   border: 1px solid var(--pricing-border);
 }
 
@@ -661,7 +661,7 @@
   gap: 12px;
   padding: 10px 12px;
   background: var(--pricing-surface);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--pricing-border);
   transition: border-color 0.15s ease;
 }
@@ -703,7 +703,7 @@
   width: 18px;
   height: 18px;
   background: var(--pricing-accent);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
   border: 2px solid var(--pricing-bg);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -713,7 +713,7 @@
   width: 18px;
   height: 18px;
   background: var(--pricing-accent);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
   border: 2px solid var(--pricing-bg);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
@@ -745,7 +745,7 @@
   position: relative;
   height: 8px;
   background: var(--pricing-surface);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   margin: 20px 0;
 }
 
@@ -755,7 +755,7 @@
   top: 0;
   height: 100%;
   background: var(--pricing-accent);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: width 0.15s ease;
 }
 
@@ -778,7 +778,7 @@
   height: 24px;
   background: var(--pricing-accent);
   border: 3px solid var(--pricing-bg);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   pointer-events: none;
   transition: left 0.15s ease;
@@ -797,7 +797,7 @@
   gap: 4px;
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: background 0.15s ease;
 }
 
@@ -814,7 +814,7 @@
   width: 8px;
   height: 8px;
   background: var(--pricing-border);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .notice-slider__step--active .notice-slider__step-dot {
@@ -853,9 +853,9 @@
   padding: 10px 24px;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .pricing-btn--secondary {

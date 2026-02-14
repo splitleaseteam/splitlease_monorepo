@@ -264,3 +264,11 @@ ehthumbs.db
 !/.node-version
 !/.pages.toml
 app/.env
+
+# Status and test result files (not needed for git)
+r*_status.md
+*_status.md
+*_scoreboard.md
+E2E_TEST_RESULTS.md
+SCHEMA_QUERY_RESULTS.md
+DATABASE_SCHEMA.md

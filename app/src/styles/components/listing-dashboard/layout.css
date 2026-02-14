@@ -3,14 +3,14 @@
 /* CSS Variables for Dashboard */
 :root {
   --ld-primary-contrast: #f1ffff;
-  --ld-success: #31135d;
+  --ld-success: var(--primary-purple);
   --ld-background: #f7f8f9;
   --ld-bg: #ffffff;
   --ld-surface-alt: #f4f3fb;
   --ld-text-primary: #1c274c;
-  --ld-text-secondary: #6b7280;
+  --ld-text-secondary: var(--text-gray);
   --ld-accent-purple: #6b4fbb;
-  --ld-border-color: #e5e7eb;
+  --ld-border-color: var(--border-color);
   --ld-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -60,7 +60,7 @@
   background-color: var(--ld-accent-purple);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s;
@@ -86,7 +86,7 @@
   padding: 12px 16px;
   background-color: #eff6ff;
   border: 2px dashed #93c5fd;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   position: relative;
   width: calc(100% - 32px);
   text-align: left;
@@ -105,7 +105,7 @@
 /* Clickable variant */
 .listing-dashboard-alert--clickable {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .listing-dashboard-alert--clickable:hover {
@@ -127,7 +127,7 @@
   width: 24px;
   height: 24px;
   background-color: var(--ld-accent-purple);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   color: white;
 }
 
@@ -198,16 +198,16 @@
   padding: 20px 16px;
   background-color: white;
   border: 1px solid var(--ld-border-color);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 @media (min-width: 768px) {
   .listing-dashboard-action-card {
     gap: 16px;
     padding: 32px;
-    border-radius: 16px;
+    border-radius: var(--rounded-2xl);
   }
 }
 
@@ -223,7 +223,7 @@
   width: 10px;
   height: 10px;
   background-color: #ef4444;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 @media (min-width: 768px) {
@@ -241,8 +241,8 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  background-color: #f3f4f6;
-  border-radius: 8px;
+  background-color: var(--bg-light-gray);
+  border-radius: var(--rounded-lg);
   color: var(--ld-accent-purple);
 }
 
@@ -280,7 +280,7 @@
   background: var(--ld-text-primary);
   color: white;
   font-size: 12px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   opacity: 0;
@@ -311,7 +311,7 @@
   color: white;
   font-size: 11px;
   line-height: 1.4;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   white-space: nowrap;
   pointer-events: none;
   z-index: 10;
@@ -358,12 +358,12 @@
   gap: 6px;
   padding: 8px 16px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   background: var(--ld-surface-alt);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   color: var(--ld-text-primary);
   position: relative;
   white-space: nowrap;
@@ -435,7 +435,7 @@
   flex: 1 1 200px;
   min-width: 180px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   background: var(--ld-surface-alt);
   border: 1px solid #e8e6f5;
   text-decoration: none;
@@ -448,7 +448,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: var(--ld-accent-purple);
   background: #eeebfb;
   flex-shrink: 0;
@@ -505,7 +505,7 @@
 }
 
 .listing-dashboard-secondary__ai-btn:hover {
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
 }
 
 .listing-dashboard-secondary__dropdown {
@@ -519,7 +519,7 @@
   padding: 10px 16px;
   background-color: white;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-weight: 500;
   color: var(--ld-text-primary);
@@ -544,7 +544,7 @@
   min-width: 200px;
   background-color: white;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow: hidden;
@@ -564,7 +564,7 @@
 }
 
 .listing-dashboard-secondary__dropdown-item:hover {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
 }
 
 .listing-dashboard-secondary__dropdown-item:not(:last-child) {
@@ -572,7 +572,7 @@
 }
 
 .listing-dashboard-secondary__dropdown-item--active {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   font-weight: 600;
 }
 
@@ -580,14 +580,14 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   margin-right: 10px;
   flex-shrink: 0;
   vertical-align: middle;
 }
 
 .listing-dashboard-secondary__dropdown-dot--complete {
-  background-color: #22c55e;
+  background-color: var(--success-green);
 }
 
 .listing-dashboard-secondary__dropdown-dot--partial {
@@ -603,7 +603,7 @@
   padding: 24px;
   margin: 16px;
   background-color: white;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--ld-border-color);
 }
@@ -612,7 +612,7 @@
   .listing-dashboard-section {
     padding: 16px;
     margin: 12px;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
   }
 }
 
@@ -646,7 +646,7 @@
   font-weight: 500;
   cursor: pointer;
   padding: 8px 20px;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   transition: background-color 0.2s;
   text-decoration: none;
 }
@@ -672,7 +672,7 @@
   background-color: var(--ld-accent-purple);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -700,7 +700,7 @@
   background-color: var(--ld-accent-purple);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -730,7 +730,7 @@
 }
 
 .listing-dashboard-collapsible__header:hover {
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
 }
 
 .listing-dashboard-collapsible__title {
@@ -808,7 +808,7 @@
   }
 
   .listing-dashboard__card {
-    border-radius: 16px;
+    border-radius: var(--rounded-2xl);
   }
 
   .listing-dashboard-action-grid {

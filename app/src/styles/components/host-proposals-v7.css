@@ -21,7 +21,7 @@
    ======================================== */
 :root {
   /* Status Colors - High Contrast */
-  --hp7-purple-dark: #31135D;
+  --hp7-purple-dark: var(--primary-purple);
   --hp7-purple-primary: #6D31C2;
   --hp7-purple-light: #8C68EE;
   --hp7-purple-bg: #f8f5ff;
@@ -41,7 +41,7 @@
 
   /* Text Colors - WCAG AAA High Contrast */
   --hp7-text: #111111;                 /* Near black for maximum contrast */
-  --hp7-text-secondary: #374151;       /* Dark gray, 4.5:1+ contrast */
+  --hp7-text-secondary: var(--text-description);       /* Dark gray, 4.5:1+ contrast */
   --hp7-text-muted: #4b5563;           /* Medium gray, meets AA */
   --hp7-border: #e5e5e5;
   --hp7-border-light: #f0f0f0;
@@ -120,7 +120,7 @@
   border: 1px solid var(--hp7-border);
   border-radius: 100px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .hp7-listing-pill:hover {
@@ -135,7 +135,7 @@
 .hp7-listing-pill-thumb {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
 }
 
@@ -221,9 +221,9 @@
 .hp7-proposal-card {
   background: var(--hp7-white);
   border: 1px solid var(--hp7-border);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .hp7-proposal-card:hover {
@@ -272,7 +272,7 @@
 .hp7-guest-avatar {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
   flex-shrink: 0;
   border: 2px solid var(--hp7-border);
@@ -310,7 +310,7 @@
   color: var(--hp7-text-muted);
   padding: 6px 12px;
   background: var(--hp7-border-light);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   flex-shrink: 0;
 }
 
@@ -344,7 +344,7 @@
   color: var(--hp7-purple-primary);
   background: white;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   border: 1px solid var(--hp7-purple-border);
 }
 
@@ -357,7 +357,7 @@
   color: var(--hp7-green-text);
   background: var(--hp7-green-bg);
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .hp7-verified-badge svg {
@@ -441,7 +441,7 @@
 .hp7-status-icon {
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -493,7 +493,7 @@
 .hp7-ai-summary-icon {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   background: var(--hp7-purple-primary);
   color: white;
   display: flex;
@@ -578,7 +578,7 @@
 .hp7-guest-avatar-large {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
   border: 2px solid var(--hp7-border);
 }
@@ -616,7 +616,7 @@
   color: var(--hp7-text-secondary);
   background: var(--hp7-bg);
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   border: 1px solid var(--hp7-border);
 }
 
@@ -648,7 +648,7 @@
   color: var(--hp7-purple-primary);
   text-decoration: none;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   transition: background 0.15s;
   display: inline-flex;
   align-items: center;
@@ -727,7 +727,7 @@
 .hp7-day-pill {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -849,7 +849,7 @@
 .hp7-progress-dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: var(--hp7-border);
   flex-shrink: 0;
 }
@@ -901,7 +901,7 @@
   min-height: var(--hp7-min-touch-target);
   font-size: var(--hp7-font-size-sm);
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   transition: all var(--hp7-transition-fast);
   text-decoration: none;
@@ -976,7 +976,7 @@
   padding: 48px 24px;
   background: var(--hp7-white);
   border: 1px solid var(--hp7-border);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .hp7-empty-state-icon {
@@ -1139,7 +1139,7 @@
   text-decoration: none;
   font-weight: 600;
   font-size: var(--hp7-font-size-base);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   z-index: 1000;
   transition: top var(--hp7-transition-fast);
 }
@@ -1207,7 +1207,7 @@ a:focus:not(:focus-visible) {
 @media (prefers-contrast: high) {
   :root {
     --hp7-border: #000;
-    --hp7-text-muted: #374151;
+    --hp7-text-muted: var(--text-description);
   }
 
   .hp7-proposal-card {
@@ -1298,7 +1298,7 @@ a:focus:not(:focus-visible) {
   .hp7-narrative-avatar {
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     object-fit: cover;
     flex-shrink: 0;
     border: 2px solid var(--hp7-border);
@@ -1379,7 +1379,7 @@ a:focus:not(:focus-visible) {
   /* Primary (Accept): Filled purple */
   .hp7-narrative-actions .hp7-btn-success,
   .hp7-narrative-actions .hp7-btn-primary {
-    background: #31135D;
+    background: var(--primary-purple);
     color: white;
     border: none;
   }
@@ -1392,8 +1392,8 @@ a:focus:not(:focus-visible) {
   /* Secondary (Modify): Outlined purple */
   .hp7-narrative-actions .hp7-btn-outline {
     background: transparent;
-    color: #31135D;
-    border: 2px solid #31135D;
+    color: var(--primary-purple);
+    border: 2px solid var(--primary-purple);
   }
 
   .hp7-narrative-actions .hp7-btn-outline:hover {
@@ -1419,8 +1419,8 @@ a:focus:not(:focus-visible) {
   }
 
   .hp7-narrative-actions .hp7-btn-ghost:hover {
-    border-color: #31135D;
-    color: #31135D;
+    border-color: var(--primary-purple);
+    color: var(--primary-purple);
   }
 }
 

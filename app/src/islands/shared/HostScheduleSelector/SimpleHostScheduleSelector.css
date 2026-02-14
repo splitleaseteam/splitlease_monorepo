@@ -8,7 +8,7 @@
   display: inline-block;
   position: relative;
   border: 2px double #6B6B6B;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 12px;
   min-height: 60px;
   background: transparent;
@@ -49,7 +49,7 @@
   padding: 8px;
   margin: 0;
   border: 1px solid #FFFFFF;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 /* Individual night cell - BIGGER */
@@ -58,7 +58,7 @@
   height: 48px;
   background-color: #B2B2B2;
   border: 2px solid #9D9D9D;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,7 +161,7 @@
   background-color: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 13px;
   font-weight: 400;
   white-space: nowrap;

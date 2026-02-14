@@ -38,7 +38,7 @@
   height: 12px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: aiSpinnerRotate 0.6s linear infinite;
 }
 
@@ -57,7 +57,7 @@
 .listing-dashboard-section--ai-highlighted {
   position: relative;
   animation: aiHighlightPulse 2s ease-in-out 3, aiHighlightFadeOut 2s ease-out 6s forwards;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   margin: -12px;
   padding: 12px;
 }
@@ -94,12 +94,12 @@
   position: absolute;
   top: -8px;
   right: 12px;
-  background: linear-gradient(135deg, #6b4fbb 0%, #31135d 100%);
+  background: linear-gradient(135deg, #6b4fbb 0%, var(--primary-purple) 100%);
   color: white;
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   z-index: 1;
   animation: aiBadgeFadeIn 0.3s ease-out, aiBadgeFadeOut 0.5s ease-out 7.5s forwards;
 }

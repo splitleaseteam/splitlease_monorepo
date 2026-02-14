@@ -10,6 +10,7 @@
  * @throws {Error} If required parameters are missing or invalid.
  */
 import type { CalculateAverageWeeklyPriceParams } from './types.js';
+import { roundToTwoDecimals } from './utils/rounding.js';
 
 export function calculateAverageWeeklyPrice({ monthlyAvgNightly }: CalculateAverageWeeklyPriceParams): number {
   if (typeof monthlyAvgNightly !== 'number' || isNaN(monthlyAvgNightly)) {
@@ -19,8 +20,4 @@ export function calculateAverageWeeklyPrice({ monthlyAvgNightly }: CalculateAver
   }
 
   return roundToTwoDecimals(monthlyAvgNightly * 7);
-}
-
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
 }

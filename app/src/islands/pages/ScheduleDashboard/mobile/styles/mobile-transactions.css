@@ -10,7 +10,7 @@
 /* Transaction Row */
 .txn-row {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -61,7 +61,7 @@
 .status-badge {
   font-size: 12px;
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   font-weight: 500;
 }
 
@@ -81,7 +81,7 @@
 }
 
 .status-badge--cancelled {
-  background: #f5f5f5;
+  background: var(--bg-lighter-gray);
   color: #757575;
 }
 
@@ -124,7 +124,7 @@
 .txn-details__actions button {
   flex: 1;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -181,8 +181,8 @@
 
 .filter-chips button {
   padding: 8px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
+  border: 1px solid var(--border-gray-light);
+  border-radius: var(--rounded-pill);
   background: white;
   font-size: 14px;
 }
@@ -199,7 +199,7 @@
   background: var(--primary-purple, #5a2d82);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 600;
   font-size: 16px;
 }
@@ -264,7 +264,7 @@
 /* Transaction Note */
 .txn-details__note {
   background: #f8f9fa;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 12px;
   margin-top: 12px;
 }
@@ -290,7 +290,7 @@
 .txn-details__btn {
   flex: 1;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 600;
   font-size: 14px;
   border: none;
@@ -323,7 +323,7 @@
 }
 
 .txn-details__btn--cancel {
-  background: #f5f5f5;
+  background: var(--bg-lighter-gray);
   color: #666;
 }
 
@@ -334,7 +334,7 @@
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: txnSpin 0.8s linear infinite;
 }
 
@@ -356,8 +356,8 @@
   padding: 12px;
   margin-top: 16px;
   background: transparent;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--border-gray-light);
+  border-radius: var(--rounded-lg);
   color: var(--primary-purple, #5a2d82);
   font-size: 14px;
   font-weight: 500;
@@ -407,7 +407,7 @@
   background: var(--primary-purple, #5a2d82);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 600;
   cursor: pointer;
 }
@@ -494,7 +494,7 @@
   gap: 12px;
   align-items: center;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
@@ -518,7 +518,7 @@
 
 .transaction-detail-view__section {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
@@ -567,7 +567,7 @@
 .transaction-detail-view__timeline-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: #5a2d82;
   margin-top: 6px;
   flex-shrink: 0;
@@ -606,7 +606,7 @@
   flex: 1;
   padding: 12px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -652,7 +652,7 @@
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: txnSpin 0.8s linear infinite;
 }
 

@@ -18,11 +18,6 @@ export type TransactionType = 'full_week' | 'shared_night' | 'alternating';
 export type { ArchetypeType };
 
 /**
- * Urgency level classifications
- */
-export type UrgencyLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-
-/**
  * Roommate information for transaction context
  */
 export interface RoommateInfo {

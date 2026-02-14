@@ -86,7 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
   cursor: pointer;
   position: relative;
 }
@@ -124,10 +124,10 @@
   font-size: 14px;
   font-weight: 500;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 10px 24px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   margin-bottom: 12px;
 }
 
@@ -187,7 +187,7 @@
   max-width: 100%;
   max-height: 200px;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
 }
 
 .preview-delete {
@@ -197,7 +197,7 @@
   background-color: #E53E3E;
   color: white;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   width: 24px;
   height: 24px;
   display: flex;
@@ -205,7 +205,7 @@
   justify-content: center;
   cursor: pointer;
   font-size: 16px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   opacity: 0;
 }
 
@@ -227,18 +227,18 @@
 }
 
 .upload-images-btn {
-  background-color: #31135D;
+  background-color: var(--primary-purple);
   color: #FFFFFF;
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 500;
   border: none;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   padding: 8px 32px;
   min-width: 128px;
   height: 32px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .upload-images-btn:hover:not(:disabled) {

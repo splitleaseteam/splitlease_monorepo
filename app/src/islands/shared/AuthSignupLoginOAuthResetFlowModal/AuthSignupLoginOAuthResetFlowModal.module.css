@@ -25,7 +25,7 @@
 
 .modal {
   background-color: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 24px;
   max-width: 400px;
   width: 100%;
@@ -47,13 +47,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   transition: color 0.2s ease;
   z-index: 10;
 }
 
 .closeBtn:hover {
-  color: #6b7280;
+  color: var(--text-gray);
 }
 
 /* ============================================================================
@@ -85,13 +85,13 @@
 .title {
   font-size: 20px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-dark);
   margin: 0 0 8px 0;
 }
 
 .subtitle {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-gray);
   line-height: 1.5;
   margin: 0;
 }
@@ -106,16 +106,16 @@
    ============================================================================ */
 
 .userTypeCard {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   gap: 14px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
 }
 
 .userTypeCard:hover,
@@ -145,13 +145,13 @@
 .userTypeTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-dark);
   margin-bottom: 2px;
 }
 
 .userTypeDesc {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-gray);
   margin: 0;
   line-height: 1.4;
 }
@@ -173,7 +173,7 @@
   background-color: #0a66c2;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,7 +195,7 @@
   width: 20px;
   height: 20px;
   background-color: white;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,23 +225,23 @@
 .googleBtn {
   flex: 1;
   padding: 12px 16px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: var(--text-dark);
   font-family: inherit;
 }
 
 .googleBtn:hover:not(:disabled) {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   border-color: #d1d5db;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -258,7 +258,7 @@
 .linkedinConnected {
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid #10B981;
+  border: 1px solid var(--success-teal);
   background-color: rgba(16, 185, 129, 0.08);
   border-radius: 10px;
   display: flex;
@@ -270,8 +270,8 @@
 .linkedinConnectedCheck {
   width: 32px;
   height: 32px;
-  background-color: #10B981;
-  border-radius: 50%;
+  background-color: var(--success-teal);
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,12 +286,12 @@
 .linkedinConnectedName {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-dark);
 }
 
 .linkedinConnectedEmail {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-gray);
 }
 
 .linkedinConnectedChange {
@@ -324,12 +324,12 @@
 .dividerLine {
   flex: 1;
   height: 1px;
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
 }
 
 .dividerText {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   font-weight: 500;
 }
 
@@ -357,13 +357,13 @@
   display: block;
   font-size: 13px;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   margin-bottom: 6px;
 }
 
 .prefillBadge {
   font-size: 11px;
-  color: #10B981;
+  color: var(--success-teal);
   margin-left: 6px;
   font-weight: 500;
   display: inline-flex;
@@ -374,14 +374,14 @@
 .input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--text-dark);
   transition: border-color 0.2s ease, background-color 0.2s ease;
   outline: none;
   box-sizing: border-box;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   font-family: inherit;
 }
 
@@ -395,17 +395,17 @@
 }
 
 .inputSuccess {
-  border-color: #10B981;
+  border-color: var(--success-teal);
 }
 
 .inputPrefilled {
-  background-color: #f9fafb;
-  border-color: #e5e7eb;
+  background-color: var(--bg-light);
+  border-color: var(--border-color);
 }
 
 .helperText {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-gray);
   margin-top: 6px;
   line-height: 1.4;
 }
@@ -417,13 +417,13 @@
 .select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--text-dark);
   outline: none;
   box-sizing: border-box;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   cursor: pointer;
   transition: border-color 0.2s ease;
   font-family: inherit;
@@ -453,7 +453,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -472,7 +472,7 @@
 .passwordRequirements {
   margin-top: 12px;
   padding: 12px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border-radius: 10px;
 }
 
@@ -481,7 +481,7 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-gray);
   margin-bottom: 6px;
 }
 
@@ -490,7 +490,7 @@
 }
 
 .requirementMet {
-  color: #10B981;
+  color: var(--success-teal);
 }
 
 .requirementIcon {
@@ -529,7 +529,7 @@
 }
 
 .buttonDisabled {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -537,14 +537,14 @@
 .buttonSecondary {
   width: 100%;
   padding: 12px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: var(--text-dark);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   font-family: inherit;
   display: flex;
   align-items: center;
@@ -552,7 +552,7 @@
 }
 
 .buttonSecondary:hover:not(:disabled) {
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   border-color: #d1d5db;
 }
 
@@ -590,9 +590,9 @@
   text-align: center;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-gray);
 }
 
 .link {
@@ -622,7 +622,7 @@
 
 .termsText {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-gray);
   text-align: center;
   margin-top: 16px;
   line-height: 1.5;
@@ -640,12 +640,12 @@
   width: 80px;
   height: 80px;
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.1) 100%);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  color: #10B981;
+  color: var(--success-teal);
 }
 
 /* ============================================================================
@@ -684,14 +684,14 @@
 .dateSelect {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   font-size: 14px;
   outline: none;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   cursor: pointer;
   font-family: inherit;
-  color: #1a1a1a;
+  color: var(--text-dark);
 }
 
 .dateSelect:focus {
@@ -705,7 +705,7 @@
 .sectionLabel {
   font-size: 13px;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   margin-bottom: 12px;
 }
 
@@ -715,7 +715,7 @@
 
 .requiredNote {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-gray);
   margin-bottom: 16px;
 }
 
@@ -727,7 +727,7 @@
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;

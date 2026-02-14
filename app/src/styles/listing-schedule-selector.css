@@ -23,7 +23,7 @@
   margin: 0 0 12px 0;
   font-size: 12px;
   font-weight: 700;
-  color: #31135d;
+  color: var(--primary-purple);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -48,7 +48,7 @@
   aspect-ratio: 1;
   border: none;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -71,7 +71,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #31135d 0%, #31135d 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple) 100%);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -87,7 +87,7 @@
 }
 
 .day-button.selected {
-  background: linear-gradient(135deg, #31135d 0%, #31135d 100%);
+  background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple) 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(49, 19, 93, 0.4);
   transform: scale(1.05);
@@ -142,7 +142,7 @@
 }
 
 .info-value strong {
-  color: #31135d;
+  color: var(--primary-purple);
 }
 
 .info-value.success {
@@ -228,7 +228,7 @@
 
 .error-overlay {
   background-color: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   max-width: 400px;
   width: 90%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -240,7 +240,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-gray-light);
 }
 
 .error-header h3 {
@@ -280,7 +280,7 @@
 
 .error-actions {
   padding: 15px 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-gray-light);
   display: flex;
   justify-content: flex-end;
 }

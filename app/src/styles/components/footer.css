@@ -1,6 +1,6 @@
 /* Footer */
 .main-footer {
-    background: #31135D;
+    background: var(--primary-purple);
     color: rgba(255, 255, 255, 0.9);
     padding: 2rem 1.5rem 1rem;
     width: 100%;
@@ -97,7 +97,7 @@
 /* Import Listing Column - Enhanced styling */
 .import-column {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     padding: 1.25rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -197,7 +197,7 @@
     background: #5B21B6;
     color: #ffffff;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     padding: 12px 18px;
     font-size: 14px;
     font-weight: 600;
@@ -334,8 +334,8 @@
 .footer-bottom {
     padding: 1.25rem 2rem;
     margin: 0;
-    background: #f5f5f5;
-    border-top: 1px solid #e0e0e0;
+    background: var(--bg-lighter-gray);
+    border-top: 1px solid var(--border-gray-light);
     width: 100%;
     display: flex;
     justify-content: space-between;

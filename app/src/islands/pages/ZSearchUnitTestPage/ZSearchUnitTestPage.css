@@ -41,7 +41,7 @@
   flex-shrink: 0;
   padding: 20px;
   background: #FAFAFA;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid #E5E7EB;
   height: fit-content;
 }
@@ -62,7 +62,7 @@
   margin-bottom: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .zsut-select,
@@ -71,7 +71,7 @@
   padding: 10px 12px;
   font-size: 14px;
   border: 1px solid #D1D5DB;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   background: #FFFFFF;
   color: #111827;
 }
@@ -100,7 +100,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #374151;
+  color: var(--text-description);
   cursor: pointer;
 }
 
@@ -131,9 +131,9 @@
   padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .zsut-btn-primary {
@@ -148,7 +148,7 @@
 
 .zsut-btn-secondary {
   background: #FFFFFF;
-  color: #374151;
+  color: var(--text-description);
   border: 1px solid #D1D5DB;
   width: 100%;
 }
@@ -194,7 +194,7 @@
   padding: 16px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   transition: box-shadow 0.2s ease;
 }
 
@@ -243,9 +243,9 @@
   padding: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   background: #F3F4F6;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .zsut-badge-active {
@@ -279,7 +279,7 @@
   height: 40px;
   border: 3px solid #E5E7EB;
   border-top-color: #4B47CE;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: zsut-spin 0.8s linear infinite;
   margin-bottom: 16px;
 }

@@ -19,7 +19,7 @@
   background: #250856;
   color: #FFFFFF;
   padding: 10px 16px;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
@@ -41,7 +41,7 @@
   position: relative;
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background: linear-gradient(135deg, #250856 0%, #3d1a7e 100%);
   border: none;
   cursor: pointer;

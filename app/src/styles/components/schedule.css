@@ -41,7 +41,7 @@
 .schedule-card {
     background: var(--bg-white);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -72,13 +72,13 @@
 
 
 .day-badge.active {
-    background: #31135D;
+    background: var(--primary-purple);
     color: white;
 }
 
 .day-badge.inactive {
-    background: #e5e7eb;
-    color: #9ca3af;
+    background: var(--border-color);
+    color: var(--text-light-gray);
 }
 
 /* Removed hover effect to maintain consistent appearance */
@@ -97,7 +97,7 @@
     background: rgba(0, 0, 0, 0.8);
     color: white;
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: var(--rounded-sm);
     font-size: 0.75rem;
     white-space: nowrap;
     z-index: 10;
@@ -118,7 +118,7 @@
     background: var(--bg-white);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-all-slow);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -140,7 +140,7 @@
     padding: 0.75rem 2rem;
     font-size: 1rem;
     font-weight: 600;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     cursor: pointer;
     position: relative;
     z-index: 10;
@@ -161,7 +161,7 @@
     margin: 1rem 0;
     padding: 1rem;
     background: white;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     pointer-events: none; /* Let pointer events pass through to children */
 }
 
@@ -180,7 +180,7 @@
     align-items: center;
     padding: 0.5rem;
     background-color: white !important;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     pointer-events: none; /* Prevent lottie from blocking button interactions */
 }
 
@@ -224,9 +224,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     font-size: 2.5rem; /* Increased by 100% from 1.25rem */
-    transition: all 0.3s ease;
+    transition: var(--transition-all-slow);
 }
 
 .calendar-week .day.active {
@@ -330,12 +330,12 @@
 
 .lottie-card-v11 {
     background: var(--bg-light, #F8F7FA);
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
+    transition: var(--transition-all-slow);
 }
 
 .lottie-card-v11:hover {
@@ -419,9 +419,9 @@
     padding: 0.5rem 1.5rem;
     font-size: 0.9rem;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-all-base);
     display: inline-block;
 }
 

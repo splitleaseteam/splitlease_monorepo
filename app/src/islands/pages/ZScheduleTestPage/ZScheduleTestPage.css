@@ -64,7 +64,7 @@
 .zst-card {
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 18px;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
 }
@@ -91,7 +91,7 @@
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #D1D5DB;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   color: #111827;
   background: #FFFFFF;
@@ -103,7 +103,7 @@
   gap: 10px;
   align-items: center;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-description);
   margin-top: 12px;
 }
 
@@ -115,7 +115,7 @@
 
 .zst-button {
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid #CBD5F5;
   background: #EEF2FF;
   font-weight: 600;
@@ -175,7 +175,7 @@
 
 .zst-state-card {
   padding: 20px 24px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
   background: #F9FAFB;
   color: #111827;

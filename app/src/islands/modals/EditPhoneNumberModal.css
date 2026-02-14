@@ -3,7 +3,7 @@
  * Updated to follow POPUP_REPLICATION_PROTOCOL.md design system
  *
  * Color Scheme: Monochromatic Purple - NO GREEN, NO YELLOW
- * Primary: #31135D
+ * Primary: var(--primary-purple)
  * Light BG: #F7F2FA
  * Border: #E7E0EC
  * Text: #1C1B1F (primary), #49454F (secondary), #79747E (muted)
@@ -49,7 +49,7 @@
    ============================================================================ */
 .edit-phone-modal {
   background-color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   width: 90%;
   max-width: 420px;
   max-height: 92vh;
@@ -100,7 +100,7 @@
 .edit-phone-modal-icon {
   width: 24px;
   height: 24px;
-  color: #31135D;
+  color: var(--primary-purple);
   flex-shrink: 0;
 }
 
@@ -137,7 +137,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: #49454F;
   transition: background-color 0.2s ease;
   flex-shrink: 0;
@@ -189,14 +189,14 @@
   color: #1C1B1F;
   background: #FFFFFF;
   border: 1px solid #E7E0EC;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .edit-phone-input:focus {
   outline: none;
-  border-color: #31135D;
+  border-color: var(--primary-purple);
   box-shadow: 0 0 0 2px rgba(49, 19, 93, 0.15);
 }
 
@@ -233,23 +233,23 @@
   font-weight: 600;
   border-radius: 100px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   border: none;
 }
 
 .edit-phone-btn--secondary {
   background: transparent;
-  color: #31135D;
+  color: var(--primary-purple);
   border: 1px solid #E7E0EC;
 }
 
 .edit-phone-btn--secondary:hover {
   background-color: #F7F2FA;
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .edit-phone-btn--primary {
-  background-color: #31135D;
+  background-color: var(--primary-purple);
   color: #FFFFFF;
 }
 
@@ -270,7 +270,7 @@
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #FFFFFF;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: editPhoneSpin 1s linear infinite;
   margin-right: 8px;
   vertical-align: middle;

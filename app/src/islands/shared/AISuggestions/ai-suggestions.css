@@ -26,7 +26,7 @@
 
 .ai-suggestions-modal {
   background: var(--bg-white);
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   max-width: 640px;
   width: 90%;
   max-height: 85vh;
@@ -69,7 +69,7 @@
   background: var(--accent-purple);
   color: white;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   font-size: var(--text-sm);
   font-weight: 500;
 }
@@ -85,10 +85,10 @@
   border: 1px solid var(--border-color);
   color: var(--text-gray);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: var(--text-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .ai-suggestions-transcript-btn:hover {
@@ -219,11 +219,11 @@
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 500;
   font-size: var(--text-base);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .ai-suggestions-btn-primary:hover:not(:disabled) {
@@ -240,15 +240,15 @@
   color: var(--text-dark);
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 500;
   font-size: var(--text-base);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .ai-suggestions-btn-secondary:hover:not(:disabled) {
-  background: #e5e7eb;
+  background: var(--border-color);
 }
 
 .ai-suggestions-btn-secondary:disabled {
@@ -271,9 +271,9 @@
 .suggestion-card {
   background: var(--bg-white);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 16px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .suggestion-card:hover {
@@ -311,13 +311,13 @@
   color: var(--text-gray);
   padding: 4px 8px;
   background: var(--bg-light-gray);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 /* Previous Content (amber highlight) */
 .suggestion-card-previous {
   background: #fef3c7;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 12px;
   margin-bottom: 12px;
 }
@@ -352,7 +352,7 @@
   padding: 12px;
   background: var(--bg-light);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: var(--text-base);
   color: var(--text-dark);
   white-space: pre-wrap;
@@ -369,12 +369,12 @@
 
 .suggestion-card-btn {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-weight: 500;
   font-size: var(--text-sm);
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .suggestion-card-btn--ignore {
@@ -383,7 +383,7 @@
 }
 
 .suggestion-card-btn--ignore:hover:not(:disabled) {
-  background: #e5e7eb;
+  background: var(--border-color);
   color: var(--text-dark);
 }
 
@@ -430,7 +430,7 @@
 
 .transcript-popup {
   background: var(--bg-white);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
@@ -502,14 +502,14 @@
   color: var(--text-dark);
   border: none;
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .transcript-popup-btn:hover {
-  background: #e5e7eb;
+  background: var(--border-color);
 }
 
 /* ==========================================
@@ -532,7 +532,7 @@
 
 .combine-modal {
   background: var(--bg-white);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
@@ -593,7 +593,7 @@
   min-height: 200px;
   padding: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-family: inherit;
   font-size: var(--text-base);
   resize: vertical;
@@ -615,7 +615,7 @@
 .combine-modal-shortcut kbd {
   background: var(--bg-light-gray);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   font-family: inherit;
   font-size: var(--text-xs);
 }
@@ -630,12 +630,12 @@
 
 .combine-modal-btn {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-weight: 500;
   font-size: var(--text-base);
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .combine-modal-btn--cancel {
@@ -644,7 +644,7 @@
 }
 
 .combine-modal-btn--cancel:hover {
-  background: #e5e7eb;
+  background: var(--border-color);
 }
 
 .combine-modal-btn--confirm {

@@ -92,7 +92,7 @@
 .buyout-panel__selected {
   padding: 0.75rem 1rem;
   background: var(--schedule-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 1rem;
 }
 
@@ -139,7 +139,7 @@
 .buyout-panel__fees-icon {
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   border: 1px solid var(--schedule-border);
   display: inline-flex;
   align-items: center;
@@ -209,7 +209,7 @@
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--schedule-border);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.9rem;
   resize: none;
   font-family: inherit;
@@ -229,12 +229,12 @@
 
 .buyout-panel__btn {
   padding: 0.875rem 1.5rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .buyout-panel__btn--primary {
@@ -291,7 +291,7 @@
   height: 64px;
   background: #EFF6FF;
   color: #2563EB;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   font-size: 2rem;
   margin: 0 auto 1rem;
 }
@@ -321,7 +321,7 @@
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 0.8s linear infinite;
 }
 
@@ -331,7 +331,7 @@
   gap: 0.5rem;
   padding: 1rem;
   background: var(--schedule-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: var(--schedule-text-muted);
   font-size: 0.9rem;
 }
@@ -367,7 +367,7 @@
   padding: 0.75rem;
   background: #FEF2F2;
   color: #DC2626;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
@@ -386,11 +386,11 @@
   margin-top: 1rem;
   background: transparent;
   border: 1px dashed var(--schedule-border);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   color: var(--schedule-text-muted);
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .buyout-panel__settings-toggle:hover {
@@ -455,8 +455,8 @@
   padding: 1rem;
   background: var(--schedule-bg);
   border: 2px solid var(--schedule-border);
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-xl);
+  transition: var(--transition-all-base);
 }
 
 .buyout-panel__swap-card--theirs {
@@ -532,9 +532,9 @@
   color: var(--schedule-text);
   background: var(--schedule-bg);
   border: 1px solid var(--schedule-border);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .buyout-panel__swap-night-btn:hover {
@@ -573,7 +573,7 @@
   padding: 0.75rem 1rem;
   background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
   border: 1px solid #A5D6A7;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.85rem;
   color: #2E7D32;
 }
@@ -619,9 +619,9 @@
   color: var(--schedule-text-muted);
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .buyout-panel__type-tab:hover {
@@ -663,7 +663,7 @@
 
 .buyout-settings {
   background: var(--schedule-bg);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   padding: 1.5rem;
 }
 
@@ -712,7 +712,7 @@
 .buyout-settings__control--readonly {
   padding: 0.75rem;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--schedule-border);
 }
 
@@ -763,7 +763,7 @@
   width: 18px;
   height: 18px;
   background: var(--schedule-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -776,7 +776,7 @@
   width: 18px;
   height: 18px;
   background: var(--schedule-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   cursor: pointer;
   border: none;
 }
@@ -792,7 +792,7 @@
 .buyout-settings__control--toggle {
   padding: 0.75rem;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--schedule-border);
 }
 
@@ -808,7 +808,7 @@
   height: 24px;
   background: var(--schedule-border);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -824,7 +824,7 @@
   width: 20px;
   height: 20px;
   background: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: transform 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
@@ -837,7 +837,7 @@
 .buyout-settings__price-range {
   padding: 0.75rem;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--schedule-border);
 }
 
@@ -863,7 +863,7 @@
   display: flex;
   align-items: center;
   border: 1px solid var(--schedule-border);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   overflow: hidden;
 }
 
@@ -909,11 +909,11 @@
 
 .buyout-settings__btn {
   padding: 0.6rem 1.25rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .buyout-settings__btn--primary {
@@ -948,7 +948,7 @@
 
 .buyout-viz {
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--schedule-border);
   padding: 1rem;
   height: 100%;
@@ -1026,7 +1026,7 @@
       rgba(239, 68, 68, 0.05) 0%,
       rgba(34, 197, 94, 0.05) 50%,
       rgba(239, 68, 68, 0.05) 100%);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   overflow: hidden;
 }
 
@@ -1069,7 +1069,7 @@
 
 .buyout-viz__bar-container--weekend {
   background: rgba(0, 0, 0, 0.03);
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .buyout-viz__price-label {
@@ -1240,7 +1240,7 @@
   margin-top: 0.5rem;
   padding: 0.4rem 0.6rem;
   background: var(--schedule-bg-light);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   border: 1px solid var(--schedule-border);
 }
 
@@ -1259,7 +1259,7 @@
 .buyout-settings__price-viz {
   padding: 0.75rem;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--schedule-border);
 }
 
@@ -1295,7 +1295,7 @@
       rgba(34, 197, 94, 0.15) 15%,
       rgba(34, 197, 94, 0.15) 85%,
       rgba(239, 68, 68, 0.15) 100%);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   position: relative;
   border: 1px solid var(--schedule-border);
 }
@@ -1305,8 +1305,8 @@
   top: 2px;
   bottom: 2px;
   background: linear-gradient(90deg, #3B82F6, #60A5FA);
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  border-radius: var(--rounded-sm);
+  transition: var(--transition-all-slow);
 }
 
 .buyout-settings__price-viz-marker {
@@ -1370,7 +1370,7 @@
 .buyout-settings__quick-summary {
   padding: 0.75rem;
   background: var(--schedule-bg);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border: 1px solid var(--schedule-border);
 }
 
@@ -1396,7 +1396,7 @@
   align-items: center;
   padding: 0.25rem 0.4rem;
   background: white;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   font-size: 0.75rem;
 }
 
@@ -1616,7 +1616,7 @@
   gap: 0.4rem;
   cursor: pointer;
   padding: 0.4rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   transition: background-color 0.15s ease;
 }
 
@@ -1665,7 +1665,7 @@
   margin-top: 0.5rem;
   padding: 0.6rem 0.75rem;
   background: #F3F4F6;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 0.8rem;
   color: #4B5563;
 }
@@ -1677,7 +1677,7 @@
 .buyout-panel__flexibility-comparison {
   margin-top: 0.4rem !important;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
 }
 
 /* Smart -10% Button Styles (Flexibility Lever) */
@@ -1709,7 +1709,7 @@
 
 .buyout-panel__stepper-btn--plus:hover:not(:disabled) {
   background: #ECFDF5;
-  border-color: #10B981;
+  border-color: var(--success-teal);
   color: #059669;
 }
 
@@ -1719,7 +1719,7 @@
   padding: 0.5rem 0.75rem;
   background: #FEF3C7;
   border: 1px solid #F59E0B;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 0.8rem;
   color: #92400E;
   display: flex;
@@ -1746,7 +1746,7 @@
   background: #1F2937;
   color: #F9FAFB;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.8rem;
   min-width: 160px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -1849,8 +1849,8 @@
   color: #9CA3AF;
   cursor: pointer;
   padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  transition: all 0.15s ease;
+  border-radius: var(--rounded-sm);
+  transition: var(--transition-all-fast);
 }
 
 .buyout-panel__compact-close:hover:not(:disabled) {
@@ -1941,7 +1941,7 @@
 .counter-offer-content__comparison {
   background: #F9FAFB;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 1.5rem;
 }
 
@@ -1978,7 +1978,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-description);
   margin-bottom: 0.5rem;
 }
 
@@ -2000,7 +2000,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   border: 2px solid #E5E7EB;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   text-align: right;
 }
 
@@ -2017,16 +2017,16 @@
 
 .counter-offer-content__btn {
   padding: 0.625rem 1.25rem;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .counter-offer-content__btn--secondary {
   background: white;
   border: 1px solid #E5E7EB;
-  color: #374151;
+  color: var(--text-description);
 }
 
 .counter-offer-content__btn--secondary:hover {
@@ -2136,7 +2136,7 @@
 
 .incoming-request__message {
   background: var(--schedule-bg);
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   padding: 0.625rem;
   margin-top: 0.5rem;
 }
@@ -2182,16 +2182,16 @@
 
 .incoming-request__btn {
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .incoming-request__btn--success {
-  background: #10B981;
-  border: 1px solid #10B981;
+  background: var(--success-teal);
+  border: 1px solid var(--success-teal);
   color: white;
 }
 

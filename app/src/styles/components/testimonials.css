@@ -80,10 +80,10 @@
 .dot {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     background: rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-all-slow);
 }
 
 .dot.active {

@@ -15,7 +15,7 @@
 
 .host-overview-page-wrapper {
   /* Primary Purple Palette (from Popup Redesign Protocol) */
-  --ho-color-primary-purple: #31135D;      /* Headers, primary buttons, icons */
+  --ho-color-primary-purple: var(--primary-purple);      /* Headers, primary buttons, icons */
   --ho-color-primary-purple-hover: #4A2F7C; /* Primary button hover */
   --ho-color-positive-purple: #5B5FCF;      /* Replaces ALL green/success states */
   --ho-color-positive-purple-hover: #4B48C8;
@@ -26,9 +26,9 @@
   --ho-color-purple-selected: #E8DEF8;      /* Selected states */
 
   /* Legacy aliases (mapped to new purple scheme) */
-  --ho-color-deep-purple: #31135D;
+  --ho-color-deep-purple: var(--primary-purple);
   --ho-color-royal-purple: #4A2F7C;
-  --ho-color-primary-brand: #31135D;
+  --ho-color-primary-brand: var(--primary-purple);
   --ho-color-primary-blue: #5B5FCF;         /* Now maps to positive purple */
   --ho-color-secondary-blue: #4B48C8;
   --ho-color-light-purple: #F7F2FA;
@@ -160,7 +160,7 @@
   width: 32px;
   height: 32px;
   background-color: var(--ho-color-primary-purple);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,7 +193,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: all var(--ho-transition-normal);
   flex-shrink: 0;
 }
@@ -310,7 +310,7 @@
   height: 48px;
   border: 4px solid var(--ho-color-border-light);
   border-top-color: var(--ho-color-primary-blue);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 1s linear infinite;
   margin-bottom: var(--ho-spacing-xl);
 }
@@ -361,7 +361,7 @@
   min-height: 40px;
 }
 
-/* 1. Primary - Solid Purple (#31135D) */
+/* 1. Primary - Solid Purple (var(--primary-purple)) */
 .btn--primary {
   background-color: var(--ho-color-primary-purple);
   color: var(--ho-color-text-light);
@@ -1017,7 +1017,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   font-size: 14px;
   font-weight: 700;
 }
@@ -1271,7 +1271,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: all var(--ho-transition-normal);
   z-index: 10;
 }
@@ -1364,7 +1364,7 @@
   width: 24px;
   height: 24px;
   background-color: var(--ho-color-primary-purple);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -9,7 +9,7 @@
 
 .benefits-wrapper {
     background: linear-gradient(135deg, #E8E3F5 0%, #EDE9F7 50%, #F2EFF9 100%);
-    border-radius: 20px;
+    border-radius: var(--rounded-pill);
     padding: 2rem 1.5rem;
     min-height: 320px;
 }
@@ -55,7 +55,7 @@
 
 .benefit-item p {
     font-size: 1rem;
-    color: #1a1a1a;
+    color: var(--text-dark);
     line-height: 1.5;
     margin: 0;
     padding-top: 2px;
@@ -71,9 +71,9 @@
     padding: 0.75rem 2rem;
     font-size: 1rem;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-all-base);
     display: inline-block;
 }
 

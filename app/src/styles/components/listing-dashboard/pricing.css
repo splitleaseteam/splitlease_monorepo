@@ -60,10 +60,10 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   font-size: 12px;
   font-weight: 500;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
   color: var(--ld-text-secondary);
 }
 
@@ -84,7 +84,7 @@
 }
 
 .ld-nightly-legend__palette-container {
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--ld-border-color);
@@ -106,12 +106,12 @@
 }
 
 /* Gradient colors - dark to light (6 swatches for 2-7 nights) */
-.ld-nightly-legend__swatch--n1 { background: #374151; color: white; }
+.ld-nightly-legend__swatch--n1 { background: var(--text-description); color: white; }
 .ld-nightly-legend__swatch--n2 { background: #4b5563; color: white; }
-.ld-nightly-legend__swatch--n3 { background: #6b7280; color: white; }
-.ld-nightly-legend__swatch--n4 { background: #9ca3af; color: #374151; }
-.ld-nightly-legend__swatch--n5 { background: #d1d5db; color: #374151; }
-.ld-nightly-legend__swatch--n6 { background: #e5e7eb; color: #374151; }
+.ld-nightly-legend__swatch--n3 { background: var(--text-gray); color: white; }
+.ld-nightly-legend__swatch--n4 { background: var(--text-light-gray); color: var(--text-description); }
+.ld-nightly-legend__swatch--n5 { background: #d1d5db; color: var(--text-description); }
+.ld-nightly-legend__swatch--n6 { background: var(--border-color); color: var(--text-description); }
 
 .ld-nightly-legend__swatch-nights {
   font-size: 10px;
@@ -152,7 +152,7 @@
   padding: 24px;
   background: linear-gradient(135deg, #f8f5ff 0%, #eef2ff 100%);
   border: 2px solid var(--ld-accent-purple);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   text-align: center;
 }
 
@@ -190,7 +190,7 @@
   text-align: center;
   padding: 16px;
   background: linear-gradient(135deg, #f3e8ff 0%, #fdf4ff 100%);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .listing-dashboard-pricing__weekly-rate-label {
@@ -319,10 +319,10 @@
   height: 24px;
   background-color: transparent;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   color: #9CA3AF;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   padding: 0;
 }
 
@@ -341,11 +341,11 @@
   background-color: var(--ld-success);
   color: #FCFAFF;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   min-width: 200px;
   text-align: center;
 }
@@ -357,7 +357,7 @@
 
 .pricing-edit-save--disabled,
 .pricing-edit-save:disabled {
-  background-color: #9ca3af;
+  background-color: var(--text-light-gray);
   cursor: not-allowed;
   transform: none;
 }
@@ -368,7 +368,7 @@
   justify-content: center;
   padding-top: 32px;
   margin-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
 }
 
 /* Rental Type Cards */
@@ -422,10 +422,10 @@
   height: 18px;
   background-color: transparent;
   border: none;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   color: #9CA3AF;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
   padding: 0;
   flex-shrink: 0;
 }
@@ -443,9 +443,9 @@
 .pricing-edit-field select {
   padding: 12px 16px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -458,7 +458,7 @@
 
 .pricing-edit-field input:disabled,
 .pricing-edit-field select:disabled {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
   cursor: not-allowed;
 }
 
@@ -480,8 +480,8 @@
   flex-direction: column;
   gap: 16px;
   padding: 24px;
-  background-color: #f9fafb;
-  border-radius: 12px;
+  background-color: var(--bg-light);
+  border-radius: var(--rounded-xl);
   border: 1px solid var(--ld-border-color);
 }
 
@@ -514,7 +514,7 @@
 }
 
 .pricing-edit-schedule__select-all:disabled {
-  color: #9ca3af;
+  color: var(--text-light-gray);
   cursor: not-allowed;
 }
 
@@ -535,7 +535,7 @@
 .pricing-edit-schedule__legend-dot {
   width: 12px;
   height: 12px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .pricing-edit-schedule__legend-dot--selected {
@@ -572,10 +572,10 @@
   width: 80px;
   padding: 10px 12px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   text-align: center;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
 }
 
 .pricing-edit-nights-range__inputs input:focus {
@@ -620,9 +620,9 @@
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  background-color: #f9fafb;
+  background-color: var(--bg-light);
   border: 1px solid var(--ld-border-color);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .pricing-edit-compensation__item label {
@@ -636,7 +636,7 @@
 .pricing-edit-compensation__item input {
   padding: 12px 16px;
   border: 1px solid var(--ld-border-color);
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 16px;
   font-weight: 600;
   background-color: white;
@@ -677,7 +677,7 @@
   padding: 20px;
   background-color: #eff6ff;
   border: 1px solid #bfdbfe;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .pricing-edit-agreement__info {
@@ -762,7 +762,7 @@
 
 .pricing-edit-overlay .host-modal {
   background-color: #ffffff;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   max-height: 90vh;
   overflow: hidden;
@@ -780,7 +780,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .pricing-edit-overlay .host-modal__title {
@@ -801,15 +801,15 @@
   cursor: pointer;
   font-size: 28px;
   line-height: 1;
-  color: #6b7280;
+  color: var(--text-gray);
   padding: 0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-base);
 }
 
 .pricing-edit-overlay .host-modal__close:hover {
   color: #1f2937;
-  background-color: #f3f4f6;
+  background-color: var(--bg-light-gray);
 }
 
 .pricing-edit-overlay .host-modal__content {
@@ -831,11 +831,11 @@
 
 .pricing-edit-overlay .host-confirm-modal__actions .btn {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   border: none;
 }
 
@@ -849,11 +849,11 @@
 }
 
 .pricing-edit-overlay .host-confirm-modal__actions .btn--secondary {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--bg-light-gray);
+  color: var(--text-description);
   border: 1px solid #d1d5db;
 }
 
 .pricing-edit-overlay .host-confirm-modal__actions .btn--secondary:hover {
-  background-color: #e5e7eb;
+  background-color: var(--border-color);
 }

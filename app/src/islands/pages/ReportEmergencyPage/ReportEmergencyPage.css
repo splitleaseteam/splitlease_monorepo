@@ -50,7 +50,7 @@
 .emergency-notice {
   background-color: #fff3cd;
   border: 1px solid #ffecb5;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   padding: 1rem;
   color: #664d03;
   font-size: 0.95rem;
@@ -70,7 +70,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
 }
@@ -87,7 +87,7 @@
 
 .emergency-form {
   background: #fff;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 2rem;
 }
@@ -154,7 +154,7 @@
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid #ced4da;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 1rem;
   background-color: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -235,7 +235,7 @@
   display: block;
   cursor: pointer;
   border: 2px dashed #ced4da;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   overflow: hidden;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
@@ -306,7 +306,7 @@
 
 .success-state {
   background: #fff;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 3rem 2rem;
   text-align: center;
@@ -334,7 +334,7 @@
 
 .success-state__note {
   background-color: #fff3cd;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   padding: 0.75rem 1rem;
   color: #664d03;
   font-size: 0.9rem;
@@ -363,12 +363,12 @@
   justify-content: center;
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .btn:disabled {

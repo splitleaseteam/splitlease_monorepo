@@ -1,13 +1,13 @@
 /*
  * Split Lease Help Center - Stylesheet
- * Brand Color: #31135d (Deep Purple)
+ * Brand Color: var(--primary-purple) (Deep Purple)
  */
 
 /* ===================================
    ROOT VARIABLES (Help Center specific)
    =================================== */
 :root {
-  --hc-brand-primary: #31135d;
+  --hc-brand-primary: var(--primary-purple);
   --hc-brand-primary-dark: #1e0a37;
   --hc-brand-primary-light: #4a1f8f;
 
@@ -16,11 +16,11 @@
   --hc-success-text: #2E7D32;
 
   --hc-info-bg: #F3E5F5;
-  --hc-info-border: #31135d;
-  --hc-info-text: #31135d;
+  --hc-info-border: var(--primary-purple);
+  --hc-info-text: var(--primary-purple);
 
   --hc-text-primary: #2C2C2C;
-  --hc-text-secondary: #666666;
+  --hc-text-secondary: var(--text-medium-gray);
   --hc-text-tertiary: #999999;
 
   --hc-bg-light-gray: #F5F5F5;
@@ -40,7 +40,7 @@
    SEARCH BANNER
    =================================== */
 .hc-search-banner {
-  background: #31135d;
+  background: var(--primary-purple);
   padding: 32px 16px 40px;
   padding-top: calc(70px + 32px);
   text-align: center;
@@ -670,7 +670,7 @@
   height: 40px;
   border: 3px solid var(--hc-border-light);
   border-top-color: var(--hc-brand-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
 }

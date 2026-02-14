@@ -7,7 +7,7 @@
  * BACKGROUND: White (#FFFFFF) with colored text/progress by type
  *
  * Alert Type Colors:
- * - success: #22C55E (green)
+ * - success: var(--success-green) (green)
  * - error: #EF4444 (red)
  * - warning: #F59E0B (amber)
  * - info: #3B82F6 (blue)
@@ -42,7 +42,7 @@
   padding: 14px 16px;
   padding-right: 40px; /* Space for close button */
   background-color: #FFFFFF;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   pointer-events: auto;
@@ -51,7 +51,7 @@
   /* Animation states */
   opacity: 0;
   transform: translateY(-20px);
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
 }
 
 .toast.show {
@@ -96,7 +96,7 @@
   font-size: 13px;
   font-weight: 400;
   line-height: 1.5;
-  color: #6b7280;
+  color: var(--text-gray);
   word-wrap: break-word;
 }
 
@@ -112,18 +112,18 @@
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
-  transition: all 0.2s ease;
+  color: var(--text-light-gray);
+  transition: var(--transition-all-base);
 }
 
 .toast-close:hover {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--bg-light-gray);
+  color: var(--text-gray);
 }
 
 .toast-close svg {
@@ -160,7 +160,7 @@
 
 /* Success - Green (using darker shade for better contrast) */
 .toast-success {
-  border-left: 4px solid #22C55E;
+  border-left: 4px solid var(--success-green);
 }
 
 .toast-success .toast-title {

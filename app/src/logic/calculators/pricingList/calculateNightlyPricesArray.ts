@@ -29,6 +29,7 @@
  */
 import { PRICING_CONSTANTS } from '../../constants/pricingConstants.js';
 import type { CalculateNightlyPricesArrayParams } from './types.js';
+import { roundToTwoDecimals } from './utils/rounding.js';
 
 export function calculateNightlyPricesArray({ hostCompensation, multipliers }: CalculateNightlyPricesArrayParams): (number | null)[] {
   // No Fallback: Validate hostCompensation
@@ -81,13 +82,4 @@ export function calculateNightlyPricesArray({ hostCompensation, multipliers }: C
   }
 
   return pricesArray;
-}
-
-/**
- * Round a number to 2 decimal places (for currency).
- * @param value - The value to round.
- * @returns Rounded value.
- */
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
 }

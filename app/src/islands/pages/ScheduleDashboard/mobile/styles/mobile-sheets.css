@@ -99,7 +99,7 @@
   text-align: center;
   padding: 16px;
   background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
 }
 
 .request-sheet__label {
@@ -121,8 +121,8 @@
   display: flex;
   align-items: center;
   background: #f8f9fa;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: 2px solid var(--border-gray-light);
+  border-radius: var(--rounded-lg);
   padding: 12px;
   transition: border-color 0.2s;
 }
@@ -156,8 +156,8 @@
 
 .request-sheet__textarea {
   width: 100%;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: 2px solid var(--border-gray-light);
+  border-radius: var(--rounded-lg);
   padding: 12px;
   font-size: 15px;
   resize: none;
@@ -174,7 +174,7 @@
 .request-sheet__btn {
   flex: 1;
   padding: 14px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 16px;
   font-weight: 600;
   border: none;
@@ -207,12 +207,12 @@
 
 .night-chip {
   padding: 8px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 20px;
+  border: 2px solid var(--border-gray-light);
+  border-radius: var(--rounded-pill);
   background: white;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .night-chip--selected {

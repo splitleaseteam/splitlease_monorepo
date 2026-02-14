@@ -6,7 +6,7 @@
    ============================================ */
 .mobile-month-calendar {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
@@ -27,7 +27,7 @@
   color: white;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   font-size: 20px;
   cursor: pointer;
   transition: background 0.2s;
@@ -82,7 +82,7 @@
   justify-content: center;
   background: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
   position: relative;
   min-height: 44px;
@@ -96,7 +96,7 @@
 .month-day-cell__dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   position: absolute;
   bottom: 4px;
 }
@@ -166,7 +166,7 @@
 
 .month-day-cell:not(.month-day-cell--outside):active {
   transform: scale(0.95);
-  background: #e0e0e0;
+  background: var(--border-gray-light);
 }
 
 .month-day-cell--mine:not(.month-day-cell--outside):hover { background: #e1bee7; }
@@ -176,7 +176,7 @@
 .month-day-cell--today .month-day-cell__num {
   background: var(--primary-purple, #5a2d82);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   width: 24px;
   height: 24px;
   display: flex;
@@ -201,7 +201,7 @@
 .mobile-month-calendar__legend-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: inline-block;
 }
 
@@ -280,9 +280,9 @@
   margin-top: 16px;
   padding: 16px;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-gray-light);
 }
 
 .day-detail-panel__header {
@@ -305,7 +305,7 @@
   color: #999;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
   transition: background 0.15s, color 0.15s;
   min-width: 32px;
   min-height: 32px;
@@ -320,7 +320,7 @@
 }
 
 .day-detail-panel__close:active {
-  background: #e0e0e0;
+  background: var(--border-gray-light);
 }
 
 .day-detail-panel__info {
@@ -338,7 +338,7 @@
   flex: 1;
   padding: 12px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   background: var(--primary-purple, #5a2d82);
   color: white;
   font-size: 14px;
@@ -387,7 +387,7 @@
 .request-type-toggle__segments {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-gray-light);
   border-radius: 10px;
   overflow: hidden;
   background: #f8f9fa;
@@ -402,7 +402,7 @@
   padding: 10px 8px;
   background: transparent;
   border: none;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--border-gray-light);
   cursor: pointer;
   color: #333;
   min-height: 64px;
@@ -506,7 +506,7 @@
 
 .day-drawer__actions button {
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: none;
   font-size: 16px;
   font-weight: 600;

@@ -47,7 +47,7 @@
     content: '';
     position: absolute;
     inset: -20px;
-    border-radius: 50%;
+    border-radius: var(--rounded-full);
     background: radial-gradient(circle,
         rgba(49, 19, 93, 0.4) 0%,
         rgba(74, 29, 127, 0.2) 40%,
@@ -98,7 +98,7 @@
 .value-card h3 {
     font-size: 0.875rem;
     font-weight: 400;
-    color: #6b7280;
+    color: var(--text-gray);
     margin: 0;
     line-height: 1.4;
     transition: all 0.4s ease;

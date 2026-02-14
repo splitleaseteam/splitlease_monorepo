@@ -8,7 +8,7 @@
   padding: 1.25rem;
   background-color: white;
   border-radius: 0.75rem;
-  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border: 1px solid var(--color-gray-200, var(--border-color));
   transition: box-shadow 0.2s, border-color 0.2s;
 }
 
@@ -34,7 +34,7 @@
 .submitted-review-card__avatar {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
 }
 
@@ -44,9 +44,9 @@
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 50%;
-  background-color: var(--color-gray-100, #f3f4f6);
-  color: var(--color-gray-400, #9ca3af);
+  border-radius: var(--rounded-full);
+  background-color: var(--color-gray-100, var(--bg-light-gray));
+  color: var(--color-gray-400, var(--text-light-gray));
 }
 
 .submitted-review-card__reviewee-info {
@@ -56,7 +56,7 @@
 
 .submitted-review-card__reviewee-label {
   font-size: 0.75rem;
-  color: var(--color-gray-500, #6b7280);
+  color: var(--color-gray-500, var(--text-gray));
 }
 
 .submitted-review-card__reviewee-name {
@@ -106,8 +106,8 @@
   padding: 0.75rem;
   font-size: 0.875rem;
   font-style: italic;
-  color: var(--color-gray-700, #374151);
-  background-color: var(--color-gray-50, #f9fafb);
+  color: var(--color-gray-700, var(--text-description));
+  background-color: var(--color-gray-50, var(--bg-light));
   border-radius: 0.5rem;
   border-left: 3px solid var(--color-green-400, #4ade80);
 }
@@ -120,7 +120,7 @@
 
 .submitted-review-card__date {
   font-size: 0.8125rem;
-  color: var(--color-gray-500, #6b7280);
+  color: var(--color-gray-500, var(--text-gray));
 }
 
 .submitted-review-card__view-btn {
@@ -133,14 +133,14 @@
   border-radius: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--color-gray-700, #374151);
+  color: var(--color-gray-700, var(--text-description));
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition-all-fast);
 }
 
 .submitted-review-card__view-btn:hover {
-  background-color: var(--color-gray-50, #f9fafb);
-  border-color: var(--color-gray-400, #9ca3af);
+  background-color: var(--color-gray-50, var(--bg-light));
+  border-color: var(--color-gray-400, var(--text-light-gray));
 }
 
 /* Mobile responsive */

@@ -31,7 +31,7 @@
   width: 140px;
   height: 140px;
   background: linear-gradient(135deg, var(--favorites-purple-light, #F0EBFF) 0%, #E5DCFF 100%);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,7 +50,7 @@
   width: 48px;
   height: 36px;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
@@ -121,11 +121,11 @@
   background: var(--favorites-purple, #6B4EE6);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .favorites-empty__cta:hover {
@@ -146,7 +146,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .favorites-empty__link:hover {
@@ -195,7 +195,7 @@
   width: 32px;
   height: 32px;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,7 +233,7 @@
 @media (max-width: 768px) {
   .favorites-empty {
     padding: 40px 24px;
-    border-radius: 16px;
+    border-radius: var(--rounded-2xl);
     margin: 16px;
     max-width: none;
   }
@@ -361,14 +361,14 @@
 .empty-state-icon {
   width: 64px;
   height: 64px;
-  color: #9ca3af;
+  color: var(--text-light-gray);
   stroke-width: 1.5;
 }
 
 .empty-state-message {
   font-size: 0.9375rem;
   font-weight: 400;
-  color: #6b7280;
+  color: var(--text-gray);
   line-height: 1.6;
   margin: 0;
 }
@@ -381,11 +381,11 @@
   background: var(--favorites-purple, #6B4EE6);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-all-base);
 }
 
 .empty-state-cta:hover {

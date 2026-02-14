@@ -2,7 +2,7 @@
  * FlexibilityScore Component Styles (Simplified)
  */
 
-@import '../../../styles/design-tokens.css';
+@import '../../../styles/variables.css';
 
 .flexibility-score {
   background: var(--bg-white);

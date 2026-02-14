@@ -224,7 +224,7 @@
   align-items: center;
   justify-content: center;
   background: var(--bg-light, #F9FAFB);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   color: var(--primary-purple, #4A2B6B);
 }
 

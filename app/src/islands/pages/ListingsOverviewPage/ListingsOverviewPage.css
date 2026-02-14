@@ -19,16 +19,16 @@
   --lo-primary-dark: #6d28d9;
   --lo-danger: #ef4444;
   --lo-danger-dark: #dc2626;
-  --lo-success: #10b981;
+  --lo-success: var(--success-teal);
   --lo-warning: #f59e0b;
-  --lo-gray-50: #f9fafb;
-  --lo-gray-100: #f3f4f6;
-  --lo-gray-200: #e5e7eb;
+  --lo-gray-50: var(--bg-light);
+  --lo-gray-100: var(--bg-light-gray);
+  --lo-gray-200: var(--border-color);
   --lo-gray-300: #d1d5db;
-  --lo-gray-400: #9ca3af;
-  --lo-gray-500: #6b7280;
+  --lo-gray-400: var(--text-light-gray);
+  --lo-gray-500: var(--text-gray);
   --lo-gray-600: #4b5563;
-  --lo-gray-700: #374151;
+  --lo-gray-700: var(--text-description);
   --lo-gray-800: #1f2937;
   --lo-gray-900: #111827;
   --lo-white: #ffffff;
@@ -101,7 +101,7 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
   border: 1px solid transparent;
 }
 
@@ -221,7 +221,7 @@
   -webkit-appearance: none;
   appearance: none;
   background-color: var(--lo-gray-300);
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -238,7 +238,7 @@
   width: 20px;
   height: 20px;
   background-color: var(--lo-white);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   transition: transform 0.2s ease;
   box-shadow: var(--lo-shadow-sm);
 }
@@ -309,7 +309,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 .lo-search-clear:hover {
@@ -747,7 +747,7 @@
   height: 40px;
   border: 3px solid var(--lo-gray-200);
   border-top-color: var(--lo-primary);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   animation: lo-spin 1s linear infinite;
 }
 
@@ -762,7 +762,7 @@
   height: 48px;
   background-color: var(--lo-danger);
   color: var(--lo-white);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -895,7 +895,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--lo-radius-sm);
-  transition: all 0.15s ease;
+  transition: var(--transition-all-fast);
 }
 
 .lo-modal-close:hover {

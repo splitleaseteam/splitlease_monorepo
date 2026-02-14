@@ -35,7 +35,7 @@
   max-width: 672px !important;
   max-height: 90vh !important;
   background: #FFFFFF !important;
-  border-radius: 16px !important;
+  border-radius: var(--rounded-2xl) !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
   overflow: hidden !important;
   animation: editProposalScaleIn 0.3s ease-out !important;
@@ -60,7 +60,7 @@
 .edit-proposal-title {
   font-size: 1.125rem !important;
   font-weight: 600 !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   margin: 0 !important;
 }
 
@@ -79,17 +79,17 @@
   padding: 0 !important;
   background: transparent !important;
   border: none !important;
-  border-radius: 50% !important;
+  border-radius: var(--rounded-full) !important;
   cursor: pointer !important;
   color: #6B6B6B !important;
-  transition: all 0.15s ease !important;
+  transition: var(--transition-all-fast) !important;
   flex-shrink: 0 !important;
   margin-left: 1rem !important;
 }
 
 .edit-proposal-close-btn:hover {
   background: #F7F2FA !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
 }
 
 /* ============================================
@@ -125,7 +125,7 @@
   display: block !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   margin-bottom: 0.5rem !important;
 }
 
@@ -134,11 +134,11 @@
   width: 100% !important;
   padding: 0.625rem 0.875rem !important;
   border: 1px solid #E7E0EC !important;
-  border-radius: 8px !important;
+  border-radius: var(--rounded-lg) !important;
   font-size: 0.9375rem !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   background: #FFFFFF !important;
-  transition: all 0.15s ease !important;
+  transition: var(--transition-all-fast) !important;
 }
 
 .edit-proposal-input:focus,
@@ -173,14 +173,14 @@
 .edit-proposal-day-btn {
   width: 48px !important;
   height: 48px !important;
-  border-radius: 50% !important;
+  border-radius: var(--rounded-full) !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   border: 2px solid #E7E0EC !important;
   background: #FFFFFF !important;
   color: #6B6B6B !important;
   cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  transition: var(--transition-all-fast) !important;
 }
 
 .edit-proposal-day-btn:hover:not(.edit-proposal-day-btn--selected) {
@@ -199,14 +199,14 @@
    ============================================ */
 .edit-proposal-pricing {
   background: #F7F2FA !important;
-  border-radius: 12px !important;
+  border-radius: var(--rounded-xl) !important;
   padding: 1rem !important;
 }
 
 .edit-proposal-pricing-title {
   font-size: 0.875rem !important;
   font-weight: 600 !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   margin: 0 0 0.75rem 0 !important;
 }
 
@@ -225,7 +225,7 @@
 .edit-proposal-pricing-value {
   font-size: 0.875rem !important;
   font-weight: 500 !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
 }
 
 .edit-proposal-pricing-total {
@@ -236,7 +236,7 @@
 
 .edit-proposal-pricing-total .edit-proposal-pricing-label {
   font-weight: 600 !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
 }
 
 .edit-proposal-pricing-total .edit-proposal-pricing-value {
@@ -251,7 +251,7 @@
 .edit-proposal-error-summary {
   background: rgba(220, 53, 69, 0.08) !important;
   border: 1px solid #DC3545 !important;
-  border-radius: 12px !important;
+  border-radius: var(--rounded-xl) !important;
   padding: 1rem !important;
 }
 
@@ -302,7 +302,7 @@
   font-weight: 600 !important;
   border-radius: 100px !important;
   cursor: pointer !important;
-  transition: all 0.15s ease !important;
+  transition: var(--transition-all-fast) !important;
   min-height: 44px !important;
   border: 2px solid transparent !important;
 }
@@ -449,11 +449,11 @@
   width: 100% !important;
   padding: 0.625rem 0.875rem !important;
   border: 1px solid #E7E0EC !important;
-  border-radius: 8px !important;
+  border-radius: var(--rounded-lg) !important;
   font-size: 0.9375rem !important;
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   background: #FFFFFF !important;
-  transition: all 0.15s ease !important;
+  transition: var(--transition-all-fast) !important;
 }
 
 .edit-proposal-modal .react-datepicker__input-container input:focus {
@@ -465,7 +465,7 @@
 .edit-proposal-modal .react-datepicker {
   font-family: inherit !important;
   border: 1px solid #E7E0EC !important;
-  border-radius: 12px !important;
+  border-radius: var(--rounded-xl) !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 
@@ -475,17 +475,17 @@
 }
 
 .edit-proposal-modal .react-datepicker__current-month {
-  color: #31135D !important;
+  color: var(--primary-purple) !important;
   font-weight: 600 !important;
 }
 
 .edit-proposal-modal .react-datepicker__day--selected,
 .edit-proposal-modal .react-datepicker__day--keyboard-selected {
   background: #5B5FCF !important;
-  border-radius: 50% !important;
+  border-radius: var(--rounded-full) !important;
 }
 
 .edit-proposal-modal .react-datepicker__day:hover {
   background: #F7F2FA !important;
-  border-radius: 50% !important;
+  border-radius: var(--rounded-full) !important;
 }

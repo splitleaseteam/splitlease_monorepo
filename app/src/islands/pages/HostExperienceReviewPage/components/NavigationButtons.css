@@ -10,9 +10,9 @@
   padding: 0.875rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .navigation-buttons__back {
@@ -44,8 +44,8 @@
 }
 
 .navigation-buttons__submit {
-  background: #22c55e;
-  border: 2px solid #22c55e;
+  background: var(--success-green);
+  border: 2px solid var(--success-green);
   color: white;
   margin-left: auto;
 }

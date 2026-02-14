@@ -5,9 +5,9 @@
 
 /* Premium Gradient Variables */
 :root {
-  --gradient-purple-blue: linear-gradient(135deg, #31135D 0%, #4A2F7C 50%, #5B21B6 100%);
-  --gradient-purple-pink: linear-gradient(135deg, #31135D 0%, #6B21A8 50%, #A855F7 100%);
-  --brand-purple: #31135D;
+  --gradient-purple-blue: linear-gradient(135deg, var(--primary-purple) 0%, #4A2F7C 50%, #5B21B6 100%);
+  --gradient-purple-pink: linear-gradient(135deg, var(--primary-purple) 0%, #6B21A8 50%, #A855F7 100%);
+  --brand-purple: var(--primary-purple);
 }
 
 /* Container */
@@ -46,7 +46,7 @@
   border-radius: 500px;
   font-size: 13px;
   font-weight: 600;
-  color: #31135D;
+  color: var(--primary-purple);
   margin-bottom: 24px;
 }
 
@@ -70,7 +70,7 @@
 }
 
 .about-mission-statement .highlight {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 /* Hero Subtitle */
@@ -154,17 +154,17 @@
 .hero-avatar-image {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   background: var(--gradient-purple-blue);
   box-shadow: 0 4px 16px rgba(49, 19, 93, 0.2);
   border: 3px solid white;
-  transition: all 0.3s ease;
+  transition: var(--transition-all-slow);
 }
 
 .hero-carousel-avatar:hover .hero-avatar-image {
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.3);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .hero-avatar-image img {
@@ -177,7 +177,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-description);
   white-space: nowrap;
 }
 
@@ -200,7 +200,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
@@ -254,7 +254,7 @@
 }
 
 .about-story-text.about-highlight strong {
-  color: #31135D;
+  color: var(--primary-purple);
   font-weight: 700;
 }
 
@@ -263,7 +263,7 @@
   margin-bottom: 32px;
   font-size: 24px;
   text-align: center;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .about-pain-points {
@@ -271,7 +271,7 @@
   padding: 24px 32px;
   list-style: none;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
 }
 
@@ -279,7 +279,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
   font-weight: 500;
   font-size: 16px;
-  color: #374151;
+  color: var(--text-description);
   line-height: 1.6;
   margin-bottom: 12px;
   position: relative;
@@ -298,7 +298,7 @@
   width: 8px;
   height: 8px;
   background: var(--gradient-purple-blue);
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
 }
 
 /* ==========================================================================
@@ -337,9 +337,9 @@
   text-align: center;
   background: white;
   border: 2px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 32px 24px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   width: 100%;
   max-width: 260px;
 }
@@ -355,7 +355,7 @@
 .about-team-card.clickable:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.1);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .about-team-card:not(.clickable):hover {
@@ -365,7 +365,7 @@
 .about-team-image {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   overflow: hidden;
   background: var(--gradient-purple-blue);
   margin-bottom: 20px;
@@ -424,26 +424,26 @@
   text-align: left;
   background: white;
   border: 1px solid #E5E7EB;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 32px;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
 }
 
 .about-feature-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(49, 19, 93, 0.1);
-  border-color: #31135D;
+  border-color: var(--primary-purple);
 }
 
 .about-feature-icon {
   margin-bottom: 16px;
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .about-feature-icon svg {
   width: 40px;
   height: 40px;
-  stroke: #31135D;
+  stroke: var(--primary-purple);
   stroke-width: 2;
 }
 
@@ -668,14 +668,14 @@
 .skeleton-text {
   height: 20px;
   width: 120px;
-  border-radius: 6px;
+  border-radius: var(--rounded-md);
   margin-bottom: 8px;
 }
 
 .skeleton-text-small {
   height: 14px;
   width: 100px;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 @keyframes skeleton-shimmer {
@@ -696,7 +696,7 @@
   font-size: 16px;
   padding: 60px 20px;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   border: 1px solid #E5E7EB;
 }
 
@@ -705,12 +705,12 @@
    ========================================================================== */
 
 .about-team-card.clickable:focus {
-  outline: 2px solid #31135D;
+  outline: 2px solid var(--primary-purple);
   outline-offset: 3px;
 }
 
 .about-feature-card:focus-within {
-  outline: 2px solid #31135D;
+  outline: 2px solid var(--primary-purple);
   outline-offset: 3px;
 }
 

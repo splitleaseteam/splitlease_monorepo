@@ -793,7 +793,7 @@ video {
     color: #c33;
     padding: 12px 16px;
     margin: 0 24px 16px;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     font-size: 14px;
 }
 
@@ -810,9 +810,9 @@ video {
     padding: 12px 24px;
     font-size: 16px;
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--transition-all-base);
     border: none;
 }
 
@@ -834,7 +834,7 @@ video {
 }
 
 .ai-signup-btn-secondary:hover {
-    background: #f5f5f5;
+    background: var(--bg-lighter-gray);
     border-color: #8B31FF;
 }
 
@@ -856,7 +856,7 @@ video {
     width: 100%;
     padding: 16px;
     border: 1px solid #D4D4D4;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     font-size: 15px;
     font-family: inherit;
     line-height: 1.6;
@@ -873,7 +873,7 @@ video {
 .ai-signup-helper {
     background: #f8f5ff;
     border: 1px solid #e4d5ff;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     padding: 12px 16px;
     font-size: 14px;
     color: #6B6B6B;
@@ -913,7 +913,7 @@ video {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #D4D4D4;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     font-size: 15px;
     font-family: inherit;
 }
@@ -1014,7 +1014,7 @@ video {
   overflow-y: auto;
   background: #FFFFFF;
   border: 1px solid #E0E0E0;
-  border-radius: 16px;
+  border-radius: var(--rounded-2xl);
   padding: 24px 20px;
   font-family: 'DM Sans', Arial, sans-serif;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -1028,12 +1028,12 @@ video {
 
 .contact-host-modal::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .contact-host-modal::-webkit-scrollbar-thumb {
   background: #6B6B6B;
-  border-radius: 4px;
+  border-radius: var(--rounded-sm);
 }
 
 .contact-host-modal::-webkit-scrollbar-thumb:hover {
@@ -1056,8 +1056,8 @@ video {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--rounded-lg);
+  transition: var(--transition-all-base);
   padding: 0;
   z-index: 10;
 }
@@ -1113,7 +1113,7 @@ video {
   margin-bottom: 20px;
   padding: 8px;
   background-color: #F5F5F5;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
 }
 
 /* Form Groups */
@@ -1126,7 +1126,7 @@ video {
   width: 100%;
   padding: 12px 14px;
   border: 1px solid #D0D0D0;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   font-family: 'DM Sans', Arial, sans-serif;
   font-size: 14px;
   box-sizing: border-box;
@@ -1205,7 +1205,7 @@ video {
   background-color: #FFE5E5;
   color: #FF0000;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   margin-top: 16px;
   font-size: 14px;
   border-left: 4px solid #FF0000;
@@ -1262,7 +1262,7 @@ video {
   font-size: 18px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   margin-top: 12px;
   height: 42px;
   display: flex;
@@ -1297,7 +1297,7 @@ video {
   height: 64px;
   background-color: #4CAF50;
   color: #FFFFFF;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1359,7 +1359,7 @@ video {
   font-size: 12px;
   padding: 12px;
   background-color: #F5F5F5;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border-left: 4px solid #6D31C2;
 }
 
@@ -1376,7 +1376,7 @@ video {
   line-height: 1.5;
   padding: 12px;
   background-color: #F5F5F5;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   border-left: 4px solid #6D31C2;
 }
 
@@ -1386,7 +1386,7 @@ video {
 
 .info-modal {
     background: white;
-    border-radius: 12px;
+    border-radius: var(--rounded-xl);
     padding: 1.5rem;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
     max-width: 400px;
@@ -1405,7 +1405,7 @@ video {
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--text-gray);
     padding: 0;
     line-height: 1;
     transition: color 0.2s;
@@ -1419,9 +1419,9 @@ video {
     display: flex;
     justify-content: space-between;
     padding: 0.75rem;
-    border-radius: 8px;
+    border-radius: var(--rounded-lg);
     margin-bottom: 0.5rem;
-    background: #f9fafb;
+    background: var(--bg-light);
 }
 
 .price-tier.selected {
@@ -1431,7 +1431,7 @@ video {
 
 .price-tier-label {
     font-weight: 500;
-    color: #374151;
+    color: var(--text-description);
 }
 
 .price-tier-value {
@@ -1459,7 +1459,7 @@ video {
 
 ::-webkit-scrollbar-thumb {
     background: #888;
-    border-radius: 4px;
+    border-radius: var(--rounded-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {

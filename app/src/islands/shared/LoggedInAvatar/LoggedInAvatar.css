@@ -26,7 +26,7 @@
 .avatar-image {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   object-fit: cover;
   border: none;
   flex-shrink: 0;
@@ -35,7 +35,7 @@
 .avatar-placeholder {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: #5B21B6;
   color: white;
   display: flex;
@@ -58,7 +58,7 @@
 /* Username color on pages with light headers (search, favorites) */
 .logged-in-avatar.on-search-page .user-name-wrapper,
 .logged-in-avatar.on-light-header .user-name-wrapper {
-  color: #31135D;
+  color: var(--primary-purple);
 }
 
 .dropdown-arrow {
@@ -75,7 +75,7 @@
   max-height: 600px;
   background-color: #FFFFFF;
   border: 1px solid #E5E5E5;
-  border-radius: 12px;
+  border-radius: var(--rounded-xl);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: visible;
   z-index: 10000 !important;
@@ -175,7 +175,7 @@
   min-width: 25px;
   height: 22px;
   padding: 0 6px;
-  border-radius: 20px;
+  border-radius: var(--rounded-pill);
   font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 700;
@@ -184,7 +184,7 @@
 }
 
 .logged-in-avatar .notification-badge.purple {
-  background-color: #31135D;
+  background-color: var(--primary-purple);
 }
 
 .logged-in-avatar .notification-badge.red {
@@ -214,7 +214,7 @@
     padding: 8px 0 !important;
     background-color: #FFFFFF !important;
     border: 1px solid #E5E5E5 !important;
-    border-radius: 12px !important;
+    border-radius: var(--rounded-xl) !important;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
     /* CRITICAL: Override mobile.css pointer-events: none */
     pointer-events: auto !important;
@@ -284,10 +284,10 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 8px;
+  border-radius: var(--rounded-lg);
   background: transparent;
   color: white;
-  transition: all 0.2s ease;
+  transition: var(--transition-all-base);
   text-decoration: none;
   border: none;
   cursor: pointer;
@@ -344,7 +344,7 @@
 /* Messaging icon color on pages with light headers */
 .logged-in-avatar.on-search-page .header-messages-icon,
 .logged-in-avatar.on-light-header .header-messages-icon {
-  color: #31135D;
+  color: var(--primary-purple);
   background: transparent;
 }
 
@@ -361,7 +361,7 @@
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: #EF4444;
   color: white;
   font-size: 11px;
@@ -381,7 +381,7 @@
   min-width: 20px;
   height: 20px;
   padding: 0 5px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   background-color: #F59E0B;
   color: white;
   font-size: 11px;

@@ -44,7 +44,7 @@
 [RULE_4]: ALL times displayed in EST timezone with (EST) suffix
 [RULE_5]: Exactly 3 time slots REQUIRED for request/suggest views
 [RULE_6]: Parent controls visibility via initialView prop (empty string '' hides component entirely)
-[RULE_7]: Handle field name variations throughout (camelCase, snake_case, 'space case', Pascal Case)
+[RULE_7]: Handle field name variations throughout (camelCase, snake_case)
 [RULE_8]: All API calls go through Supabase Edge Functions
 [RULE_9]: Component returns null if initialView is empty string (unmounted state)
 [RULE_10]: Success/error messages auto-dismiss after 5 seconds
@@ -53,14 +53,16 @@
 
 ## FIELD_NAME_VARIANTS
 
-[VIRTUAL_MEETING]: virtualMeeting | 'virtual meeting' | virtual_meeting
-[BOOKED_DATE]: bookedDate | 'booked date' | booked_date
-[MEETING_LINK]: googleMeetLink | 'meeting link' | meetingLink
+Code handles camelCase and snake_case variants (legacy compatibility):
+
+[VIRTUAL_MEETING]: virtualMeeting | virtual_meeting
+[BOOKED_DATE]: bookedDate | booked_date
+[MEETING_LINK]: googleMeetLink | meeting_link | meetingLink
 [USER_TYPE]: typeUserSignup | type_user_signup
-[GUEST_NAME]: guest.firstName | guest.name | guest.['firstName']
+[GUEST_NAME]: guest.firstName | guest.name
 [HOST_NAME]: host.name | host.firstName
 [LISTING_NAME]: listing.name | _listing.name
-[PROFILE_PHOTO]: guest.profilePhoto | guest.['profile photo']
+[PROFILE_PHOTO]: guest.profilePhoto | guest['profile photo']
 [NIGHTS]: proposal.nights | proposal.Nights
 [RESERVATION_SPAN]: proposal.reservationSpan | proposal['reservation span'] | proposal.reservationspan
 

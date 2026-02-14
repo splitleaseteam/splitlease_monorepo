@@ -25,7 +25,7 @@
   --ai-primary: #6366f1;
   --ai-primary-hover: #4f46e5;
   --ai-primary-light: #e0e7ff;
-  --ai-success: #22c55e;
+  --ai-success: var(--success-green);
   --ai-success-light: #dcfce7;
   --ai-warning: #f59e0b;
   --ai-warning-light: #fef3c7;
@@ -33,16 +33,16 @@
   --ai-error-light: #fee2e2;
   --ai-info: #3b82f6;
   --ai-info-light: #dbeafe;
-  --ai-gray-50: #f9fafb;
-  --ai-gray-100: #f3f4f6;
-  --ai-gray-200: #e5e7eb;
+  --ai-gray-50: var(--bg-light);
+  --ai-gray-100: var(--bg-light-gray);
+  --ai-gray-200: var(--border-color);
   --ai-gray-300: #d1d5db;
-  --ai-gray-400: #9ca3af;
-  --ai-gray-500: #6b7280;
+  --ai-gray-400: var(--text-light-gray);
+  --ai-gray-500: var(--text-gray);
   --ai-gray-600: #4b5563;
-  --ai-gray-700: #374151;
+  --ai-gray-700: var(--text-description);
   --ai-gray-800: #1f2937;
-  --ai-border-radius: 8px;
+  --ai-border-radius: var(--rounded-lg);
   --ai-border-radius-lg: 12px;
   --ai-transition: 0.2s ease;
 }
@@ -586,7 +586,7 @@
 .ai-tools-audio__record-btn {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
+  border-radius: var(--rounded-full);
   border: none;
   background: var(--ai-primary);
   color: white;
