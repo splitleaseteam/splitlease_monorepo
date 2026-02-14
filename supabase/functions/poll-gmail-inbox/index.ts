@@ -4,24 +4,27 @@
  *
  * Replaces legacy Python script that polled Gmail to forward messages between paired users.
  *
- * BUSINESS LOGIC:
+ * BUSINESS LOGIC (Thread-ID Based Routing):
  * 1. Connect to Gmail via service account
  * 2. Fetch UNREAD messages
- * 3. Extract sender email from From header
- * 4. Find sender's user ID in auth.users
- * 5. Find active recipient from thread pairing (host_user_id ↔ guest_user_id)
- * 6. Check recipient's notification_preferences.message_forwarding_sms/email
- * 7. If enabled, call sendNotification from _shared/notificationSender.ts
- * 8. Mark message as READ in Gmail
+ * 3. Extract thread_id from To: header (tech+<thread_id>@leaseplit.com)
+ * 4. Look up specific thread by thread_id in public.threads
+ * 5. Extract sender email from From header
+ * 6. Find sender's user ID in public.user
+ * 7. Identify recipient as the OTHER participant in the thread (host ↔ guest)
+ * 8. Check recipient's notification_preferences (message_forwarding_email/sms booleans)
+ * 9. If enabled, call sendNotification from _shared/notificationSender.ts
+ * 10. Mark message as READ in Gmail
  *
  * SECURITY:
  * - Requires GMAIL_CLIENT_EMAIL and GMAIL_PRIVATE_KEY secrets
  * - Service role authentication required
  *
  * DESIGN PRINCIPLES:
- * - Privacy-first: Only forward if recipient explicitly opted in
+ * - Privacy-first: Only forward if recipient explicitly opted in (boolean preferences)
  * - Fire-and-forget: Errors logged but don't stop processing other messages
  * - Idempotent: Safe to run multiple times (only processes UNREAD)
+ * - Thread-specific: Routes based on thread_id, not all user pairings
  */
 
 import "jsr:@supabase/functions-js@2/edge-runtime.d.ts";
@@ -221,6 +224,23 @@ function extractSenderEmail(message: GmailMessage): string | null {
 }
 
 /**
+ * Extract thread_id from To: header
+ * Expected format: tech+<thread_id>@leaseplit.com
+ */
+function extractThreadId(message: GmailMessage): string | null {
+  const toHeader = message.payload.headers.find((h) => h.name.toLowerCase() === 'to');
+  if (!toHeader) return null;
+
+  // Extract email from "Name <email@example.com>" format
+  const emailMatch = toHeader.value.match(/<([^>]+)>/) || [null, toHeader.value];
+  const email = emailMatch[1]?.trim().toLowerCase() || toHeader.value.trim().toLowerCase();
+
+  // Extract thread_id from tech+<thread_id>@leaseplit.com
+  const threadIdMatch = email.match(/tech\+([^@]+)@/);
+  return threadIdMatch ? threadIdMatch[1] : null;
+}
+
+/**
  * Extract message subject
  */
 function extractSubject(message: GmailMessage): string {
@@ -260,7 +280,34 @@ async function processMessage(
   try {
     console.log(`[poll-gmail-inbox] Processing message ${message.id}`);
 
-    // Step 1: Extract sender email
+    // Step 1: Extract thread_id from To: header (tech+<thread_id>@leaseplit.com)
+    const threadId = extractThreadId(message);
+    if (!threadId) {
+      console.warn(`[poll-gmail-inbox] Could not extract thread_id from To: header for message ${message.id}`);
+      // Mark as read to avoid reprocessing
+      await markMessageAsRead(accessToken, message.id);
+      return { success: false, error: 'No thread_id found in To: address' };
+    }
+
+    console.log(`[poll-gmail-inbox] Thread ID: ${threadId}`);
+
+    // Step 2: Look up the specific thread by thread_id
+    const { data: thread, error: threadError } = await supabase
+      .from('thread')
+      .select('_id, host_user_id, guest_user_id')
+      .eq('_id', threadId)
+      .single();
+
+    if (threadError || !thread) {
+      console.warn(`[poll-gmail-inbox] Thread ${threadId} not found in database`);
+      // Mark as read anyway to avoid reprocessing
+      await markMessageAsRead(accessToken, message.id);
+      return { success: false, error: `Thread ${threadId} not found` };
+    }
+
+    console.log(`[poll-gmail-inbox] Thread found: host=${thread.host_user_id}, guest=${thread.guest_user_id}`);
+
+    // Step 3: Extract sender email and identify sender
     const senderEmail = extractSenderEmail(message);
     if (!senderEmail) {
       console.warn(`[poll-gmail-inbox] Could not extract sender email from message ${message.id}`);
@@ -269,7 +316,7 @@ async function processMessage(
 
     console.log(`[poll-gmail-inbox] Sender: ${senderEmail}`);
 
-    // Step 2: Find sender's user ID in auth.users
+    // Step 4: Find sender's user ID
     const { data: senderUser, error: senderError } = await supabase
       .from('user')
       .select('_id, email')
@@ -287,98 +334,87 @@ async function processMessage(
 
     console.log(`[poll-gmail-inbox] Sender user ID: ${senderUser._id}`);
 
-    // Step 3: Find active recipient from thread pairing
-    // Check both directions: sender could be host OR guest
-    const { data: threads, error: threadError } = await supabase
-      .from('thread')
-      .select('host_user_id, guest_user_id')
-      .or(`host_user_id.eq.${senderUser._id},guest_user_id.eq.${senderUser._id}`);
-
-    if (threadError || !threads || threads.length === 0) {
-      console.warn(`[poll-gmail-inbox] No active threads found for user ${senderUser._id}`);
+    // Step 5: Identify recipient (the OTHER user in the thread)
+    let recipientId: string | null = null;
+    if (thread.host_user_id === senderUser._id) {
+      recipientId = thread.guest_user_id;
+    } else if (thread.guest_user_id === senderUser._id) {
+      recipientId = thread.host_user_id;
+    } else {
+      console.warn(`[poll-gmail-inbox] Sender ${senderUser._id} is not a participant in thread ${threadId}`);
       await markMessageAsRead(accessToken, message.id);
-      return { success: false, error: 'No active recipient found' };
+      return { success: false, error: 'Sender not a thread participant' };
     }
 
-    // Determine recipient (the OTHER user in the pairing)
-    const recipientIds = threads
-      .map((thread) =>
-        thread.host_user_id === senderUser._id ? thread.guest_user_id : thread.host_user_id
-      )
-      .filter((id) => id); // Remove nulls
-
-    if (recipientIds.length === 0) {
-      console.warn(`[poll-gmail-inbox] No valid recipients found for user ${senderUser._id}`);
+    if (!recipientId) {
+      console.warn(`[poll-gmail-inbox] No recipient found in thread ${threadId}`);
       await markMessageAsRead(accessToken, message.id);
-      return { success: false, error: 'No valid recipients' };
+      return { success: false, error: 'No recipient in thread' };
     }
 
-    console.log(`[poll-gmail-inbox] Found ${recipientIds.length} potential recipients`);
+    console.log(`[poll-gmail-inbox] Recipient user ID: ${recipientId}`);
 
-    // Step 4: Process each recipient
+    // Step 6: Get recipient details
+    const { data: recipient, error: recipientError } = await supabase
+      .from('user')
+      .select('_id, email, "Name - First" as firstName, "Phone number" as phone')
+      .eq('_id', recipientId)
+      .single();
+
+    if (recipientError || !recipient) {
+      console.warn(`[poll-gmail-inbox] Recipient ${recipientId} not found`);
+      await markMessageAsRead(accessToken, message.id);
+      return { success: false, error: 'Recipient not found' };
+    }
+
+    console.log(`[poll-gmail-inbox] Recipient: ${recipient.email}`);
+
+    // Step 7: Prepare message content
     const subject = extractSubject(message);
     const body = extractMessageBody(message);
-    let anyForwarded = false;
 
-    for (const recipientId of recipientIds) {
-      // Get recipient details
-      const { data: recipient, error: recipientError } = await supabase
-        .from('user')
-        .select('_id, email, "Name - First" as firstName, "Phone number" as phone')
-        .eq('_id', recipientId)
-        .single();
-
-      if (recipientError || !recipient) {
-        console.warn(`[poll-gmail-inbox] Recipient ${recipientId} not found`);
-        continue;
-      }
-
-      console.log(`[poll-gmail-inbox] Checking recipient: ${recipient.email}`);
-
-      // Step 5: Send notification (checks preferences internally)
-      const result = await sendNotification({
-        supabase,
-        userId: recipientId,
-        category: 'message_forwarding',
-        edgeFunction: 'poll-gmail-inbox',
-        email: {
-          templateId: '1757429600000x000000000000000005', // Message forwarding template
-          toEmail: recipient.email,
-          toName: recipient.firstName,
-          variables: {
-            sender_name: senderUser.email.split('@')[0],
-            subject,
-            message_body: body.substring(0, 500), // Truncate for preview
-            thread_link: 'https://www.split.lease/messages',
-          },
+    // Step 8: Send notification (checks message_forwarding_email/sms preferences)
+    const result = await sendNotification({
+      supabase,
+      userId: recipientId,
+      category: 'message_forwarding',
+      edgeFunction: 'poll-gmail-inbox',
+      email: {
+        templateId: '1757429600000x000000000000000005', // Message forwarding template
+        toEmail: recipient.email,
+        toName: recipient.firstName,
+        variables: {
+          sender_name: senderUser.email.split('@')[0],
+          subject,
+          message_body: body.substring(0, 500), // Truncate for preview
+          thread_link: `https://www.split.lease/messages?thread=${threadId}`,
         },
-        sms: recipient.phone
-          ? {
-              toPhone: recipient.phone,
-              body: `New message from ${senderUser.email.split('@')[0]}: "${subject.substring(0, 50)}"... Reply at www.split.lease/messages`,
-            }
-          : undefined,
-      });
+      },
+      sms: recipient.phone
+        ? {
+            toPhone: recipient.phone,
+            body: `New message from ${senderUser.email.split('@')[0]}: "${subject.substring(0, 50)}"... Reply at www.split.lease/messages`,
+          }
+        : undefined,
+    });
 
-      if (result.emailSent || result.smsSent) {
-        anyForwarded = true;
-        console.log(
-          `[poll-gmail-inbox] Forwarded to ${recipient.email} (email: ${result.emailSent}, sms: ${result.smsSent})`
-        );
-      } else {
-        console.log(
-          `[poll-gmail-inbox] Skipped forwarding to ${recipient.email} (user opted out or no preferences)`
-        );
-      }
-    }
-
-    // Step 6: Mark message as READ
+    // Step 9: Mark message as READ
     await markMessageAsRead(accessToken, message.id);
 
-    return {
-      success: true,
-      error: anyForwarded ? undefined : 'Message processed but not forwarded (recipients opted out)',
-    };
+    if (result.emailSent || result.smsSent) {
+      console.log(
+        `[poll-gmail-inbox] Forwarded to ${recipient.email} (email: ${result.emailSent}, sms: ${result.smsSent})`
+      );
+      return { success: true };
+    } else {
+      console.log(
+        `[poll-gmail-inbox] Skipped forwarding to ${recipient.email} (user opted out: ${result.emailSkipReason || result.smsSkipReason})`
+      );
+      return {
+        success: true,
+        error: `Message processed but not forwarded: ${result.emailSkipReason || result.smsSkipReason}`,
+      };
+    }
   } catch (error) {
     console.error(`[poll-gmail-inbox] Error processing message ${message.id}:`, error);
     return {
