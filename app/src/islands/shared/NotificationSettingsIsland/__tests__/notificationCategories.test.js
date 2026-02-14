@@ -80,27 +80,27 @@ describe('notificationCategories', () => {
       });
     });
 
-    it('should map to correct database columns', () => {
-      // Spot check some expected mappings
+    it('should map to correct database columns (snake_case)', () => {
+      // Spot check some expected mappings - using snake_case for boolean schema
       const messageForwarding = NOTIFICATION_CATEGORIES.find(
         (cat) => cat.id === 'message_forwarding'
       );
-      expect(messageForwarding.dbColumn).toBe('Message Forwarding');
+      expect(messageForwarding.dbColumn).toBe('message_forwarding');
 
       const checkinCheckout = NOTIFICATION_CATEGORIES.find(
         (cat) => cat.id === 'checkin_checkout'
       );
-      expect(checkinCheckout.dbColumn).toBe('Check In/Out Reminders');
+      expect(checkinCheckout.dbColumn).toBe('checkin_checkout');
 
       const tipsInsights = NOTIFICATION_CATEGORIES.find(
         (cat) => cat.id === 'tips_insights'
       );
-      expect(tipsInsights.dbColumn).toBe('Tips/Insights');
+      expect(tipsInsights.dbColumn).toBe('tips_insights');
 
       const accountAssistance = NOTIFICATION_CATEGORIES.find(
         (cat) => cat.id === 'account_assistance'
       );
-      expect(accountAssistance.dbColumn).toBe('Login/Signup Assistance');
+      expect(accountAssistance.dbColumn).toBe('account_assistance');
     });
   });
 
@@ -136,19 +136,19 @@ describe('notificationCategories', () => {
       expect(columns).toEqual(expectedColumns);
     });
 
-    it('should include expected column names', () => {
+    it('should include expected column names (snake_case)', () => {
       const columns = getAllPreferenceColumns();
-      expect(columns).toContain('Message Forwarding');
-      expect(columns).toContain('Payment Reminders');
-      expect(columns).toContain('Promotional');
-      expect(columns).toContain('Reservation Updates');
-      expect(columns).toContain('Lease Requests');
-      expect(columns).toContain('Proposal Updates');
-      expect(columns).toContain('Check In/Out Reminders');
-      expect(columns).toContain('Reviews');
-      expect(columns).toContain('Tips/Insights');
-      expect(columns).toContain('Login/Signup Assistance');
-      expect(columns).toContain('Virtual Meetings');
+      expect(columns).toContain('message_forwarding');
+      expect(columns).toContain('payment_reminders');
+      expect(columns).toContain('promotional');
+      expect(columns).toContain('reservation_updates');
+      expect(columns).toContain('lease_requests');
+      expect(columns).toContain('proposal_updates');
+      expect(columns).toContain('checkin_checkout');
+      expect(columns).toContain('reviews');
+      expect(columns).toContain('tips_insights');
+      expect(columns).toContain('account_assistance');
+      expect(columns).toContain('virtual_meetings');
     });
 
     it('should return an array', () => {
@@ -161,16 +161,18 @@ describe('notificationCategories', () => {
   // getDefaultPreferences Tests
   // ============================================================================
   describe('getDefaultPreferences', () => {
-    it('should return all categories with sensible defaults', () => {
+    it('should return all categories with All True defaults', () => {
       const defaults = getDefaultPreferences();
 
       // Should have 11 keys (one for each category)
       expect(Object.keys(defaults)).toHaveLength(11);
 
-      // Each value should be a non-empty array of channels
+      // Each value should be Email + SMS (All True paradigm)
       Object.values(defaults).forEach((value) => {
         expect(Array.isArray(value)).toBe(true);
-        expect(value.length).toBeGreaterThan(0);
+        expect(value).toHaveLength(2);
+        expect(value).toContain('Email');
+        expect(value).toContain('SMS');
       });
     });
 

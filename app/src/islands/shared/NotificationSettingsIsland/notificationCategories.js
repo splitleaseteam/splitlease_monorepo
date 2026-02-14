@@ -91,17 +91,14 @@ export function getAllPreferenceColumns() {
 
 /**
  * Get default preferences object
- * New users get sensible defaults: Email + SMS for most categories,
- * Email only for promotional content.
+ * New users get all notifications enabled by default (All True paradigm).
+ * This matches the database trigger behavior that creates rows with all booleans set to TRUE.
  */
 export function getDefaultPreferences() {
   const defaults = {};
   NOTIFICATION_CATEGORIES.forEach(cat => {
-    // Promotional content defaults to Email only (opt-in for SMS)
-    // All other categories default to Email + SMS
-    defaults[cat.dbColumn] = cat.id === 'promotional'
-      ? [NOTIFICATION_CHANNELS.EMAIL]
-      : [NOTIFICATION_CHANNELS.EMAIL, NOTIFICATION_CHANNELS.SMS];
+    // All categories default to Email + SMS (All True paradigm)
+    defaults[cat.dbColumn] = [NOTIFICATION_CHANNELS.EMAIL, NOTIFICATION_CHANNELS.SMS];
   });
   return defaults;
 }
