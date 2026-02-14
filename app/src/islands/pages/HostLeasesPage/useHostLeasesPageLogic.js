@@ -172,7 +172,7 @@ export function useHostLeasesPageLogic() {
   const {
     user: authUser,
     userId: authUserId,
-    loading: authLoading,
+    isLoading: authLoading,
     isAuthenticated
   } = useAuthenticatedUser({ requiredRole: 'host', redirectOnFail: '/' });
 

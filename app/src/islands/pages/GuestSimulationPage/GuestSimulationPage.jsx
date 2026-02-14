@@ -164,7 +164,7 @@ export default function GuestSimulationPage() {
                     isActive={currentStep === 0 || stepStatuses.A === 'active'}
                     isLoading={isLoading && loadingMessage.includes('Step A')}
                     onAction={handleStepA}
-                    buttonText="Mark as Tester"
+                    actionButtonLabel="Mark as Tester"
                     disabled={!mobileConfirmed && currentStep === 0}
                     result={simulationData.stepAResult}
                   />
@@ -179,7 +179,7 @@ export default function GuestSimulationPage() {
                     isActive={stepStatuses.B === 'active'}
                     isLoading={isLoading && loadingMessage.includes('Step B')}
                     onAction={handleStepB}
-                    buttonText="Create Proposals"
+                    actionButtonLabel="Create Proposals"
                     disabled={stepStatuses.B !== 'active'}
                     result={simulationData.stepBResult}
                   />
@@ -194,7 +194,7 @@ export default function GuestSimulationPage() {
                     isActive={stepStatuses.C === 'active'}
                     isLoading={isLoading && loadingMessage.includes('Step C')}
                     onAction={handleStepC}
-                    buttonText="Apply Counteroffer"
+                    actionButtonLabel="Apply Counteroffer"
                     disabled={stepStatuses.C !== 'active'}
                     result={simulationData.stepCResult}
                   />
@@ -209,7 +209,7 @@ export default function GuestSimulationPage() {
                     isActive={false}
                     isLoading={false}
                     onAction={null}
-                    buttonText="Not Implemented"
+                    actionButtonLabel="Not Implemented"
                     disabled={true}
                     result={null}
                   />
@@ -224,7 +224,7 @@ export default function GuestSimulationPage() {
                     isActive={stepStatuses.E === 'active'}
                     isLoading={isLoading && loadingMessage.includes('Step E')}
                     onAction={handleStepE}
-                    buttonText="Schedule Meeting"
+                    actionButtonLabel="Schedule Meeting"
                     disabled={stepStatuses.E !== 'active'}
                     result={simulationData.stepEResult}
                   />
@@ -239,7 +239,7 @@ export default function GuestSimulationPage() {
                     isActive={stepStatuses.F === 'active'}
                     isLoading={isLoading && loadingMessage.includes('Step F')}
                     onAction={handleStepF}
-                    buttonText="Accept Proposals"
+                    actionButtonLabel="Accept Proposals"
                     disabled={stepStatuses.F !== 'active'}
                     result={simulationData.stepFResult}
                   />

@@ -20,7 +20,7 @@ function formatBlockedDate(dateString) {
 const BlockedDateList = React.memo(function BlockedDateList({
   allFutureBlockedDates,
   displayedBlockedDates,
-  toggleBlockedDate,
+  onToggleBlockedDate,
   showAllBlockedDates,
   setShowAllBlockedDates,
   hasMoreDates,
@@ -39,7 +39,7 @@ const BlockedDateList = React.memo(function BlockedDateList({
               <button
                 type="button"
                 className="listing-dashboard-availability__remove-date"
-                onClick={() => toggleBlockedDate(dateKey)}
+                onClick={() => onToggleBlockedDate(dateKey)}
                 title="Remove blocked date"
                 aria-label={`Remove blocked date ${formatBlockedDate(dateKey)}`}
               >

@@ -36,11 +36,11 @@
 [FEATURES]: Video background hero, animated example cards with hover states, floating people avatars, premium gradient buttons, responsive role cards, Typeform modal integration
 [COLORS]: Uses --gradient-purple-blue, --gradient-purple-pink, --brand-purple
 
-### create-proposal-flow-v2.css
+### create-proposal-flow.css
 [INTENT]: Multi-step proposal creation modal wizard
 [DEFINES]: .create-proposal-popup, .proposal-container, .proposal-header, .section, .field-group, .day-selector, .day-button, .pricing-section, .navigation-buttons, .review-section, .user-details-section, .move-in-section, .days-selection-section
 [FEATURES]: Fixed position modal overlay, sticky header/footer, multi-section form layout, day selection grid, pricing breakdown display, responsive navigation buttons
-[USED_BY]: CreateProposalFlowV2 component
+[USED_BY]: CreateProposalFlow component
 
 ### faq.css
 [INTENT]: FAQ page with tabbed navigation and accordion

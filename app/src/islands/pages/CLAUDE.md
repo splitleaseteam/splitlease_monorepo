@@ -239,7 +239,7 @@ Uses Islands Architecture and Hollow Component Pattern. See `app/src/CLAUDE.md` 
 [ROUTE]: /view-split-lease/{LISTING_ID}
 [PATTERN]: Hollow Component Pattern
 [FEATURES]: Full listing details, schedule selector, pricing breakdown, proposal wizard
-[IMPORTS]: shared/CreateProposalFlowV2, shared/GoogleMap
+[IMPORTS]: shared/CreateProposalFlow, shared/GoogleMap
 [PRICING]: Real-time pricing calculations based on selected days
 
 ### ViewSplitLeasePage-old.jsx
@@ -466,7 +466,7 @@ window.history.replaceState({}, '', `?${params.toString()}`);
 - `shared/Footer.jsx` - Site footer
 - `shared/ListingCard.jsx` - Reusable listing card
 - `shared/GoogleMap.jsx` - Map with listing markers
-- `shared/CreateProposalFlowV2.jsx` - Proposal wizard
+- `shared/CreateProposalFlow.jsx` - Proposal wizard
 - `shared/ListingScheduleSelector.jsx` - Day selection UI
 
 ### Libraries

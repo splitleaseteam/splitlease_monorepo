@@ -53,7 +53,7 @@ export function useGuestLeasesPageLogic() {
   const {
     user: authUser,
     userId: authUserId,
-    loading: authLoading,
+    isLoading: authLoading,
     isAuthenticated,
     redirectReason
   } = useAuthenticatedUser({ requiredRole: 'guest', redirectOnFail: '/' });

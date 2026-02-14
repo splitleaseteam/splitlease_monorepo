@@ -693,7 +693,7 @@
 }
 
 /* ============================================================================
-   Z-INDEX NOTE: CreateProposalFlowV2 Modal
+   Z-INDEX NOTE: CreateProposalFlow Modal
    The modal is now rendered via React Portal directly to document.body,
    so it's completely outside the header DOM hierarchy and uses its own z-index.
    No special z-index overrides needed here.

@@ -778,16 +778,6 @@ export const routes = [
     hasDynamicSegment: false
   },
 
-  // ===== Z-SHARATH TEST (INTERNAL) =====
-  {
-    path: '/_internal/z-sharath-test',
-    file: 'z-sharath-test.html',
-    aliases: ['/_internal/z-sharath-test.html'],
-    protected: false,
-    cloudflareInternal: true,
-    internalName: 'z-sharath-test-view',
-    hasDynamicSegment: false
-  },
 
   // ===== Z-UNIT CHATGPT MODELS (INTERNAL) =====
   {

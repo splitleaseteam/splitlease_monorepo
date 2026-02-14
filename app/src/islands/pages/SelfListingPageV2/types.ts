@@ -24,7 +24,7 @@ export type NightId = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday'
 export const NIGHT_IDS: NightId[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 // Types
-export interface FormData {
+export interface SelfListingFormData {
   // Step 1: Host Type
   hostType: 'resident' | 'liveout' | 'coliving' | 'agent';
 
@@ -61,7 +61,7 @@ export interface FormData {
   photos: Array<{ id: string; url: string; file?: File }>;
 }
 
-export const DEFAULT_FORM_DATA: FormData = {
+export const DEFAULT_FORM_DATA: SelfListingFormData = {
   hostType: 'resident',
   marketStrategy: 'private',
   leaseStyle: 'nightly',

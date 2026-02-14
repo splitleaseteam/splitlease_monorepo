@@ -348,16 +348,6 @@
   display: block;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* Day Selector (Card 3 - Simple) */
 .day-selector-wrapper-simple {

@@ -260,9 +260,9 @@ export function canCancelVMRequest(virtualMeeting, currentUserId) {
  *
  * @param {Object} virtualMeeting - Virtual meeting object
  * @param {string} currentUserId - Current user's ID
- * @returns {string} Button text
+ * @returns {string} Button label
  */
-export function getVMButtonText(virtualMeeting, currentUserId) {
+export function getVMButtonLabel(virtualMeeting, currentUserId) {
   if (!virtualMeeting) {
     return 'Request Virtual Meeting';
   }
@@ -340,7 +340,7 @@ export function getVMStateInfo(virtualMeeting, currentUserId) {
   return {
     state,
     showButton: true,
-    buttonText: getVMButtonText(virtualMeeting, currentUserId),
+    buttonLabel: getVMButtonLabel(virtualMeeting, currentUserId),
     buttonStyle: getVMButtonStyle(virtualMeeting, currentUserId),
     buttonDisabled: isVMButtonDisabled(virtualMeeting, currentUserId),
     canRequest: canRequestNewMeeting(virtualMeeting),

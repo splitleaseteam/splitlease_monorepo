@@ -9,7 +9,7 @@
 
 import { useEffect } from 'react';
 import SuggestionCard from './SuggestionCard';
-import TranscriptPopup from './TranscriptPopup';
+import TranscriptModal from './TranscriptModal';
 import CombineModal from './CombineModal';
 import { useAISuggestionsState } from './useAISuggestionsState';
 import { PROGRESS_STAGES } from './constants';
@@ -258,7 +258,7 @@ export default function AISuggestionsModal({
       </div>
 
       {/* Transcript Popup */}
-      <TranscriptPopup
+      <TranscriptModal
         isOpen={showTranscript}
         transcript={houseManual?.transcript}
         source={houseManual?.transcript_source}

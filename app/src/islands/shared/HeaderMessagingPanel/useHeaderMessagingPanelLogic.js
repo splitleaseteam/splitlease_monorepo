@@ -25,7 +25,7 @@ import { useCTAHandler } from '../../pages/MessagingPage/useCTAHandler.js';
 import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
 import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
-import { clearProposalDraft } from '../CreateProposalFlowV2.jsx';
+import { clearProposalDraft } from '../CreateProposalFlow.jsx';
 
 /**
  * @param {object} options
@@ -88,9 +88,9 @@ export function useHeaderMessagingPanelLogic({
   const handleOpenModal = useCallback(async (modalName, context) => {
     console.log('[HeaderMessagingPanel] handleOpenModal called:', modalName, context);
 
-    // Special handling for CreateProposalFlowV2 modal
-    if (modalName === 'CreateProposalFlowV2') {
-      console.log('[HeaderMessagingPanel] Opening CreateProposalFlowV2 modal');
+    // Special handling for CreateProposalFlow modal
+    if (modalName === 'CreateProposalFlow') {
+      console.log('[HeaderMessagingPanel] Opening CreateProposalFlow modal');
 
       // Get listing data from threadInfo or context
       const listingId = context?.listingId || threadInfo?.listing_id;

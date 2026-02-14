@@ -184,7 +184,7 @@ export const CTA_ROUTES = {
   // --- Create Proposal (Modal) ---
   'create_proposal_guest': {
     actionType: 'modal',
-    destination: 'CreateProposalFlowV2'
+    destination: 'CreateProposalFlow'
   }
 };
 
@@ -209,7 +209,7 @@ export async function fetchCTAConfig() {
 
   try {
     const { data, error } = await supabase
-      .schema('reference_table').from('os_messaging_cta')
+      .from('os_messaging_cta')
       .select('*');
 
     if (error) {

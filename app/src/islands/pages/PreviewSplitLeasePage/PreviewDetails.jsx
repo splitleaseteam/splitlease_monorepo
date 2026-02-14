@@ -10,7 +10,7 @@ import { SectionHeader } from './PreviewHelpers.jsx';
 export function PreviewDetails({
   listing,
   expandedSections,
-  toggleSection,
+  onToggleSection,
   handleOpenEditModal,
   commuteSectionRef,
   amenitiesSectionRef,
@@ -41,7 +41,7 @@ export function PreviewDetails({
         </p>
         {listing.listing_description?.length > 360 && (
           <button
-            onClick={() => toggleSection('description')}
+            onClick={() => onToggleSection('description')}
             style={{
               marginTop: '0.5rem',
               background: 'none',
@@ -125,7 +125,7 @@ export function PreviewDetails({
           </p>
           {listing.neighborhood_description_by_host?.length > 500 && (
             <button
-              onClick={() => toggleSection('neighborhood')}
+              onClick={() => onToggleSection('neighborhood')}
               style={{
                 marginTop: '0.5rem',
                 background: 'none',

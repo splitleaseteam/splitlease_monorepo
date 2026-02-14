@@ -105,7 +105,7 @@ export const Section3LeaseStyles: React.FC<Section3Props> = ({
     setErrors({});
   };
 
-  const selectAllNights = useCallback(() => {
+  const handleSelectAllNights = useCallback(() => {
     const allNightIds = ALL_NIGHTS.map((n) => n.id);
     handleNightsSelectionChange(allNightIds);
   }, [handleNightsSelectionChange]);
@@ -220,7 +220,7 @@ export const Section3LeaseStyles: React.FC<Section3Props> = ({
                 : `${getAvailableNightsCount()} Nights Available, ${getNotAvailableNightsCount()} Nights Not Available`}
             </span>
             {getNotAvailableNightsCount() > 0 && (
-              <button type="button" className="btn-link" onClick={selectAllNights}>
+              <button type="button" className="btn-link" onClick={handleSelectAllNights}>
                 select all nights
               </button>
             )}

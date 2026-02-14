@@ -12,7 +12,7 @@ import { isGuest } from '../../../logic/rules/users/isGuest.js';
 import { supabase } from '../../../lib/supabase.js';
 import { NYC_BOUNDS, isValidServiceArea, getBoroughForZipCode, getBoroughFromCounty } from '../../../lib/nycZipCodes';
 import { fetchInformationalTexts } from '../../../lib/informationalTextsFetcher.js';
-import type { FormData, NightId, SpaceType, AddressData } from './types';
+import type { SelfListingFormData, NightId, SpaceType, AddressData } from './types';
 import { DEFAULT_FORM_DATA, HOST_TYPES, WEEKLY_PATTERNS } from './types';
 
 const STORAGE_KEY = 'selfListingV2Draft';
@@ -96,11 +96,11 @@ const infoContentConfig: Record<string, { title: string; dbTag: string; fallback
 
 export function useSelfListingV2Logic() {
   // Auth hook
-  const { user: authUser, loading: authLoading, isAuthenticated } = useAuthenticatedUser();
+  const { user: authUser, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser();
 
   // State
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
+  const [formData, setFormData] = useState<SelfListingFormData>(DEFAULT_FORM_DATA);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState(false);
@@ -228,10 +228,10 @@ export function useSelfListingV2Logic() {
     const lastHostType = localStorage.getItem(LAST_HOST_TYPE_KEY);
     const lastMarketStrategy = localStorage.getItem(LAST_MARKET_STRATEGY_KEY);
 
-    const prefillFromLastListing: Partial<FormData> = {};
+    const prefillFromLastListing: Partial<SelfListingFormData> = {};
 
     if (lastHostType && ['resident', 'liveout', 'coliving', 'agent'].includes(lastHostType)) {
-      prefillFromLastListing.hostType = lastHostType as FormData['hostType'];
+      prefillFromLastListing.hostType = lastHostType as SelfListingFormData['hostType'];
       console.log('[SelfListingPageV2] Prefilling hostType from last listing:', lastHostType);
     }
     if (lastMarketStrategy && ['private', 'public'].includes(lastMarketStrategy)) {

@@ -88,7 +88,7 @@ export default function AvailabilitySection({ compact = false }) {
     formatDateKey,
   });
 
-  const toggleBlockedDate = useCallback((dateKey) => {
+  const handleToggleBlockedDate = useCallback((dateKey) => {
     setBlockedDates((prev) => {
       const next = prev.includes(dateKey)
         ? prev.filter((d) => d !== dateKey)
@@ -115,8 +115,8 @@ export default function AvailabilitySection({ compact = false }) {
   // Keyboard toggle (Enter/Space in CalendarGrid)
   const handleDateClick = useCallback((dayInfo) => {
     if (dayInfo.isPast || !dayInfo.date || isDateBooked(dayInfo.date)) return;
-    toggleBlockedDate(formatDateKey(dayInfo.date));
-  }, [toggleBlockedDate, isDateBooked]);
+    handleToggleBlockedDate(formatDateKey(dayInfo.date));
+  }, [handleToggleBlockedDate, isDateBooked]);
 
   // --- Quick-set patterns ---
   const applyPattern = useCallback((pattern) => {
@@ -317,7 +317,7 @@ export default function AvailabilitySection({ compact = false }) {
                       <button
                         type="button"
                         className="listing-dashboard-availability__remove-date"
-                        onClick={() => toggleBlockedDate(dateKey)}
+                        onClick={() => handleToggleBlockedDate(dateKey)}
                         title="Remove blocked date"
                         aria-label={`Remove blocked date ${dateKey}`}
                       >

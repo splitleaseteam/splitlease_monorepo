@@ -11,7 +11,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 import Header from '../../shared/Header.jsx';
 import Footer from '../../shared/Footer.jsx';
-import CreateProposalFlowV2, { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
+import CreateProposalFlow, { clearProposalDraft } from '../../shared/CreateProposalFlow.jsx';
 import ContactHostMessaging from '../../shared/ContactHostMessaging.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
 import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
@@ -58,7 +58,7 @@ import {
 
 export default function ViewSplitLeasePage() {
   // Core state
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [listing, setListing] = useState(null);
   const [zatConfig, setZatConfig] = useState(null);
@@ -66,7 +66,7 @@ export default function ViewSplitLeasePage() {
 
   // Booking widget state - initialize from URL parameters if available
   const [moveInDate, setMoveInDate] = useState(() => getInitialMoveInFromUrl());
-  const [strictMode, setStrictMode] = useState(false);
+  const [isStrictModeEnabled, setIsStrictModeEnabled] = useState(false);
   const [selectedDayObjects, setSelectedDayObjects] = useState(() => getInitialScheduleFromUrl()); // Day objects from URL param or empty
   const [reservationSpan, setReservationSpan] = useState(() => getInitialReservationSpanFromUrl() || 13); // URL value or 13 weeks default
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
@@ -184,7 +184,7 @@ export default function ViewSplitLeasePage() {
   // Responsive state
   const [isMobile, setIsMobile] = useState(false);
   const [shouldLoadMap, setShouldLoadMap] = useState(false);
-  const [mobileBookingExpanded, setMobileBookingExpanded] = useState(false);
+  const [isMobileBookingExpanded, setIsMobileBookingExpanded] = useState(false);
 
   // Section references for navigation
   const mapRef = useRef(null);
@@ -237,12 +237,12 @@ export default function ViewSplitLeasePage() {
           name: listingData.listing_title
         });
         setListing(listingData);
-        setLoading(false);
+        setIsLoading(false);
 
       } catch (err) {
         console.error('Error initializing page:', err);
         setError(err.message);
-        setLoading(false);
+        setIsLoading(false);
       }
     }
 
@@ -544,7 +544,7 @@ export default function ViewSplitLeasePage() {
     setShowPhotoModal(false);
   };
 
-  const toggleSection = (section) => {
+  const handleToggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -568,7 +568,7 @@ export default function ViewSplitLeasePage() {
   };
 
   // Submit proposal to backend (after auth is confirmed)
-  const submitProposal = async (proposalData) => {
+  const handleSubmitProposal = async (proposalData) => {
     // Guard against double submission
     if (isSubmittingProposal) {
       logger.debug('Proposal submission already in progress, skipping duplicate call');
@@ -774,7 +774,7 @@ export default function ViewSplitLeasePage() {
 
     // User is logged in, proceed with submission
     logger.debug('User is logged in, submitting proposal');
-    await submitProposal(proposalData);
+    await handleSubmitProposal(proposalData);
   };
 
   // Handle successful authentication
@@ -804,9 +804,9 @@ export default function ViewSplitLeasePage() {
       // Small delay to ensure auth state is fully updated
       setTimeout(async () => {
         try {
-          await submitProposal(dataToSubmit);
+          await handleSubmitProposal(dataToSubmit);
         } catch (error) {
-          // Error already shown as toast inside submitProposal
+          // Error already shown as toast inside handleSubmitProposal
           logger.debug('Post-auth proposal submission failed:', error.message);
         }
       }, 500);
@@ -848,7 +848,7 @@ export default function ViewSplitLeasePage() {
   // RENDER LOGIC
   // ============================================================================
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <Header />
@@ -996,7 +996,7 @@ export default function ViewSplitLeasePage() {
             listing={listing}
             isMobile={isMobile}
             expandedSections={expandedSections}
-            toggleSection={toggleSection}
+            onToggleSection={handleToggleSection}
             mapSectionRef={mapSectionRef}
             mapRef={mapRef}
             shouldLoadMap={shouldLoadMap}
@@ -1030,8 +1030,8 @@ export default function ViewSplitLeasePage() {
           moveInDate={moveInDate}
           setMoveInDate={setMoveInDate}
           minMoveInDate={minMoveInDate}
-          strictMode={strictMode}
-          setStrictMode={setStrictMode}
+          isStrictModeEnabled={isStrictModeEnabled}
+          setIsStrictModeEnabled={setIsStrictModeEnabled}
           customScheduleDescription={customScheduleDescription}
           setCustomScheduleDescription={setCustomScheduleDescription}
           showCustomScheduleInput={showCustomScheduleInput}
@@ -1297,7 +1297,7 @@ export default function ViewSplitLeasePage() {
 
       {/* Create Proposal Modal - V2 */}
       {isProposalModalOpen && (
-        <CreateProposalFlowV2
+        <CreateProposalFlow
           listing={listing}
           moveInDate={moveInDate}
           daysSelected={selectedDayObjects}
@@ -1432,8 +1432,8 @@ export default function ViewSplitLeasePage() {
           moveInDate={moveInDate}
           setMoveInDate={setMoveInDate}
           minMoveInDate={minMoveInDate}
-          strictMode={strictMode}
-          setStrictMode={setStrictMode}
+          isStrictModeEnabled={isStrictModeEnabled}
+          setIsStrictModeEnabled={setIsStrictModeEnabled}
           customScheduleDescription={customScheduleDescription}
           setCustomScheduleDescription={setCustomScheduleDescription}
           showCustomScheduleInput={showCustomScheduleInput}
@@ -1444,8 +1444,8 @@ export default function ViewSplitLeasePage() {
           setIsFavorited={setIsFavorited}
           loggedInUserData={loggedInUserData}
           setShowAuthModal={setShowAuthModal}
-          mobileBookingExpanded={mobileBookingExpanded}
-          setMobileBookingExpanded={setMobileBookingExpanded}
+          isMobileBookingExpanded={isMobileBookingExpanded}
+          setIsMobileBookingExpanded={setIsMobileBookingExpanded}
           handleCreateProposal={handleCreateProposal}
         />
       )}

@@ -130,7 +130,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   const {
     user: authenticatedUser,
     userId: authUserId,
-    loading: authLoading,
+    isLoading: authLoading,
     isAuthenticated
   } = useAuthenticatedUser();
   
@@ -138,7 +138,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   // STATE: Core Data
   // ==========================================================================
   
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [listing, setListing] = useState(null);
   const [zatConfig, setZatConfig] = useState(null);
@@ -153,7 +153,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   const [selectedDayObjects, setSelectedDayObjects] = useState(initialState.daysSelected);
   const [moveInDate, setMoveInDate] = useState(initialState.moveInDate);
   const [reservationSpan, setReservationSpan] = useState(initialState.reservationSpan);
-  const [strictMode, setStrictMode] = useState(false);
+  const [isStrictModeEnabled, setIsStrictModeEnabled] = useState(false);
   
   // ==========================================================================
   // STATE: Modals
@@ -231,11 +231,11 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
     }
     
     return validateScheduleSelection(selectedDayObjects, listing, {
-      strictMode,
+      isStrictModeEnabled,
       moveInDate,
       reservationSpan
     });
-  }, [listing, selectedDayObjects, strictMode, moveInDate, reservationSpan]);
+  }, [listing, selectedDayObjects, isStrictModeEnabled, moveInDate, reservationSpan]);
   
   const isBookingValid = !validationErrors.hasErrors && priceBreakdown !== null && moveInDate !== null;
   
@@ -293,7 +293,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
         setListing(listingData);
         setZatConfig(zatConfigData);
         setInformationalTexts(infoTexts);
-        setLoading(false);
+        setIsLoading(false);
         
         logger.debug(`[useViewSplitLeaseLogic] Initialized in ${mode} mode:`, {
           listingId,
@@ -303,7 +303,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
       } catch (err) {
         logger.error('[useViewSplitLeaseLogic] Initialization error:', err);
         setError(err.message);
-        setLoading(false);
+        setIsLoading(false);
       }
     }
     
@@ -602,7 +602,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
   
   return {
     // Loading & Data
-    loading,
+    isLoading,
     error,
     listing,
     zatConfig,
@@ -619,7 +619,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
     selectedDayObjects,
     moveInDate,
     reservationSpan,
-    strictMode,
+    isStrictModeEnabled,
     
     // Computed Values
     minMoveInDate,
@@ -669,7 +669,7 @@ export function useViewSplitLeaseLogic(options: UseViewSplitLeaseLogicOptions = 
     
     // Setters (for UI-only state overrides)
     setShowAuthModal,
-    setStrictMode,
+    setIsStrictModeEnabled,
     setShouldLoadMap
   };
 }

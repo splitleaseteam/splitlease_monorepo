@@ -15,6 +15,7 @@ import type {
   TransactionOption,
   TransactionType,
 } from '../types';
+import { calculateUrgencyMultiplier } from '../../UrgencyCountdown/utils/urgencyCalculations';
 
 /**
  * Select personalized default transaction option
@@ -23,10 +24,10 @@ import type {
  *
  * Decision tree:
  * 1. Big Spender + High Urgency → Full Week
- * 2. High Flex + Any Urgency → Alternating
- * 3. Average + Low Urgency → Alternating
- * 4. Average + Medium Urgency → Shared Night
- * 5. Average + High Urgency → Shared Night
+ * 2. Budget Conscious + Any Urgency → Alternating
+ * 3. Balanced + Low Urgency → Alternating
+ * 4. Balanced + Medium Urgency → Shared Night
+ * 5. Balanced + High Urgency → Shared Night
  * 6. Big Spender + Low Urgency → Full Week
  *
  * @param context - Transaction context
@@ -64,9 +65,9 @@ export function selectPersonalizedDefault(
   }
 
   // ========================================
-  // RULE 2: High Flex + Any Urgency → SWAP
+  // RULE 2: Budget Conscious + Any Urgency → SWAP
   // ========================================
-  if (requestingUserArchetype === 'high_flexibility') {
+  if (requestingUserArchetype === 'budget_conscious') {
     const previousAlternations = userHistory.previousTransactions || 0;
     return {
       primaryOption: 'alternating',
@@ -83,11 +84,11 @@ export function selectPersonalizedDefault(
   }
 
   // ========================================
-  // RULE 3: Average User + Low Urgency (>21 days) → SWAP
+  // RULE 3: Balanced + Low Urgency (>21 days) → SWAP
   // ========================================
   if (
     daysUntilCheckIn > 21 &&
-    requestingUserArchetype === 'average_user'
+    requestingUserArchetype === 'balanced'
   ) {
     return {
       primaryOption: 'alternating',
@@ -102,12 +103,12 @@ export function selectPersonalizedDefault(
   }
 
   // ========================================
-  // RULE 4: Average User + Medium Urgency (8-21 days) → CRASH
+  // RULE 4: Balanced + Medium Urgency (8-21 days) → CRASH
   // ========================================
   if (
     daysUntilCheckIn >= 8 &&
     daysUntilCheckIn <= 21 &&
-    requestingUserArchetype === 'average_user'
+    requestingUserArchetype === 'balanced'
   ) {
     return {
       primaryOption: 'shared_night',
@@ -122,11 +123,11 @@ export function selectPersonalizedDefault(
   }
 
   // ========================================
-  // RULE 5: Average User + High Urgency (<8 days) → CRASH
+  // RULE 5: Balanced + High Urgency (<8 days) → CRASH
   // ========================================
   if (
     daysUntilCheckIn < 8 &&
-    requestingUserArchetype === 'average_user'
+    requestingUserArchetype === 'balanced'
   ) {
     return {
       primaryOption: 'shared_night',
@@ -270,27 +271,6 @@ function buildTransactionOption(
     requiresUserNight,
     potentialMatches,
   };
-}
-
-/**
- * Calculate urgency multiplier based on days until check-in
- *
- * Linear model:
- * - 0-3 days: 1.5x (critical)
- * - 4-7 days: 1.25x (high)
- * - 8-14 days: 1.1x (medium)
- * - 15+ days: 1.0x (low)
- *
- * SCAFFOLDING: Replace with exponential model or dynamic pricing algorithm
- *
- * @param daysUntilCheckIn - Days until check-in
- * @returns Urgency multiplier (1.0 or higher)
- */
-function calculateUrgencyMultiplier(daysUntilCheckIn: number): number {
-  if (daysUntilCheckIn <= 3) return 1.5;
-  if (daysUntilCheckIn <= 7) return 1.25;
-  if (daysUntilCheckIn <= 14) return 1.1;
-  return 1.0;
 }
 
 /**

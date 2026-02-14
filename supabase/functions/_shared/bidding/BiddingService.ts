@@ -26,17 +26,17 @@ import type {
   WinnerResult,
 } from './types.ts';
 import {
+  validateBid,
+  processAutoBid,
+  determineWinner,
+  calculateBidIncrement,
   BIDDING_CONSTANTS,
   generateSessionId,
   generateBidId,
   calculateExpiresAt,
-} from './constants.ts';
-import { validateBid } from './rules/validateBid.ts';
+} from '@splitlease/bidding-logic';
 import { isSessionExpired } from './rules/isSessionExpired.ts';
 import { shouldFinalizeSession } from './rules/shouldFinalizeSession.ts';
-import { processAutoBid } from './processors/processAutoBid.ts';
-import { determineWinner } from './processors/determineWinner.ts';
-import { calculateBidIncrement } from './calculators/calculateBidIncrement.ts';
 
 export class BiddingService {
   private supabase: SupabaseClient;
@@ -216,7 +216,12 @@ export class BiddingService {
     }
 
     // Validate bid using logic module
-    const validation = validateBid(amount, session, userId, bidHistory);
+        const validation = validateBid({
+      proposedBid: amount,
+      session,
+      userId,
+      bidHistory,
+    });
 
     if (!validation.valid) {
       throw new Error(`Bid validation failed: ${validation.errors.join(', ')}`);
@@ -225,7 +230,7 @@ export class BiddingService {
     // Calculate increment
     const previousHighBid = session.winningBidAmount || 0;
     const { amount: incrementAmount, percent: incrementPercent } =
-      calculateBidIncrement(amount, previousHighBid);
+      calculateBidIncrement({ newBid: amount, previousBid: previousHighBid });
 
     // Create bid record
     const bidId = generateBidId();
@@ -287,7 +292,11 @@ export class BiddingService {
 
     // Check for auto-bid trigger
     const updatedSession = { ...session, winningBidAmount: amount, winnerUserId: userId };
-    const autoBidResult = processAutoBid(updatedSession, participants, placedBid);
+    const autoBidResult = processAutoBid({
+      session: updatedSession,
+      participants,
+      newBid: placedBid,
+    });
 
     let autoBid: Bid | undefined;
 
@@ -460,7 +469,7 @@ export class BiddingService {
     const participants = await this.getParticipants(sessionId);
 
     // Determine winner using logic module
-    const result = determineWinner(session, participants);
+    const result = determineWinner({ session, participants });
 
     // Update session status
     const { error: sessionError } = await this.supabase

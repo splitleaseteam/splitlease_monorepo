@@ -77,9 +77,9 @@ import EndProposalModal from 'islands/modals/EndProposalModal';
       options: ['guest', 'host'],
       description: 'Determines cancellation vs rejection flow',
     },
-    buttonText: {
+    confirmButtonLabel: {
       control: 'text',
-      description: 'Custom button text (overrides default)',
+      description: 'Custom confirm button label (overrides default)',
     },
     onClose: {
       action: 'closed',
@@ -100,7 +100,7 @@ import EndProposalModal from 'islands/modals/EndProposalModal';
 };
 
 // Interactive wrapper
-const CancelProposalDemo = ({ userType, buttonText, initialOpen = true }) => {
+const CancelProposalDemo = ({ userType, confirmButtonLabel, initialOpen = true }) => {
   const [isOpen, setIsOpen] = useState(initialOpen);
 
   return (
@@ -128,7 +128,7 @@ const CancelProposalDemo = ({ userType, buttonText, initialOpen = true }) => {
         proposal={mockProposal}
         listing={mockListing}
         userType={userType}
-        buttonText={buttonText}
+        confirmButtonLabel={confirmButtonLabel}
         onClose={() => setIsOpen(false)}
         onConfirm={(reason) => {
           console.log('Confirmed with reason:', reason);
@@ -165,7 +165,7 @@ export const HostRejection = {
 
 // Decline Counteroffer
 export const DeclineCounteroffer = {
-  render: () => <CancelProposalDemo userType="guest" buttonText="Decline Counteroffer" />,
+  render: () => <CancelProposalDemo userType="guest" confirmButtonLabel="Decline Counteroffer" />,
   parameters: {
     docs: {
       description: {

@@ -160,7 +160,7 @@ export async function loadProposalDetailsWorkflow({
     houseRulesArray.length > 0
   ) {
     const { data: rulesData, error: rulesError } = await supabase
-      .schema('reference_table').from('zat_features_houserule')
+      .from('zat_features_houserule')
       .select('id, name, icon')
       .in('id', houseRulesArray)
 

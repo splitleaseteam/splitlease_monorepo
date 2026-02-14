@@ -2752,17 +2752,6 @@
   }
 }
 
-/* Price Information Tooltip Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* ========================================
    MOBILE MAP FLOATING ACTION BUTTON
@@ -2839,10 +2828,6 @@
     animation: fadeIn 0.2s ease-out;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
 
   /* Bottom Sheet Container */
   .mobile-filter-sheet {

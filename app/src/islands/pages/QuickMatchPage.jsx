@@ -2,7 +2,7 @@ import { useQuickMatchPageLogic } from './useQuickMatchPageLogic';
 import Header from '../shared/Header';
 import Footer from '../shared/Footer';
 import {
-  ProposalCard,
+  QuickMatchProposalCard,
   CandidateCard,
   MatchFilters,
   ProposalChoiceModal
@@ -101,7 +101,7 @@ export default function QuickMatchPage() {
             {/* Left Panel - Proposal Details & Filters */}
             <section className="quick-match-proposal-panel">
               <h2 className="qm-panel-title">Proposal Details</h2>
-              <ProposalCard
+              <QuickMatchProposalCard
                 proposal={proposal}
                 isLoading={isLoadingProposal}
               />

@@ -4,7 +4,7 @@
  * Exports the local store and React hook for managing listing form data.
  */
 
-export { listingLocalStore, type StoreState } from './listingLocalStore';
+export { listingLocalStore, type ListingFormStoreState } from './listingLocalStore';
 export { useListingStore } from './useListingStore';
 export {
   prepareListingSubmission,

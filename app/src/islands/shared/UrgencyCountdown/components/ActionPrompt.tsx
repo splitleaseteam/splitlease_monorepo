@@ -29,7 +29,7 @@ export const ActionPrompt: React.FC<ActionPromptProps> = ({
   className = '',
 }) => {
   // Get urgency-specific messaging
-  const { buttonText, savingsText, icon } = getPromptContent(
+  const { ctaLabel, savingsText, icon } = getPromptContent(
     urgencyLevel,
     currentPrice,
     savings
@@ -56,7 +56,7 @@ export const ActionPrompt: React.FC<ActionPromptProps> = ({
         }`}
         onClick={onClick}
         disabled={disabled || loading}
-        aria-label={`${buttonText}. Price: $${currentPrice}`}
+        aria-label={`${ctaLabel}. Price: $${currentPrice}`}
         data-testid="action-prompt-button"
       >
         {loading ? (
@@ -67,7 +67,7 @@ export const ActionPrompt: React.FC<ActionPromptProps> = ({
         ) : (
           <span className="button-content">
             {icon && <span className="button-icon">{icon}</span>}
-            <span className="button-text">{buttonText}</span>
+            <span className="button-text">{ctaLabel}</span>
             <span className="button-arrow">→</span>
           </span>
         )}
@@ -98,7 +98,7 @@ function getPromptContent(
   currentPrice: number,
   savings?: number
 ): {
-  buttonText: string;
+  ctaLabel: string;
   savingsText: string;
   icon?: string;
 } {
@@ -107,22 +107,22 @@ function getPromptContent(
 
   const content = {
     low: {
-      buttonText: 'Reserve at This Price',
+      ctaLabel: 'Reserve at This Price',
       savingsText: `Book early to save`,
       icon: '📅',
     },
     medium: {
-      buttonText: `Lock in $${formattedPrice}`,
+      ctaLabel: `Lock in $${formattedPrice}`,
       savingsText: `Save $${formattedSavings} by booking today`,
       icon: '🔒',
     },
     high: {
-      buttonText: `Secure $${formattedPrice} Now`,
+      ctaLabel: `Secure $${formattedPrice} Now`,
       savingsText: `Act fast - save $${formattedSavings}`,
       icon: '⚡',
     },
     critical: {
-      buttonText: `BOOK NOW AT $${formattedPrice}`,
+      ctaLabel: `BOOK NOW AT $${formattedPrice}`,
       savingsText: `URGENT - Save $${formattedSavings} in next 6 hours`,
       icon: '🚨',
     },
@@ -137,7 +137,7 @@ function getPromptContent(
 export const CompactActionPrompt: React.FC<
   Omit<ActionPromptProps, 'savings'>
 > = ({ currentPrice, urgencyLevel, onClick, disabled, loading, className = '' }) => {
-  const buttonText =
+  const ctaLabel =
     urgencyLevel === 'critical'
       ? 'BOOK NOW'
       : urgencyLevel === 'high'
@@ -158,7 +158,7 @@ export const CompactActionPrompt: React.FC<
         <span className="loading-spinner" />
       ) : (
         <>
-          <span>{buttonText}</span>
+          <span>{ctaLabel}</span>
           <span className="compact-price">${formatCurrency(currentPrice)}</span>
         </>
       )}
@@ -185,7 +185,7 @@ export const SplitActionPrompt: React.FC<
   loading,
   className = '',
 }) => {
-  const { buttonText, savingsText, icon } = getPromptContent(
+  const { ctaLabel, savingsText, icon } = getPromptContent(
     urgencyLevel,
     currentPrice,
     savings
@@ -218,7 +218,7 @@ export const SplitActionPrompt: React.FC<
           ) : (
             <>
               {icon && <span>{icon}</span>}
-              <span>{buttonText}</span>
+              <span>{ctaLabel}</span>
             </>
           )}
         </button>
@@ -285,7 +285,7 @@ export const TimerActionPrompt: React.FC<
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  const { buttonText, savingsText, icon } = getPromptContent(
+  const { ctaLabel, savingsText, icon } = getPromptContent(
     urgencyLevel,
     currentPrice,
     savings
@@ -323,7 +323,7 @@ export const TimerActionPrompt: React.FC<
         ) : (
           <>
             {icon && <span>{icon}</span>}
-            <span>{buttonText}</span>
+            <span>{ctaLabel}</span>
           </>
         )}
       </button>

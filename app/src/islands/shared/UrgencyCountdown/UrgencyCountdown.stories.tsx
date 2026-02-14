@@ -39,7 +39,7 @@ const meta: Meta<typeof UrgencyCountdown> = {
     },
     variant: {
       control: { type: 'select' },
-      options: ['default', 'compact', 'prominent', 'minimal'],
+      options: ['standard', 'compact', 'prominent', 'minimal'],
     },
   },
 };
@@ -52,7 +52,7 @@ export const LowUrgency: Story = {
     targetDate: addDays(new Date(), 21),
     basePrice: 180,
     transactionType: 'full_week',
-    variant: 'default',
+    variant: 'standard',
   },
   parameters: {
     docs: {
@@ -68,7 +68,7 @@ export const MediumUrgency: Story = {
     targetDate: addDays(new Date(), 10),
     basePrice: 180,
     transactionType: 'shared_night',
-    variant: 'default',
+    variant: 'standard',
   },
   parameters: {
     docs: {
@@ -84,7 +84,7 @@ export const HighUrgency: Story = {
     targetDate: addDays(new Date(), 5),
     basePrice: 180,
     transactionType: 'alternating',
-    variant: 'default',
+    variant: 'standard',
   },
   parameters: {
     docs: {
@@ -100,7 +100,7 @@ export const CriticalUrgency: Story = {
     targetDate: addDays(new Date(), 2),
     basePrice: 180,
     transactionType: 'full_week',
-    variant: 'default',
+    variant: 'standard',
   },
   parameters: {
     docs: {
@@ -596,7 +596,7 @@ export const Playground: Story = {
     urgencySteepness: 2.0,
     marketDemandMultiplier: 1.0,
     transactionType: 'full_week',
-    variant: 'default',
+    variant: 'standard',
   },
   parameters: {
     docs: {

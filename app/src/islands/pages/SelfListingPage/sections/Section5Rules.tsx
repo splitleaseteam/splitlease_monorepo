@@ -37,7 +37,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
     }
   };
 
-  const toggleHouseRule = (rule: string) => {
+  const handleToggleHouseRule = (rule: string) => {
     // If trying to add a rule and already at max, show toast and return
     if (!data.houseRules.includes(rule) && data.houseRules.length >= 12) {
       showToast({ title: 'Maximum reached', content: 'You can select up to 12 house rules', type: 'info' });
@@ -55,7 +55,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
     handleChange('houseRules', [...new Set([...data.houseRules, ...common])]);
   };
 
-  const removeBlockedDate = (dateToRemove: Date) => {
+  const handleRemoveBlockedDate = (dateToRemove: Date) => {
     const updated = data.blockedDates.filter(
       (d) => d.toDateString() !== dateToRemove.toDateString()
     );
@@ -63,7 +63,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
   };
 
   // Toggle a single blocked date (add if not present, remove if present)
-  const toggleBlockedDate = (date: Date) => {
+  const handleToggleBlockedDate = (date: Date) => {
     const dateStr = date.toDateString();
     const isBlocked = data.blockedDates.some((d) => d.toDateString() === dateStr);
 
@@ -78,7 +78,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
   };
 
   // Add multiple dates to blocked list (for range selection)
-  const addBlockedDates = (dates: Date[]) => {
+  const handleAddBlockedDates = (dates: Date[]) => {
     // Filter out dates that are already blocked
     const newDates = dates.filter(
       (date) => !data.blockedDates.some((d) => d.toDateString() === date.toDateString())
@@ -111,7 +111,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
   const handleDateClick = (date: Date) => {
     if (selectionMode === 'individual') {
       // Individual mode: toggle the clicked date
-      toggleBlockedDate(date);
+      handleToggleBlockedDate(date);
     } else {
       // Range mode: wait for two clicks
       if (!selectedStartDate) {
@@ -120,7 +120,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
       } else {
         // Second click: block all dates in the range
         const rangeDates = getDatesBetween(selectedStartDate, date);
-        addBlockedDates(rangeDates);
+        handleAddBlockedDates(rangeDates);
         // Reset range start for next selection
         setSelectedStartDate(null);
       }
@@ -363,7 +363,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
               <input
                 type="checkbox"
                 checked={data.houseRules.includes(rule)}
-                onChange={() => toggleHouseRule(rule)}
+                onChange={() => handleToggleHouseRule(rule)}
               />
               <span>{rule}</span>
             </label>
@@ -420,7 +420,7 @@ export const Section5Rules: React.FC<Section5Props> = ({ data, rentalType, onCha
                       <button
                         type="button"
                         className="availability-remove-date"
-                        onClick={() => removeBlockedDate(date)}
+                        onClick={() => handleRemoveBlockedDate(date)}
                         title="Remove blocked date"
                       >
                         ×

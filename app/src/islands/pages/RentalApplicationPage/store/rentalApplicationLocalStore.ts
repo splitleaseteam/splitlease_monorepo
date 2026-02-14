@@ -90,7 +90,7 @@ export interface RentalApplicationFormData {
 }
 
 // Store state type
-export interface StoreState {
+export interface RentalApplicationStoreState {
   formData: RentalApplicationFormData;
   occupants: Occupant[];
   verificationStatus: VerificationStatus;
@@ -157,8 +157,8 @@ const DEFAULT_VERIFICATION_STATUS: VerificationStatus = {
  * Local memory store for rental application form data
  */
 class RentalApplicationLocalStore {
-  private state: StoreState;
-  private listeners: Set<(state: StoreState) => void>;
+  private state: RentalApplicationStoreState;
+  private listeners: Set<(state: RentalApplicationStoreState) => void>;
   private autoSaveTimer: ReturnType<typeof setTimeout> | null;
   private readonly AUTO_SAVE_DELAY = 1000; // 1 second debounce
   private currentUserId: string | null = null;
@@ -179,7 +179,7 @@ class RentalApplicationLocalStore {
    * Initialize the store - load from localStorage if available
    * @param userId - Required user ID to scope localStorage keys (prevents data leaks between users)
    */
-  initialize(userId: string): StoreState {
+  initialize(userId: string): RentalApplicationStoreState {
     // If userId changes, reset the store to prevent cross-user data contamination
     if (this.currentUserId && this.currentUserId !== userId) {
       console.log(`[RentalAppStore] User changed from ${this.currentUserId} to ${userId}, resetting store`);
@@ -241,7 +241,7 @@ class RentalApplicationLocalStore {
   /**
    * Get current state
    */
-  getState(): StoreState {
+  getState(): RentalApplicationStoreState {
     return { ...this.state };
   }
 
@@ -454,7 +454,7 @@ class RentalApplicationLocalStore {
   /**
    * Subscribe to store updates
    */
-  subscribe(listener: (state: StoreState) => void): () => void {
+  subscribe(listener: (state: RentalApplicationStoreState) => void): () => void {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);

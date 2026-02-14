@@ -674,7 +674,7 @@ export function HostEditingProposal({
         isOpen={showRejectModal}
         proposal={proposal}
         userType="host"
-        buttonText="Reject Proposal"
+        confirmButtonLabel="Reject Proposal"
         onClose={() => {
           setShowRejectModal(false)
           onCancel?.()
@@ -749,7 +749,7 @@ export function HostEditingProposal({
         isOpen={showRejectModal}
         proposal={proposal}
         userType="host"
-        buttonText="Reject Proposal"
+        confirmButtonLabel="Reject Proposal"
         onClose={() => setShowRejectModal(false)}
         onConfirm={handleReject}
       />

@@ -189,7 +189,7 @@ import Button from 'islands/shared/Button.jsx';
 
 ### Proposal Creation Flow
 [ENTRY]: Guest clicks "Book" on listing
-[STEP_1]: islands/shared/CreateProposalFlowV2.jsx modal opens
+[STEP_1]: islands/shared/CreateProposalFlow.jsx modal opens
 [STEP_2]: User selects days (uses day conversion)
 [STEP_3]: logic/calculators/pricing calculates prices
 [STEP_4]: logic/rules/proposals validates proposal

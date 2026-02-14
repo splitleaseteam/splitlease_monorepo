@@ -39,7 +39,7 @@ export interface UsePersonalizedDefaultsReturn {
   /** Reasoning for recommendation */
   reasoning: string[];
   /** Loading state */
-  loading: boolean;
+  isLoading: boolean;
   /** Error state */
   error: Error | null;
   /** Manually refetch recommendations */
@@ -85,7 +85,7 @@ export function usePersonalizedDefaults({
     primaryOption: TransactionType | null;
     sortedOptions: TransactionOption[] | null;
     reasoning: string[];
-    loading: boolean;
+    isLoading: boolean;
     error: Error | null;
     archetypeType: string | null;
     archetypeConfidence: number | null;
@@ -93,7 +93,7 @@ export function usePersonalizedDefaults({
     primaryOption: null,
     sortedOptions: null,
     reasoning: [],
-    loading: false,
+    isLoading: false,
     error: null,
     archetypeType: null,
     archetypeConfidence: null,
@@ -104,7 +104,7 @@ export function usePersonalizedDefaults({
    */
   const fetchRecommendations = useCallback(async () => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       // STEP 1: Fetch user archetype
       const archetypeResponse = await fetch(
@@ -160,7 +160,7 @@ export function usePersonalizedDefaults({
         primaryOption: recommendations.primaryRecommendation,
         sortedOptions: recommendations.options,
         reasoning: recommendedOption?.reasoning || [],
-        loading: false,
+        isLoading: false,
         error: null,
         archetypeType: recommendations.userArchetype.type,
         archetypeConfidence: recommendations.userArchetype.confidence,
@@ -188,7 +188,7 @@ export function usePersonalizedDefaults({
 
       setState((prev) => ({
         ...prev,
-        loading: false,
+        isLoading: false,
         error,
       }));
 
@@ -314,7 +314,7 @@ export function usePersonalizedDefaultsMock(
     primaryOption: 'full_week',
     sortedOptions: mockOptions,
     reasoning: mockOptions[0].reasoning || [],
-    loading: false,
+    isLoading: false,
     error: null,
     refetch: async () => {
       console.log('[Mock] Refetch called');

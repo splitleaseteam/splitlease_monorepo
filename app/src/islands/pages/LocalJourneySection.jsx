@@ -78,7 +78,7 @@ export default function LocalJourneySection({ onExploreRentals }) {
       });
 
       // Individual card animations - scale and opacity based on position
-      cards.forEach((card, _index) => {
+      cards.forEach((card) => {
         if (isMobile) {
           // Mobile: Simpler animation - cards start small, scale UP when active
           gsap.set(card, {

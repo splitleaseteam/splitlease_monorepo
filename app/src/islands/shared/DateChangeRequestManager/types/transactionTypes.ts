@@ -7,15 +7,15 @@
  * @module types/transactionTypes
  */
 
+import type { ArchetypeType } from './archetypeTypes';
+
 /**
  * Transaction type identifiers
  */
 export type TransactionType = 'full_week' | 'shared_night' | 'alternating';
 
-/**
- * User archetype classifications
- */
-export type ArchetypeType = 'big_spender' | 'high_flexibility' | 'average_user';
+// Re-export ArchetypeType so existing consumers that import it from here still work
+export type { ArchetypeType };
 
 /**
  * Urgency level classifications

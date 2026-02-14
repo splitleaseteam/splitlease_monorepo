@@ -35,7 +35,7 @@ export function ListingsGrid({ listings, onLoadMore, hasMore, isLoading, onOpenC
 
   return (
     <div className="listings-container">
-      {listings.map((listing, _index) => {
+      {listings.map((listing) => {
         const listingId = listing.id;
         const isFavorited = favoritedListingIds?.has(listingId);
         const proposalForListing = proposalsByListingId?.get(listingId) || null;

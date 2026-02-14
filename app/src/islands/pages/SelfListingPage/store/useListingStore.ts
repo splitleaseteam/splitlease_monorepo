@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { listingLocalStore, type StoreState } from './listingLocalStore';
+import { listingLocalStore, type ListingFormStoreState } from './listingLocalStore';
 import type { ListingFormData } from '../types/listing.types';
 
 interface UseListingStoreReturn {
@@ -13,7 +13,7 @@ interface UseListingStoreReturn {
   formData: ListingFormData;
   lastSaved: Date | null;
   isDirty: boolean;
-  stagingStatus: StoreState['stagingStatus'];
+  stagingStatus: ListingFormStoreState['stagingStatus'];
   errors: string[];
 
   // Update functions
@@ -51,7 +51,7 @@ interface UseListingStoreReturn {
  * Hook for accessing and updating the listing local store
  */
 export function useListingStore(): UseListingStoreReturn {
-  const [state, setState] = useState<StoreState>(() => listingLocalStore.getState());
+  const [state, setState] = useState<ListingFormStoreState>(() => listingLocalStore.getState());
 
   // Subscribe to store updates
   useEffect(() => {

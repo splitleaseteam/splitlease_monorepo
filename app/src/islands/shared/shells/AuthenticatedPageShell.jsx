@@ -50,7 +50,7 @@ export function AuthenticatedPageShell({
   className,
   children,
 }) {
-  const { user: rawUser, loading, isAuthenticated } = useAuthenticatedUser({
+  const { user: rawUser, isLoading, isAuthenticated } = useAuthenticatedUser({
     requiredRole,
     redirectOnFail: redirectUrl,
   });
@@ -67,7 +67,7 @@ export function AuthenticatedPageShell({
     : null;
 
   // Auth still checking or not authenticated -- show loading shell
-  if (loading || !isAuthenticated) {
+  if (isLoading || !isAuthenticated) {
     return (
       <>
         <Header />

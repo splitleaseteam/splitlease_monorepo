@@ -15,7 +15,7 @@ interface ListingDetailsSectionProps {
   listing: any;
   isMobile: boolean;
   expandedSections: { description: boolean; neighborhood: boolean; blockedDates: boolean };
-  toggleSection: (section: string) => void;
+  onToggleSection: (section: string) => void;
   // Map-related
   mapSectionRef: React.RefObject<any>;
   mapRef: React.RefObject<any>;
@@ -31,7 +31,7 @@ export function ListingDetailsSection({
   listing,
   isMobile,
   expandedSections,
-  toggleSection,
+  onToggleSection,
   mapSectionRef,
   mapRef,
   shouldLoadMap,
@@ -105,7 +105,7 @@ export function ListingDetailsSection({
         </p>
         {listing.listing_description?.length > 360 && (
           <button
-            onClick={() => toggleSection('description')}
+            onClick={() => onToggleSection('description')}
             style={{
               marginTop: '0.5rem',
               background: 'none',
@@ -195,7 +195,7 @@ export function ListingDetailsSection({
           </p>
           {listing.neighborhood_description_by_host?.length > 500 && (
             <button
-              onClick={() => toggleSection('neighborhood')}
+              onClick={() => onToggleSection('neighborhood')}
               style={{
                 marginTop: '0.5rem',
                 background: 'none',

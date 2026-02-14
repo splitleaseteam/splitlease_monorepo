@@ -41,7 +41,7 @@ export const UrgencyCountdown: React.FC<UrgencyCountdownProps> = ({
   urgencySteepness,
   marketDemandMultiplier,
   transactionType,
-  variant = 'default',
+  variant = 'standard',
   onPriceUpdate,
   onUrgencyChange,
   onActionClick,
@@ -58,7 +58,7 @@ export const UrgencyCountdown: React.FC<UrgencyCountdownProps> = ({
   );
 
   // Urgency pricing calculations
-  const { pricing, loading, error, alerts } = useUrgencyPricing(
+  const { pricing, isLoading, error, alerts } = useUrgencyPricing(
     targetDate,
     basePrice,
     {
@@ -178,7 +178,7 @@ export const UrgencyCountdown: React.FC<UrgencyCountdownProps> = ({
   }, [targetDate, basePrice, urgencySteepness, marketDemandMultiplier, pricing?.calculatedAt]);
 
   // Loading state
-  if (loading && !pricing) {
+  if (isLoading && !pricing) {
     return (
       <div
         className={`urgency-countdown urgency-loading ${className}`}

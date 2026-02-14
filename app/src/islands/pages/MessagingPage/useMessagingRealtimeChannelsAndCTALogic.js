@@ -23,10 +23,10 @@ import { useCTAHandler } from './useCTAHandler.js';
 import { fetchZatPriceConfiguration } from '../../../lib/listingDataFetcher.js';
 import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
 import { calculateNextAvailableCheckIn } from '../../../logic/calculators/scheduling/calculateNextAvailableCheckIn.js';
-import { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
+import { clearProposalDraft } from '../../shared/CreateProposalFlow.jsx';
 
 export function useMessagingPageLogic() {
-  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({ redirectOnFail: '/?login=true' });
+  const { user: authUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser({ redirectOnFail: '/?login=true' });
 
   // ============================================================================
   // AUTH STATE
@@ -96,9 +96,9 @@ export function useMessagingPageLogic() {
   const handleOpenModal = useCallback(async (modalName, context) => {
     console.log('[MessagingPage] handleOpenModal called:', modalName, context);
 
-    // Special handling for CreateProposalFlowV2 modal
-    if (modalName === 'CreateProposalFlowV2') {
-      console.log('[MessagingPage] Opening CreateProposalFlowV2 modal');
+    // Special handling for CreateProposalFlow modal
+    if (modalName === 'CreateProposalFlow') {
+      console.log('[MessagingPage] Opening CreateProposalFlow modal');
 
       // Get listing data from threadInfo or context
       const listingId = context?.listingId || threadInfo?.listing_id;

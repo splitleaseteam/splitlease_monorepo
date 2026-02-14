@@ -11,9 +11,9 @@
 import type { RefObject, Dispatch, SetStateAction } from 'react';
 
 /**
- * Listing Object - Complete listing data structure
+ * BookingListing - Complete listing data as seen from the booking page
  */
-export interface ListingObject {
+export interface BookingListing {
   id: string;
   Name: string;
   Description: string;
@@ -21,12 +21,12 @@ export interface ListingObject {
   Active: boolean;
   Approved: boolean;
   Complete: boolean;
-  photos: PhotoObject[];
-  coordinates: CoordinatesObject;
-  amenitiesInUnit?: AmenityObject[];
-  safetyFeatures?: FeatureObject[];
-  houseRules?: RuleObject[];
-  hostData: HostObject;
+  photos: ListingPhoto[];
+  coordinates: ListingCoordinates;
+  amenitiesInUnit?: ListingAmenity[];
+  safetyFeatures?: ListingSafetyFeature[];
+  houseRules?: ListingHouseRule[];
+  hostData: ListingHost;
   neighborhoodName?: string;
   'Starting nightly price'?: string;
   'Features - Qty Bedrooms'?: number;
@@ -45,9 +45,9 @@ export interface ListingObject {
 }
 
 /**
- * Photo Object - Listing photo data
+ * ListingPhoto - Photo belonging to a listing
  */
-export interface PhotoObject {
+export interface ListingPhoto {
   id: string;
   url: string;
   /** @deprecated Use url instead */
@@ -61,17 +61,17 @@ export interface PhotoObject {
 }
 
 /**
- * Coordinates Object - Geographic location
+ * ListingCoordinates - Geographic location of a listing
  */
-export interface CoordinatesObject {
+export interface ListingCoordinates {
   lat: number;
   lng: number;
 }
 
 /**
- * Amenity Object - Available amenity
+ * ListingAmenity - Amenity available in a listing
  */
-export interface AmenityObject {
+export interface ListingAmenity {
   id: string;
   name: string;
   icon?: string;
@@ -81,7 +81,7 @@ export interface AmenityObject {
 /**
  * Feature Object - Safety or other feature
  */
-export interface FeatureObject {
+export interface ListingSafetyFeature {
   id: string;
   name: string;
   icon?: string;
@@ -90,7 +90,7 @@ export interface FeatureObject {
 /**
  * Rule Object - House rule
  */
-export interface RuleObject {
+export interface ListingHouseRule {
   id: string;
   text: string;
   icon?: string;
@@ -99,7 +99,7 @@ export interface RuleObject {
 /**
  * Host Object - Host information
  */
-export interface HostObject {
+export interface ListingHost {
   userId: string;
   first_name: string;
   last_name?: string;
@@ -145,7 +145,7 @@ export interface ValidationResult {
 /**
  * ZAT Configuration - Price adjustment multipliers
  */
-export interface ZatConfigObject {
+export interface ListingZatConfig {
   priceMultipliers: {
     2: number;
     3: number;
@@ -158,7 +158,7 @@ export interface ZatConfigObject {
 /**
  * User Object - User profile data
  */
-export interface UserObject {
+export interface BookingUser {
   userId: string;
   aboutMe?: string;
   needForSpace?: string;
@@ -169,7 +169,7 @@ export interface UserObject {
 /**
  * Proposal Object - Existing proposal data
  */
-export interface ProposalObject {
+export interface BookingProposal {
   id: string;
   Guest: string;
   Listing: string;
@@ -226,7 +226,7 @@ export interface InformationalText {
  */
 export type ValidationRule = (
   selectedDays: Day[],
-  listing: ListingObject,
+  listing: BookingListing,
   context: Record<string, any>
 ) => { valid: boolean; error?: string };
 
@@ -245,24 +245,24 @@ export interface UseViewSplitLeaseLogicOptions {
  */
 export interface UseViewSplitLeaseLogicReturn {
   // Loading & Data
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
-  listing: ListingObject | null;
-  zatConfig: ZatConfigObject | null;
+  listing: BookingListing | null;
+  zatConfig: ListingZatConfig | null;
   informationalTexts: Record<string, InformationalText>;
 
   // Auth & User
   isAuthenticated: boolean;
   authUserId: string | null;
-  loggedInUserData: UserObject | null;
+  loggedInUserData: BookingUser | null;
   isFavorited: boolean;
-  existingProposalForListing: ProposalObject | null;
+  existingProposalForListing: BookingProposal | null;
 
   // Booking State
   selectedDayObjects: Day[];
   moveInDate: string | null;
   reservationSpan: number;
-  strictMode: boolean;
+  isStrictModeEnabled: boolean;
 
   // Computed Values
   minMoveInDate: string;
@@ -310,7 +310,7 @@ export interface UseViewSplitLeaseLogicReturn {
 
   // Setters
   setShowAuthModal: Dispatch<SetStateAction<boolean>>;
-  setStrictMode: Dispatch<SetStateAction<boolean>>;
+  setIsStrictModeEnabled: Dispatch<SetStateAction<boolean>>;
   setShouldLoadMap: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -319,7 +319,7 @@ export interface UseViewSplitLeaseLogicReturn {
  */
 
 export interface PhotoGalleryProps {
-  photos: PhotoObject[];
+  photos: ListingPhoto[];
   listingName: string;
   onPhotoClick: (index: number) => void;
   currentIndex: number;
@@ -329,7 +329,7 @@ export interface PhotoGalleryProps {
 }
 
 export interface BookingWidgetProps {
-  listing: ListingObject;
+  listing: BookingListing;
   selectedDays: Day[];
   moveInDate: string | null;
   reservationSpan: number;
@@ -339,7 +339,7 @@ export interface BookingWidgetProps {
   isValid: boolean;
   formattedPrice: string;
   formattedStartingPrice: string;
-  existingProposal: ProposalObject | null;
+  existingProposal: BookingProposal | null;
   onScheduleChange: (dayObjects: Day[]) => void;
   onMoveInDateChange: (date: string) => void;
   onReservationSpanChange: (span: number) => void;
@@ -347,7 +347,7 @@ export interface BookingWidgetProps {
 }
 
 export interface ListingHeaderProps {
-  listing: ListingObject;
+  listing: BookingListing;
   isFavorited: boolean;
   onToggleFavorite: () => void;
   onLocationClick: () => void;
@@ -363,14 +363,14 @@ export interface DescriptionSectionProps {
 }
 
 export interface AmenitiesGridProps {
-  amenities?: AmenityObject[];
-  safetyFeatures?: FeatureObject[];
+  amenities?: ListingAmenity[];
+  safetyFeatures?: ListingSafetyFeature[];
   isExpanded: boolean;
   onToggle: () => void;
 }
 
 export interface MapSectionProps {
-  coordinates: CoordinatesObject;
+  coordinates: ListingCoordinates;
   listingName: string;
   neighborhood?: string;
   shouldLoad: boolean;
@@ -379,7 +379,7 @@ export interface MapSectionProps {
 }
 
 export interface HostInfoCardProps {
-  host: HostObject;
+  host: ListingHost;
   onContactClick: () => void;
   isAuthenticated: boolean;
 }

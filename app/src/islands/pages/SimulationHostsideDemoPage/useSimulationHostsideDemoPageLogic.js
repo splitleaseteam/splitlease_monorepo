@@ -92,7 +92,7 @@ export function useSimulationHostsideDemoPageLogic() {
   // ============================================================================
   // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-  const { user, userId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+  const { user, userId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser({
     requiredRole: 'host',
     redirectOnFail: '/'
   });

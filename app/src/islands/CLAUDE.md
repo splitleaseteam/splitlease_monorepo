@@ -52,8 +52,8 @@ Uses Islands Architecture with independent React roots per page. See `app/src/CL
 [INTENT]: Reusable components and utilities shared across multiple pages
 [TOTAL_FILES]: 19 top-level files + 15 subdirectories with nested components
 [PATTERN]: Composition-based, reusable UI components and complex feature modules
-[KEY_COMPONENTS]: Header, Footer, Button, GoogleMap, ListingScheduleSelector, CreateProposalFlowV2, DayButton, PriceDisplay, Toast, InformationalText, SearchScheduleSelector, AuthAwareSearchScheduleSelector, ContactHostMessaging, ExternalReviews, ErrorOverlay
-[KEY_SUBDIRS]: LoggedInAvatar/, FavoriteButton/, ListingCard/, HostScheduleSelector/, VirtualMeetingManager/, CreateProposalFlowV2Components/, SubmitListingPhotos/, ImportListingModal/, ImportListingReviewsModal/, AIImportAssistantModal/, CreateDuplicateListingModal/, ScheduleCohost/, EditListingDetails/, AiSignupMarketReport/
+[KEY_COMPONENTS]: Header, Footer, Button, GoogleMap, ListingScheduleSelector, CreateProposalFlow, DayButton, PriceDisplay, Toast, InformationalText, SearchScheduleSelector, AuthAwareSearchScheduleSelector, ContactHostMessaging, ExternalReviews, ErrorModal
+[KEY_SUBDIRS]: LoggedInAvatar/, FavoriteButton/, ListingCard/, HostScheduleSelector/, VirtualMeetingManager/, CreateProposalFlowComponents/, SubmitListingPhotos/, ImportListingModal/, ImportListingReviewsModal/, AIImportAssistantModal/, CreateDuplicateListingModal/, ScheduleCohost/, EditListingDetails/, AiSignupMarketReport/
 [NOTE]: Each subdirectory contains a focused feature module with multiple related components
 
 ---
@@ -103,7 +103,7 @@ UI components delegate ALL logic to custom hooks (`useXxxPageLogic`). See `app/s
 [STRUCTURE]: Main component + sub-components + styles + types (if TypeScript)
 [ENCAPSULATION]: All related UI logic, components, and utilities in one directory
 [EXPORT]: Main component exported via index file or directly
-[EXAMPLE_FILES]: VirtualMeetingManager/, LoggedInAvatar/, HostScheduleSelector/, CreateProposalFlowV2Components/
+[EXAMPLE_FILES]: VirtualMeetingManager/, LoggedInAvatar/, HostScheduleSelector/, CreateProposalFlowComponents/
 
 ---
 
@@ -129,12 +129,12 @@ UI components delegate ALL logic to custom hooks (`useXxxPageLogic`). See `app/s
 [PURPOSE]: Site-wide footer with links and company information
 [SECTIONS]: Navigation links, social media, legal/policy links, copyright
 
-### CreateProposalFlowV2.jsx
+### CreateProposalFlow.jsx
 [PURPOSE]: Multi-step wizard for guests to submit booking proposals
 [SECTIONS]: Review listing → User details → Move-in date → Days selection
 [PARENT]: ViewSplitLeasePage (listing detail page)
 [CALLBACK]: onSubmit(proposalData) when wizard completes
-[DEPENDENCIES]: CreateProposalFlowV2Components/ for section components
+[DEPENDENCIES]: CreateProposalFlowComponents/ for section components
 
 ### ListingScheduleSelector.jsx
 [PURPOSE]: Day selection UI with pricing display for listing creation/editing

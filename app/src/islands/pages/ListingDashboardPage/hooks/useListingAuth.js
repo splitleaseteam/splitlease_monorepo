@@ -5,7 +5,7 @@ import { useAuthenticatedUser } from '../../../../hooks/useAuthenticatedUser.js'
  * Wraps useAuthenticatedUser and maps to the shape listing dashboard hooks expect.
  */
 export function useListingAuth() {
-  const { user: authUser, userId, loading, isAuthenticated } = useAuthenticatedUser({
+  const { user: authUser, userId, isLoading, isAuthenticated } = useAuthenticatedUser({
     redirectOnFail: '/?login=true'
   });
 
@@ -23,8 +23,8 @@ export function useListingAuth() {
 
   // Map to authState shape expected by consumers
   const authState = {
-    isChecking: loading,
-    shouldRedirect: !loading && !isAuthenticated
+    isChecking: isLoading,
+    shouldRedirect: !isLoading && !isAuthenticated
   };
 
   return {

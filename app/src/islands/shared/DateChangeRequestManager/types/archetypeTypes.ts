@@ -6,12 +6,12 @@
  * @module types/archetypeTypes
  */
 
-import { TransactionType } from './transactionTypes';
+import type { TransactionType } from './transactionTypes';
 
 /**
  * User archetype type
  */
-export type ArchetypeType = 'big_spender' | 'high_flexibility' | 'average_user';
+export type ArchetypeType = 'big_spender' | 'budget_conscious' | 'balanced';
 
 /**
  * Behavioral signals used for archetype detection
@@ -88,15 +88,15 @@ export interface ArchetypeDetectionResult {
 export interface ArchetypeScoreBreakdown {
   /** Score for big spender (0-100) */
   bigSpenderScore: number;
-  /** Score for high flexibility (0-100) */
-  highFlexScore: number;
-  /** Score for average user (0-100) */
-  averageScore: number;
+  /** Score for budget conscious (0-100) */
+  budgetConsciousScore: number;
+  /** Score for balanced (0-100) */
+  balancedScore: number;
   /** Normalized scores (0-1) */
   normalized: {
     big_spender: number;
-    high_flexibility: number;
-    average_user: number;
+    budget_conscious: number;
+    balanced: number;
   };
 }
 
@@ -193,8 +193,8 @@ export interface UserArchetypeResponse {
  */
 export const USER_ARCHETYPES = {
   BIG_SPENDER: 'big_spender' as const,
-  HIGH_FLEX: 'high_flexibility' as const,
-  AVERAGE: 'average_user' as const,
+  BUDGET_CONSCIOUS: 'budget_conscious' as const,
+  BALANCED: 'balanced' as const,
 };
 
 /**
@@ -202,8 +202,8 @@ export const USER_ARCHETYPES = {
  */
 export const ARCHETYPE_LABELS: Record<ArchetypeType, string> = {
   big_spender: 'Premium Booker',
-  high_flexibility: 'Flexible Scheduler',
-  average_user: 'Standard User',
+  budget_conscious: 'Budget Conscious',
+  balanced: 'Balanced',
 };
 
 /**
@@ -211,8 +211,8 @@ export const ARCHETYPE_LABELS: Record<ArchetypeType, string> = {
  */
 export const ARCHETYPE_DESCRIPTIONS: Record<ArchetypeType, string> = {
   big_spender: 'Users who typically pay premium for guaranteed access',
-  high_flexibility: 'Users who prefer fair exchanges and frequent date changes',
-  average_user: 'Standard user with balanced preferences',
+  budget_conscious: 'Users who prefer fair exchanges and frequent date changes',
+  balanced: 'Standard user with balanced preferences',
 };
 
 /**
@@ -220,6 +220,6 @@ export const ARCHETYPE_DESCRIPTIONS: Record<ArchetypeType, string> = {
  */
 export const ARCHETYPE_DEFAULT_PERCENTAGES: Record<ArchetypeType, number> = {
   big_spender: 120,
-  high_flexibility: 90,
-  average_user: 100,
+  budget_conscious: 90,
+  balanced: 100,
 };

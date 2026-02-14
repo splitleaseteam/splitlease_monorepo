@@ -72,7 +72,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
     handleInputChange,
     handleCheckboxAutosave,
     handleSave,
-    toggleSection,
+    handleToggleSection,
     loadCommonRules,
     loadCommonSafetyFeatures,
     loadCommonInUnitAmenities,
@@ -82,7 +82,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
     generateAIDescription,
     addPhotoUrl,
     handlePhotoUpload,
-    removePhoto,
+    handleRemovePhoto,
     handlePhotoDragStart,
     handlePhotoDragOver,
     handlePhotoDragLeave,
@@ -104,7 +104,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
   // Property Info Section (Name + Address)
   const renderPropertyInfoSection = () => (
     <div className="eld-collapsible-section">
-      <div className="eld-collapsible-header" onClick={() => toggleSection('name')}>
+      <div className="eld-collapsible-header" onClick={() => handleToggleSection('name')}>
         <div className="eld-collapsible-header-left">
           <span className="eld-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -254,7 +254,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
     <>
       {/* Listing Title Sub-section */}
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('title')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('title')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -299,7 +299,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
 
       {/* Description of Lodging Sub-section */}
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('description')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('description')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -348,7 +348,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
   // Neighborhood Description Section
   const renderNeighborhoodSection = () => (
     <div className="eld-collapsible-section">
-      <div className="eld-collapsible-header" onClick={() => toggleSection('neighborhood')}>
+      <div className="eld-collapsible-header" onClick={() => handleToggleSection('neighborhood')}>
         <div className="eld-collapsible-header-left">
           <span className="eld-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -393,7 +393,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
   const renderAmenitiesSection = () => (
     <>
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('amenities')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('amenities')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -444,7 +444,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
       </div>
 
       <div className="eld-collapsible-section" ref={fieldRefs.building}>
-        <div className="eld-collapsible-header" onClick={() => toggleSection('building')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('building')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -499,7 +499,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
   // Rules Section with Autosave Checkboxes
   const renderRulesSection = () => (
     <div className="eld-collapsible-section">
-      <div className="eld-collapsible-header" onClick={() => toggleSection('rules')}>
+      <div className="eld-collapsible-header" onClick={() => handleToggleSection('rules')}>
         <div className="eld-collapsible-header-left">
           <span className="eld-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -571,7 +571,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
     <>
       {/* Storage and Space Sub-section */}
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('storage')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('storage')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -645,7 +645,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
 
       {/* Safety Features Sub-section with Autosave */}
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('safety')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('safety')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -696,7 +696,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
 
       {/* Space Details Sub-section */}
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('space')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('space')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -797,7 +797,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
   // Availability Section
   const renderAvailabilitySection = () => (
     <div className="eld-collapsible-section">
-      <div className="eld-collapsible-header" onClick={() => toggleSection('availability')}>
+      <div className="eld-collapsible-header" onClick={() => handleToggleSection('availability')}>
         <div className="eld-collapsible-header-left">
           <span className="eld-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -877,7 +877,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
 
     return (
       <div className="eld-collapsible-section">
-        <div className="eld-collapsible-header" onClick={() => toggleSection('photos')}>
+        <div className="eld-collapsible-header" onClick={() => handleToggleSection('photos')}>
           <div className="eld-collapsible-header-left">
             <span className="eld-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -962,7 +962,7 @@ export function EditListingDetails({ listing, editSection, focusField, onClose, 
                     <div className="eld-photo-controls">
                       <button
                         type="button"
-                        onClick={() => removePhoto(index)}
+                        onClick={() => handleRemovePhoto(index)}
                         className="eld-photo-delete"
                         title="Remove photo"
                       >

@@ -13,7 +13,7 @@
  * @param {boolean} props.isActive - Whether this step is currently active
  * @param {boolean} props.isLoading - Whether this step is loading
  * @param {Function} props.onAction - Click handler for the action button
- * @param {string} props.buttonText - Text for the action button
+ * @param {string} props.actionButtonLabel - Label for the action button
  * @param {boolean} props.disabled - Whether the button is disabled
  * @param {Object} props.result - Step result { success: boolean, message: string }
  */
@@ -26,7 +26,7 @@ export default function StepCard({
   isActive,
   isLoading,
   onAction,
-  buttonText,
+  actionButtonLabel,
   disabled,
   result
 }) {
@@ -81,7 +81,7 @@ export default function StepCard({
               Completed
             </>
           ) : (
-            buttonText
+            actionButtonLabel
           )}
         </button>
       </div>

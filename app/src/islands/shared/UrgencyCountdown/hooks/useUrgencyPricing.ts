@@ -41,7 +41,7 @@ export interface UseUrgencyPricingConfig {
  */
 export interface UseUrgencyPricingReturn {
   pricing: UrgencyPricing | null;
-  loading: boolean;
+  isLoading: boolean;
   error: Error | null;
   alerts: PriceAlert[];
   refresh: () => void;
@@ -77,7 +77,7 @@ export function useUrgencyPricing(
   } = config;
 
   const [pricing, setPricing] = useState<UrgencyPricing | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
 
@@ -140,7 +140,7 @@ export function useUrgencyPricing(
       setError(err instanceof Error ? err : new Error('Unknown error'));
       console.error('[useUrgencyPricing] Calculation error:', err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [
     targetDate,
@@ -156,7 +156,7 @@ export function useUrgencyPricing(
    * Refresh pricing calculation
    */
   const refresh = useCallback(() => {
-    setLoading(true);
+    setIsLoading(true);
     calculatePricing();
   }, [calculatePricing]);
 
@@ -210,7 +210,7 @@ export function useUrgencyPricing(
 
   return {
     pricing,
-    loading,
+    isLoading,
     error,
     alerts,
     refresh,

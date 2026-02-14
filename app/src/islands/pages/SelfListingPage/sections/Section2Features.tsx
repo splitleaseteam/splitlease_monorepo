@@ -72,7 +72,7 @@ export const Section2Features: React.FC<Section2Props> = ({
     }
   };
 
-  const toggleAmenity = (amenity: string, isInside: boolean) => {
+  const handleToggleAmenity = (amenity: string, isInside: boolean) => {
     const field = isInside ? 'amenitiesInsideUnit' : 'amenitiesOutsideUnit';
     const currentAmenities = data[field];
 
@@ -249,7 +249,7 @@ export const Section2Features: React.FC<Section2Props> = ({
                   <input
                     type="checkbox"
                     checked={data.amenitiesInsideUnit.includes(amenity)}
-                    onChange={() => toggleAmenity(amenity, true)}
+                    onChange={() => handleToggleAmenity(amenity, true)}
                   />
                   <span>{amenity}</span>
                 </label>
@@ -282,7 +282,7 @@ export const Section2Features: React.FC<Section2Props> = ({
                   <input
                     type="checkbox"
                     checked={data.amenitiesOutsideUnit.includes(amenity)}
-                    onChange={() => toggleAmenity(amenity, false)}
+                    onChange={() => handleToggleAmenity(amenity, false)}
                   />
                   <span>{amenity}</span>
                 </label>

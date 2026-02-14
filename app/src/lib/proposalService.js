@@ -252,7 +252,7 @@ export async function updateProposalStatus(proposalId, status, userId) {
 }
 
 /**
- * Transform a UI listing object to the format expected by CreateProposalFlowV2.
+ * Transform a UI listing object to the format expected by CreateProposalFlow.
  * Centralizes data-shaping logic that was previously in SearchPage.jsx.
  *
  * @param {Object} listing - Listing from useSearchPageLogic (transformed format)

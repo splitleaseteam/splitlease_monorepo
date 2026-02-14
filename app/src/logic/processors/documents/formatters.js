@@ -9,6 +9,9 @@
 
 /**
  * Format ISO date to MM/DD/YYYY for document display
+ * NOTE: Cannot delegate to canonical formatDateDisplay because it produces M/D/YY
+ * (no zero-padding, 2-digit year). Documents require zero-padded MM/DD/YYYY format
+ * for legal/contractual consistency.
  * @param {string|Date|null} isoDate - ISO timestamp or Date object
  * @returns {string} Formatted date string (MM/DD/YYYY) or empty string
  */
@@ -32,6 +35,9 @@ export function formatDateForDocument(isoDate) {
 
 /**
  * Format ISO date to MM/DD/YY (short year) for document display
+ * NOTE: Cannot delegate to canonical formatDateDisplay({format:'short'}) because it
+ * produces M/D/YY (no zero-padding). Documents require zero-padded MM/DD/YY format
+ * for legal/contractual consistency.
  * @param {string|Date|null} isoDate - ISO timestamp or Date object
  * @returns {string} Formatted date string (MM/DD/YY) or empty string
  */

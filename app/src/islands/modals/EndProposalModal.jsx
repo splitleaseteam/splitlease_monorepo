@@ -69,7 +69,7 @@ export default function EndProposalModal({
   proposal,
   listing,
   userType = 'guest',
-  buttonText,
+  confirmButtonLabel,
   onClose,
   onConfirm
 }) {
@@ -93,7 +93,7 @@ export default function EndProposalModal({
 
   // Determine button text based on context
   const defaultButtonText = isHost ? 'Reject Proposal' : 'Cancel Proposal'
-  const finalButtonText = buttonText || defaultButtonText
+  const finalButtonText = confirmButtonLabel || defaultButtonText
   const isCounteroffer = finalButtonText.includes('Decline')
 
   // Determine modal title

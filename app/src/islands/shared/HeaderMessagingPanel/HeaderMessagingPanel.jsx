@@ -27,7 +27,7 @@ import ThreadCard from '../../pages/MessagingPage/components/ThreadCard.jsx';
 import MessageBubble from '../../pages/MessagingPage/components/MessageBubble.jsx';
 import MessageInput from '../../pages/MessagingPage/components/MessageInput.jsx';
 import TypingIndicator from '../../pages/MessagingPage/components/TypingIndicator.jsx';
-import CreateProposalFlowV2 from '../CreateProposalFlowV2.jsx';
+import CreateProposalFlow from '../CreateProposalFlow.jsx';
 import './HeaderMessagingPanel.css';
 
 /**
@@ -96,7 +96,7 @@ export default function HeaderMessagingPanel({
     if (!isOpen) return;
 
     const handleClickOutside = (e) => {
-      // If a modal is active (like CreateProposalFlowV2), don't close the panel
+      // If a modal is active (like CreateProposalFlow), don't close the panel
       // This prevents edit button clicks inside the modal from closing everything
       if (activeModal) return;
 
@@ -104,7 +104,7 @@ export default function HeaderMessagingPanel({
         // Check if click is on the trigger button (messaging icon)
         if (e.target.closest('.header-messages-icon')) return;
 
-        // CRITICAL: Check if click is inside the CreateProposalFlowV2 modal
+        // CRITICAL: Check if click is inside the CreateProposalFlow modal
         // The modal is rendered outside the panel div but is logically part of this component
         // Use multiple selectors to catch all modal containers
         if (e.target.closest('.create-proposal-popup')) return;
@@ -335,8 +335,8 @@ export default function HeaderMessagingPanel({
         This completely removes it from the header DOM hierarchy to prevent:
         1. Overflow issues from parent containers
         2. Click event propagation conflicts with panel's outside-click handler */}
-    {activeModal === 'CreateProposalFlowV2' && proposalModalData && createPortal(
-      <CreateProposalFlowV2
+    {activeModal === 'CreateProposalFlow' && proposalModalData && createPortal(
+      <CreateProposalFlow
         listing={proposalModalData.listing}
         moveInDate={proposalModalData.moveInDate}
         daysSelected={proposalModalData.daysSelected}

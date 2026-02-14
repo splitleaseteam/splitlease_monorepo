@@ -28,7 +28,7 @@ import { logger } from '../lib/logger.js';
  * @param {boolean} options.requireHost   - Redirect if user is not a Host
  * @param {'guest'|'host'|'any'} options.requiredRole - Convenience alias for requireGuest/requireHost
  * @param {string|null} options.redirectOnFail - URL to redirect on auth/role failure (null = no redirect)
- * @returns {{ user: object|null, userId: string|null, loading: boolean, error: Error|null, isAuthenticated: boolean, redirectReason: string|null }}
+ * @returns {{ user: object|null, userId: string|null, isLoading: boolean, error: Error|null, isAuthenticated: boolean, redirectReason: string|null }}
  */
 export function useAuthenticatedUser({
   requireGuest = false,
@@ -42,7 +42,7 @@ export function useAuthenticatedUser({
 
   const [user, setUser] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [redirectReason, setRedirectReason] = useState(null);
 
@@ -65,7 +65,7 @@ export function useAuthenticatedUser({
           if (redirectOnFail) { window.location.href = redirectOnFail; return; }
           setUser(null);
           setUserId(null);
-          setLoading(false);
+          setIsLoading(false);
           return;
         }
 
@@ -88,7 +88,7 @@ export function useAuthenticatedUser({
             if (redirectOnFail) { window.location.href = redirectOnFail; return; }
             setUser(null);
             setUserId(null);
-            setLoading(false);
+            setIsLoading(false);
             return;
           }
 
@@ -107,7 +107,7 @@ export function useAuthenticatedUser({
           };
           setUser(userObj);
           setUserId(finalUserId);
-          setLoading(false);
+          setIsLoading(false);
           return;
         }
 
@@ -128,7 +128,7 @@ export function useAuthenticatedUser({
             if (redirectOnFail) { window.location.href = redirectOnFail; return; }
             setUser(null);
             setUserId(null);
-            setLoading(false);
+            setIsLoading(false);
             return;
           }
 
@@ -147,7 +147,7 @@ export function useAuthenticatedUser({
           };
           setUser(userObj);
           setUserId(finalUserId);
-          setLoading(false);
+          setIsLoading(false);
           return;
         }
 
@@ -160,7 +160,7 @@ export function useAuthenticatedUser({
         if (redirectOnFail) { window.location.href = redirectOnFail; return; }
         setUser(null);
         setUserId(null);
-        setLoading(false);
+        setIsLoading(false);
       } catch (err) {
         logger.error('[useAuthenticatedUser] Authentication error:', err);
         if (cancelled) return;
@@ -168,7 +168,7 @@ export function useAuthenticatedUser({
         setError(err);
         setUser(null);
         setUserId(null);
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -176,7 +176,7 @@ export function useAuthenticatedUser({
     return () => { cancelled = true; };
   }, []);
 
-  return { user, userId, loading, error, isAuthenticated: !!user, redirectReason };
+  return { user, userId, isLoading, error, isAuthenticated: !!user, redirectReason };
 }
 
 function passesRoleCheck(userType, requireGuest, requireHost) {

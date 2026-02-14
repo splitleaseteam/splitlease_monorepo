@@ -113,10 +113,6 @@
 /_internal/z-schedule-test  /_internal/z-schedule-test-view  200
 /_internal/z-schedule-test/  /_internal/z-schedule-test-view  200
 
-# /_internal/z-sharath-test → z-sharath-test.html
-/_internal/z-sharath-test  /_internal/z-sharath-test-view  200
-/_internal/z-sharath-test/  /_internal/z-sharath-test-view  200
-
 # /_internal/z-unit-chatgpt-models → z-unit-chatgpt-models.html
 /_internal/z-unit-chatgpt-models  /_internal/z-unit-chatgpt-models-view  200
 /_internal/z-unit-chatgpt-models/  /_internal/z-unit-chatgpt-models-view  200

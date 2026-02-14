@@ -3,6 +3,10 @@
  */
 
 import { formatCurrency as sharedFormatCurrency } from '../../../lib/formatting/formatCurrency.js';
+import {
+  formatDateDisplay,
+  formatDateRange as canonicalFormatDateRange
+} from '../../../lib/formatting/formatDates.js';
 
 /**
  * Format a number as currency (USD)
@@ -16,37 +20,29 @@ export function formatCurrency(amount) {
 
 /**
  * Format a date as M/D/YY
+ * Delegates to canonical formatDateDisplay with format='short'.
  * @param {Date|string} date - The date to format
  * @returns {string} Formatted date string
  */
 export function formatDate(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const year = d.getFullYear().toString().slice(-2);
-  return `${month}/${day}/${year}`;
+  return formatDateDisplay(date, { format: 'short' });
 }
 
 /**
  * Format a date as full date (e.g., "Mar 28, 2025")
+ * Delegates to canonical formatDateDisplay with format='medium'.
  * @param {Date|string} date - The date to format
  * @returns {string} Formatted date string
  */
 export function formatFullDate(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatDateDisplay(date, { format: 'medium' });
 }
 
 /**
- * Format a date with time (e.g., "Mar 28, 2025 12:00 pm")
+ * Format a date with time (e.g., "Mar 28 2025 12:00 pm")
+ * NOTE: Cannot delegate to canonical formatDateTimeDisplay because that function
+ * produces a different format (includes weekday, uses long month, forces ET timezone).
+ * This function produces "Mon D YYYY H:MM am/pm" with no weekday and no timezone.
  * @param {Date|string} date - The date to format
  * @returns {string} Formatted date/time string
  */
@@ -75,13 +71,14 @@ export function formatTime(time) {
 }
 
 /**
- * Format a date range
+ * Format a date range as "M/D/YY - M/D/YY"
+ * Delegates to canonical formatDateRange with format='short'.
  * @param {Date|string} start - Start date
  * @param {Date|string} end - End date
  * @returns {string} Formatted date range
  */
 export function formatDateRange(start, end) {
-  return `${formatDate(start)} - ${formatDate(end)}`;
+  return canonicalFormatDateRange(start, end, { format: 'short' });
 }
 
 /* ========================================

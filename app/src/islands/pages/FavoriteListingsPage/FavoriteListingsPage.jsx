@@ -13,7 +13,7 @@ import GoogleMap from '../../shared/GoogleMap.jsx';
 import ContactHostMessaging from '../../shared/ContactHostMessaging.jsx';
 import InformationalText from '../../shared/InformationalText.jsx';
 import LoggedInAvatar from '../../shared/LoggedInAvatar/LoggedInAvatar.jsx';
-import CreateProposalFlowV2 from '../../shared/CreateProposalFlowV2.jsx';
+import CreateProposalFlow from '../../shared/CreateProposalFlow.jsx';
 import ProposalSuccessModal from '../../modals/ProposalSuccessModal.jsx';
 import SignUpLoginModal from '../../shared/AuthSignupLoginOAuthResetFlowModal';
 import EmptyState from './components/EmptyState';
@@ -21,7 +21,7 @@ import FavoritesCardV2 from './components/FavoritesCardV2.jsx';
 import FavoritesCardV3 from './components/FavoritesCardV3.jsx';
 import { useFavoriteListingsPageLogic } from './useFavoriteListingsPageLogic';
 import './FavoriteListingsPage.css';
-import '../../../styles/create-proposal-flow-v2.css';
+import '../../../styles/create-proposal-flow.css';
 
 /**
  * CARD VERSION TOGGLE
@@ -553,7 +553,7 @@ const FavoriteListingsPage = () => {
 
       {/* Create Proposal Modal - V2 */}
       {isProposalModalOpen && selectedListingForProposal && (
-        <CreateProposalFlowV2
+        <CreateProposalFlow
           listing={{
             ...selectedListingForProposal,
             listing_title: selectedListingForProposal.title || selectedListingForProposal.listing_title,

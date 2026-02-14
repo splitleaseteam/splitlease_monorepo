@@ -22,7 +22,7 @@
 
 export { default } from './islands/shared/ListingScheduleSelector.jsx';
 export { DayButton } from './islands/shared/DayButton.jsx';
-export { ErrorOverlay } from './islands/shared/ErrorOverlay.jsx';
+export { ErrorModal } from './islands/shared/ErrorModal.jsx';
 export { PriceDisplay } from './islands/shared/PriceDisplay.jsx';
 export { useScheduleSelector } from './islands/shared/useScheduleSelector.js';
 

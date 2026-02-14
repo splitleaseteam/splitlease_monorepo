@@ -459,7 +459,7 @@ export default function CompareTermsModal({ proposal, onClose, onAcceptCounterof
           isOpen={showCancelModal}
           proposal={proposal}
           userType="guest"
-          buttonText="Decline Counteroffer"
+          confirmButtonLabel="Decline Counteroffer"
           onClose={handleCloseCancelModal}
           onConfirm={handleCancelConfirm}
         />

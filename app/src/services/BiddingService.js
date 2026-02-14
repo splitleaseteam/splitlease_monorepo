@@ -14,8 +14,6 @@
 
 import {
   validateBid,
-  isSessionExpired,
-  shouldFinalizeSession,
   processAutoBid,
   determineWinner,
   calculateBidIncrement,
@@ -23,7 +21,9 @@ import {
   generateBidId,
   calculateExpiresAt,
   BIDDING_CONSTANTS,
-} from '../logic/bidding/index.js';
+  isSessionExpired,
+  shouldFinalizeSession,
+} from '@splitlease/bidding-logic';
 
 // =====================================================
 // BIDDING SERVICE CLASS

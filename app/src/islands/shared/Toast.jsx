@@ -246,11 +246,10 @@ export function useToast() {
 function ToastContainer({ toasts, onRemove }) {
   return (
     <div className="toast-container" role="alert" aria-live="polite">
-      {toasts.map((toast, index) => (
+      {toasts.map((toast) => (
         <ToastItem
           key={toast.id}
           toast={toast}
-          index={index}
           onRemove={() => onRemove(toast.id)}
         />
       ))}
@@ -261,7 +260,7 @@ function ToastContainer({ toasts, onRemove }) {
 /**
  * Individual Toast Item
  */
-function ToastItem({ toast, _index, onRemove }) {
+function ToastItem({ toast, onRemove }) {
   const [isVisible, setIsVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 

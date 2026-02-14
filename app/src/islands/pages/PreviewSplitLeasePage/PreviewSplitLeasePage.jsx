@@ -116,7 +116,7 @@ export default function PreviewSplitLeasePage() {
           <PreviewDetails
             listing={logic.listing}
             expandedSections={logic.expandedSections}
-            toggleSection={logic.toggleSection}
+            onToggleSection={logic.handleToggleSection}
             handleOpenEditModal={logic.handleOpenEditModal}
             commuteSectionRef={logic.commuteSectionRef}
             amenitiesSectionRef={logic.amenitiesSectionRef}

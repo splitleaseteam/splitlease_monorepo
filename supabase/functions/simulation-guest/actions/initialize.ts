@@ -78,7 +78,7 @@ export async function handleInitialize(
       proposals: [
         {
           id: `mock_proposal_${Date.now()}`,
-          guest_id: guestId,
+          guest_user_id: guestId,
           status: 'Pending Guest Deposit',
           schedule_type: 'nightly',
           days_per_week: 7,
@@ -153,7 +153,7 @@ export async function handleInitialize(
       proposals: [
         {
           id: `mock_proposal_${Date.now()}`,
-          guest_id: guestId,
+          guest_user_id: guestId,
           status: 'Pending Guest Deposit',
           schedule_type: 'nightly',
           days_per_week: 7,

@@ -5,6 +5,11 @@
  * Production-ready with comprehensive interface definitions
  */
 
+import type { TransactionType } from '../DateChangeRequestManager/types/transactionTypes';
+
+// Re-export so existing consumers of this module still get TransactionType
+export type { TransactionType };
+
 /**
  * Urgency context containing all data needed for urgency calculations
  */
@@ -97,12 +102,10 @@ export interface CountdownConfig {
 /**
  * Component display variant
  */
-export type UrgencyVariant = 'default' | 'compact' | 'prominent' | 'minimal';
+export type UrgencyVariant = 'standard' | 'compact' | 'prominent' | 'minimal';
 
-/**
- * Transaction type for context-specific messaging
- */
-export type TransactionType = 'full_week' | 'shared_night' | 'alternating';
+// TransactionType is imported from DateChangeRequestManager/types/transactionTypes
+// and re-exported at the top of this file
 
 /**
  * Time update interval in milliseconds

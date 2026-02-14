@@ -3,6 +3,7 @@
  */
 
 import { formatCurrency as _formatCurrency } from '../../../lib/formatting/formatCurrency.js';
+import { formatDateDisplay } from '../../../lib/formatting/formatDates.js';
 
 /**
  * Format a number as currency (USD) with cents
@@ -24,37 +25,29 @@ export function formatCurrencyWhole(amount) {
 
 /**
  * Format a date as M/D/YY
+ * Delegates to canonical formatDateDisplay with format='short'.
  * @param {Date|string} date - The date to format
  * @returns {string} Formatted date string
  */
 export function formatDate(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  const year = d.getFullYear().toString().slice(-2);
-  return `${month}/${day}/${year}`;
+  return formatDateDisplay(date, { format: 'short' });
 }
 
 /**
  * Format a date as full date (e.g., "Mar 28, 2025")
+ * Delegates to canonical formatDateDisplay with format='medium'.
  * @param {Date|string} date - The date to format
  * @returns {string} Formatted date string
  */
 export function formatFullDate(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return formatDateDisplay(date, { format: 'medium' });
 }
 
 /**
  * Format a date range as "Mon D - Mon D, YYYY"
+ * NOTE: Cannot delegate to canonical formatDateRange because that function produces
+ * "M/D/YY - M/D/YY" format. This function produces a compact range with month names
+ * and a shared year suffix (e.g., "Mar 28 - Apr 5, 2025" or "Mar 1 - 15, 2025").
  * @param {Date|string} start - Start date
  * @param {Date|string} end - End date
  * @returns {string} Formatted date range
@@ -79,6 +72,9 @@ export function formatDateRange(start, end) {
 
 /**
  * Format a stay period as "Mon D - Mon D" (compact)
+ * NOTE: Cannot delegate to canonical formatDateRange because that function produces
+ * "M/D/YY - M/D/YY" format. This function produces a compact range with month names
+ * and no year (e.g., "Mar 1 - Apr 5" or "Mar 1 - 15").
  * @param {string} checkIn - Check-in date
  * @param {string} lastNight - Last night date
  * @returns {string} Formatted period

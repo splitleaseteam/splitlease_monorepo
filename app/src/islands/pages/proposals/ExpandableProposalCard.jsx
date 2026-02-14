@@ -39,7 +39,7 @@ import { navigateToMessaging } from '../../../logic/workflows/proposals/navigati
 import { executeDeleteProposal } from '../../../logic/workflows/proposals/cancelProposalWorkflow.js';
 import { goToRentalApplication, getListingUrlWithProposalContext } from '../../../lib/navigation.js';
 import HostProfileModal from '../../modals/HostProfileModal.jsx';
-import GuestEditingProposalModal from '../../modals/GuestEditingProposalModal.jsx';
+import GuestEditingProposalModal from '../../modals/GuestEditingProposalModal/index.js';
 import EndProposalModal from '../../modals/EndProposalModal.jsx';
 import CompareTermsModal from '../../modals/CompareTermsModal.jsx';
 import NotInterestedModal from '../../shared/SuggestedProposals/components/NotInterestedModal.jsx';
@@ -1177,7 +1177,7 @@ export default function ExpandableProposalCard({
       <EndProposalModal
         isOpen={showCancelModal}
         proposal={proposal}
-        buttonText="Cancel Proposal"
+        confirmButtonLabel="Cancel Proposal"
         onClose={() => setShowCancelModal(false)}
         onConfirm={() => setShowCancelModal(false)}
       />

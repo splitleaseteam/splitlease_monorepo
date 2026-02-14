@@ -7,7 +7,7 @@
  * @module islands/shared/QuickMatch
  */
 
-export { ProposalCard } from './ProposalCard.jsx';
+export { QuickMatchProposalCard } from './QuickMatchProposalCard.jsx';
 export { CandidateCard } from './CandidateCard.jsx';
 export { MatchFilters } from './MatchFilters.jsx';
 export { ScoreBreakdown } from './ScoreBreakdown.jsx';

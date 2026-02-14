@@ -1,18 +1,67 @@
 {
-  "version": "5",
-  "specifiers": {
-    "jsr:@std/assert@*": "1.0.17",
-    "jsr:@std/internal@^1.0.12": "1.0.12"
-  },
-  "jsr": {
-    "@std/assert@1.0.17": {
-      "integrity": "df5ebfffe77c03b3fa1401e11c762cc8f603d51021c56c4d15a8c7ab45e90dbe",
-      "dependencies": [
-        "jsr:@std/internal"
-      ]
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "jsr:@std/assert": "jsr:@std/assert@1.0.18",
+      "jsr:@std/assert@1": "jsr:@std/assert@1.0.18",
+      "jsr:@std/internal@^1.0.12": "jsr:@std/internal@1.0.12"
     },
-    "@std/internal@1.0.12": {
-      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    "jsr": {
+      "@std/assert@1.0.18": {
+        "dependencies": [
+          "jsr:@std/internal@^1.0.12"
+        ]
+      }
     }
+  },
+  "redirects": {
+    "https://esm.sh/@supabase/supabase-js@2": "https://esm.sh/@supabase/supabase-js@2.95.3",
+    "https://esm.sh/iceberg-js@^0.8.1?target=denonext": "https://esm.sh/iceberg-js@0.8.1?target=denonext"
+  },
+  "remote": {
+    "https://esm.sh/@supabase/auth-js@2.95.3/denonext/auth-js.mjs": "a5ee87d057b726277d545b9df8d17083e098a3f88957a39a734a6173de98df92",
+    "https://esm.sh/@supabase/functions-js@2.95.3/denonext/functions-js.mjs": "65c505a80e2859dd8ccfa11b179bc51ac68f914fdd13b56294a1f7b70786638a",
+    "https://esm.sh/@supabase/postgrest-js@2.95.3/denonext/postgrest-js.mjs": "e4b718b139ab55c7b6d6efe57051d2e9d660f6815316fbeda59a485e94a7c360",
+    "https://esm.sh/@supabase/realtime-js@2.95.3/denonext/realtime-js.mjs": "51bd35a5d48b0048aed9a3ab5b1d07e6c690873d8aa11a9b624bb7cedfd14260",
+    "https://esm.sh/@supabase/storage-js@2.95.3/denonext/storage-js.mjs": "2927fc6f888bb67a7d319f46d5a9fb6921da0cd8fdcca22b41ed6b0aa183308e",
+    "https://esm.sh/@supabase/supabase-js@2.95.3": "1f2684e4be12043f36ea7decd22a2ba0c3367cf6c474b99a051f1e7148e88176",
+    "https://esm.sh/@supabase/supabase-js@2.95.3/denonext/supabase-js.mjs": "7d64abffcc66aaf1b83bc3a7cf60229aa4bc69fbcc703884150707edd4f5332e",
+    "https://esm.sh/iceberg-js@0.8.1/denonext/iceberg-js.mjs": "d839d81a2e3966500ca2cdd0c1cb458e9608bacfc91f7bb67a69b2e878dcdb4f",
+    "https://esm.sh/iceberg-js@0.8.1?target=denonext": "58c849d7fe2bf4eca4a84eb501e83c161a7d8c34ca1bec15a962b3bec3062633",
+    "https://esm.sh/tslib@2.8.1/denonext/tslib.mjs": "ebce3cd5facb654623020337f867b426ba95f71596ba87acc9e6c6f4e55905ca",
+    "https://jsr.io/@std/assert/1.0.18/almost_equals.ts": "4c69f1e45a4e65bc8aa737baf336e48cf9f9b2697e4db56197895c3d0b9b1fce",
+    "https://jsr.io/@std/assert/1.0.18/array_includes.ts": "2dad64d743ca20af30a869ee7cf08408017bba95f11d3d172c65afc7c4197f0a",
+    "https://jsr.io/@std/assert/1.0.18/assert.ts": "577cd3382908011da36639d019d9be54340e7e388b6db599425de0e977894318",
+    "https://jsr.io/@std/assert/1.0.18/assertion_error.ts": "7082ae41b34eb0bc9054d8f2867996d0593af80904f98bfc0ad4f27b98f00d91",
+    "https://jsr.io/@std/assert/1.0.18/equal.ts": "dbd18c595aa4c90fe5ded1c7340add2d9ba6a0f6fbc30353d272915d6e1e2278",
+    "https://jsr.io/@std/assert/1.0.18/equals.ts": "b4cc0f658c1e2bf07c67fbcf200b9a35db5f93b1b17743d7f22589dc1352e4e3",
+    "https://jsr.io/@std/assert/1.0.18/exists.ts": "f94c2c43e8657413c4a0ff8f0c6d0f4eb90b83e7bf5f22bcaffc6ee504093948",
+    "https://jsr.io/@std/assert/1.0.18/fail.ts": "b7c2756c2444c546ef23477f828c5c848a4de529a128eece1ebb080480676434",
+    "https://jsr.io/@std/assert/1.0.18/false.ts": "7891e342f1c36244161cf21f554ab381fdb1df23acdd5df29e16a990129fc9b8",
+    "https://jsr.io/@std/assert/1.0.18/greater.ts": "18a798d5afafb0d47d8baa8a2f598df79e3bb7939937c866802a7d5f6908298a",
+    "https://jsr.io/@std/assert/1.0.18/greater_or_equal.ts": "b4eb8147e519b7c6a46daee132908921a8e1566cea4592945aa7800811cc259a",
+    "https://jsr.io/@std/assert/1.0.18/instance_of.ts": "2c4e16ee181f424b91d27f26e7fd5bd493864ad1987c33ccb06f3eb6710c87e3",
+    "https://jsr.io/@std/assert/1.0.18/is_error.ts": "36323f0da5b789e9be40313059e5fb3224fb81d35fa636aecc0fcf534a1f345e",
+    "https://jsr.io/@std/assert/1.0.18/less.ts": "c578b053e2c554a37923885c829a9bcbaedefaf18fe812addc871f6f02d0fe1a",
+    "https://jsr.io/@std/assert/1.0.18/less_or_equal.ts": "9d9eb025efa49ded1459c58288b6b9399448216db842bc59146181dd77c091e1",
+    "https://jsr.io/@std/assert/1.0.18/match.ts": "b39df7aa77e4ed43e1823fd7ac6bb31229464ca7e853aa9ff1acfcf06ad54523",
+    "https://jsr.io/@std/assert/1.0.18/mod.ts": "c3fc0e0ff82dbeb6c2274dfc5ff3a90830834dcb0400e2d7f69380cfb8b9ec5d",
+    "https://jsr.io/@std/assert/1.0.18/not_equals.ts": "f462d72b42d1c5469f7358c46dd3ca0b8f8e50b82c7462206da7be529c743472",
+    "https://jsr.io/@std/assert/1.0.18/not_instance_of.ts": "f2ee2c8d8a591c53aebdf6a6ff24450024f15cbf8f46edde790b5dc6280d4c9a",
+    "https://jsr.io/@std/assert/1.0.18/not_match.ts": "7e00371062defbb5ceaede29015d5de75bb832c3125727229f7d3b7f22bc15c6",
+    "https://jsr.io/@std/assert/1.0.18/not_strict_equals.ts": "8bb7f371a888cdb69016131611d467729e3e62a65b24f059ed186358b83c069c",
+    "https://jsr.io/@std/assert/1.0.18/object_match.ts": "dbb2974c0ad3cbdba72b9be1605845cc9529c64907146c925cc9e4d9b634856f",
+    "https://jsr.io/@std/assert/1.0.18/rejects.ts": "44c36f9424baa7e81c305dcd930f33585ee9408a2fa94e900a30c18da3459149",
+    "https://jsr.io/@std/assert/1.0.18/strict_equals.ts": "92145ed74ffa8c96a2407754634c840f3ac2bc033236552a37f7b7d3d317917f",
+    "https://jsr.io/@std/assert/1.0.18/string_includes.ts": "c6921a2799299235c662f28929ffe1e08f429892e8d28ee9307ada38d90d1f1f",
+    "https://jsr.io/@std/assert/1.0.18/throws.ts": "0ef612c1624f0b0b4b6e07320bd24dcd5094077774c0fe608f897682b772822b",
+    "https://jsr.io/@std/assert/1.0.18/unimplemented.ts": "13341d1f065390d682450c185bd2cc3241f05d952fb45437b450f4b1f004ca1c",
+    "https://jsr.io/@std/assert/1.0.18/unreachable.ts": "bf47aa8b78e2eb19550a1ffe2fef74e2cca804b19fa64cffecef9a4ae4dd47d2",
+    "https://jsr.io/@std/internal/1.0.12/build_message.ts": "51cd9a8d92a827770b2edd6b841a83517bd190016ba903eddc0a0c566f414e7a",
+    "https://jsr.io/@std/internal/1.0.12/diff.ts": "8a75475658ad5a0210ce59c8f71c1df9a654a714809c1fef5f6533572f7907a7",
+    "https://jsr.io/@std/internal/1.0.12/diff_str.ts": "4ae2e93b8c19c113ef833b264f41040de824940eed363f7f789a679708a0c5fe",
+    "https://jsr.io/@std/internal/1.0.12/format.ts": "b83e00ef56b07adeaa59498e37f3609d7535a743459e7da05e434cdf434bbe51",
+    "https://jsr.io/@std/internal/1.0.12/styles.ts": "9bcd79843151e58b174e5ef4a8be1711dd7fa0596b490ee580dc130f071039d8",
+    "https://jsr.io/@std/internal/1.0.12/types.ts": "878c9447273b628afa10c9bc2ae79a64df7e3e5c85848bcb7ce017fd6d45a52f"
   }
 }

@@ -35,8 +35,8 @@ interface PricingSectionProps {
   setMoveInDate: (date: string) => void;
   minMoveInDate: string;
   // Strict mode
-  strictMode: boolean;
-  setStrictMode: (mode: boolean) => void;
+  isStrictModeEnabled: boolean;
+  setIsStrictModeEnabled: (mode: boolean) => void;
   // Custom schedule
   customScheduleDescription: string;
   setCustomScheduleDescription: (desc: string) => void;
@@ -75,8 +75,8 @@ export function PricingSection({
   moveInDate,
   setMoveInDate,
   minMoveInDate,
-  strictMode,
-  setStrictMode,
+  isStrictModeEnabled,
+  setIsStrictModeEnabled,
   customScheduleDescription,
   setCustomScheduleDescription,
   showCustomScheduleInput,
@@ -249,8 +249,8 @@ export function PricingSection({
       >
         <input
           type="checkbox"
-          checked={strictMode}
-          onChange={() => setStrictMode(!strictMode)}
+          checked={isStrictModeEnabled}
+          onChange={() => setIsStrictModeEnabled(!isStrictModeEnabled)}
           style={{
             width: '18px',
             height: '18px',

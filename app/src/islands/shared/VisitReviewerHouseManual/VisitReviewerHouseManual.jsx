@@ -129,7 +129,7 @@ const VisitReviewerHouseManual = ({
                     key={section.id}
                     section={section}
                     isExpanded={logic.isSectionExpanded(section.id)}
-                    onToggle={() => logic.toggleSection(section.id)}
+                    onToggle={() => logic.handleToggleSection(section.id)}
                     onMapView={logic.trackMapSaw}
                     onNarrationPlay={logic.trackNarrationHeard}
                   />

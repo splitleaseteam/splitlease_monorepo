@@ -54,7 +54,7 @@ export const useScheduleSelectorLogicCore = ({
   // ============================================================================
 
   const [selectedDays, setSelectedDays] = useState(initialSelectedDays)
-  const [errorState, setErrorState] = useState({
+  const [errorInfo, setErrorInfo] = useState({
     hasError: false,
     errorType: null,
     errorMessage: ''
@@ -212,7 +212,7 @@ export const useScheduleSelectorLogicCore = ({
     // Check maximum
     if (maxNights && selectedDays.length >= maxNights) {
       if (!maxNightsWarningShown) {
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'maximum_nights_warning',
           errorMessage: `Maximum ${maxNights} nights allowed`
@@ -225,7 +225,7 @@ export const useScheduleSelectorLogicCore = ({
 
     // Check if day is available
     if (!day.isAvailable) {
-      setErrorState({
+      setErrorInfo({
         hasError: true,
         errorType: 'availability',
         errorMessage: 'This day is not available'
@@ -241,7 +241,7 @@ export const useScheduleSelectorLogicCore = ({
     const stillContiguous = isScheduleContiguous({ selectedDayIndices: newDayIndices })
 
     if (!stillContiguous && newSelection.length > 1) {
-      setErrorState({
+      setErrorInfo({
         hasError: true,
         errorType: 'contiguity',
         errorMessage: 'Days must be consecutive'
@@ -250,7 +250,7 @@ export const useScheduleSelectorLogicCore = ({
     }
 
     setSelectedDays(newSelection)
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' })
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' })
     setRecalculateState(true)
 
     return true
@@ -265,7 +265,7 @@ export const useScheduleSelectorLogicCore = ({
     const ABSOLUTE_MIN_NIGHTS = 2
 
     if (remainingDays.length - 1 < ABSOLUTE_MIN_NIGHTS) {
-      setErrorState({
+      setErrorInfo({
         hasError: true,
         errorType: 'absolute_minimum',
         errorMessage: `Minimum ${ABSOLUTE_MIN_NIGHTS} nights required`
@@ -277,7 +277,7 @@ export const useScheduleSelectorLogicCore = ({
     const minNights = listing.minimumNights || 2
     if (remainingDays.length - 1 < minNights) {
       if (!minNightsWarningShown) {
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'minimum_nights_warning',
           errorMessage: `Host prefers at least ${minNights} nights`
@@ -294,7 +294,7 @@ export const useScheduleSelectorLogicCore = ({
       const stillContiguous = isScheduleContiguous({ selectedDayIndices: remainingIndices })
 
       if (!stillContiguous) {
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'contiguity',
           errorMessage: 'Removal would create non-consecutive selection'
@@ -304,7 +304,7 @@ export const useScheduleSelectorLogicCore = ({
     }
 
     setSelectedDays(remainingDays)
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' })
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' })
     setRecalculateState(true)
 
     return true
@@ -322,14 +322,14 @@ export const useScheduleSelectorLogicCore = ({
 
   const clearSelection = useCallback(() => {
     setSelectedDays([])
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' })
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' })
     setRecalculateState(true)
     setMaxNightsWarningShown(false)
     setMinNightsWarningShown(false)
   }, [])
 
   const clearError = useCallback(() => {
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' })
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' })
   }, [])
 
   // ============================================================================
@@ -348,7 +348,7 @@ export const useScheduleSelectorLogicCore = ({
     checkOutName,
     nightsCount,
     priceBreakdown,
-    errorState,
+    errorInfo,
     isClickable,
     isContiguous,
     acceptableSchedule,

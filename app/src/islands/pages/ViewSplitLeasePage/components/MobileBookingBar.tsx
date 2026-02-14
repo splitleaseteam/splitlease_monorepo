@@ -31,8 +31,8 @@ interface MobileBookingBarProps {
   setMoveInDate: (date: string) => void;
   minMoveInDate: string;
   // Strict mode
-  strictMode: boolean;
-  setStrictMode: (mode: boolean) => void;
+  isStrictModeEnabled: boolean;
+  setIsStrictModeEnabled: (mode: boolean) => void;
   // Custom schedule
   customScheduleDescription: string;
   setCustomScheduleDescription: (desc: string) => void;
@@ -47,8 +47,8 @@ interface MobileBookingBarProps {
   loggedInUserData: any;
   setShowAuthModal: (show: boolean) => void;
   // Mobile expanded state
-  mobileBookingExpanded: boolean;
-  setMobileBookingExpanded: (expanded: boolean) => void;
+  isMobileBookingExpanded: boolean;
+  setIsMobileBookingExpanded: (expanded: boolean) => void;
   // Proposal
   handleCreateProposal: () => void;
 }
@@ -66,8 +66,8 @@ export function MobileBookingBar({
   moveInDate,
   setMoveInDate,
   minMoveInDate,
-  strictMode,
-  setStrictMode,
+  isStrictModeEnabled,
+  setIsStrictModeEnabled,
   customScheduleDescription,
   setCustomScheduleDescription,
   showCustomScheduleInput,
@@ -78,16 +78,16 @@ export function MobileBookingBar({
   setIsFavorited,
   loggedInUserData,
   setShowAuthModal,
-  mobileBookingExpanded,
-  setMobileBookingExpanded,
+  isMobileBookingExpanded,
+  setIsMobileBookingExpanded,
   handleCreateProposal,
 }: MobileBookingBarProps) {
   return (
     <>
       {/* Overlay when expanded */}
-      {mobileBookingExpanded && (
+      {isMobileBookingExpanded && (
         <div
-          onClick={() => setMobileBookingExpanded(false)}
+          onClick={() => setIsMobileBookingExpanded(false)}
           style={{
             position: 'fixed',
             inset: 0,
@@ -108,15 +108,15 @@ export function MobileBookingBar({
           background: 'white',
           boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
           zIndex: 9999,
-          borderTopLeftRadius: mobileBookingExpanded ? '20px' : '0',
-          borderTopRightRadius: mobileBookingExpanded ? '20px' : '0',
+          borderTopLeftRadius: isMobileBookingExpanded ? '20px' : '0',
+          borderTopRightRadius: isMobileBookingExpanded ? '20px' : '0',
           transition: 'all 0.3s ease',
-          maxHeight: mobileBookingExpanded ? '80vh' : 'auto',
-          overflowY: mobileBookingExpanded ? 'auto' : 'hidden'
+          maxHeight: isMobileBookingExpanded ? '80vh' : 'auto',
+          overflowY: isMobileBookingExpanded ? 'auto' : 'hidden'
         }}
       >
         {/* Collapsed View */}
-        {!mobileBookingExpanded ? (
+        {!isMobileBookingExpanded ? (
           <div style={{ padding: '12px 16px' }}>
             {/* Schedule Selector Row */}
             {scheduleSelectorListing && (
@@ -157,7 +157,7 @@ export function MobileBookingBar({
 
               {/* Continue Button */}
               <button
-                onClick={() => setMobileBookingExpanded(true)}
+                onClick={() => setIsMobileBookingExpanded(true)}
                 style={{
                   padding: '12px 24px',
                   background: '#31135d',
@@ -193,7 +193,7 @@ export function MobileBookingBar({
                 Complete Your Booking
               </h3>
               <button
-                onClick={() => setMobileBookingExpanded(false)}
+                onClick={() => setIsMobileBookingExpanded(false)}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -273,8 +273,8 @@ export function MobileBookingBar({
             }}>
               <input
                 type="checkbox"
-                checked={strictMode}
-                onChange={() => setStrictMode(!strictMode)}
+                checked={isStrictModeEnabled}
+                onChange={() => setIsStrictModeEnabled(!isStrictModeEnabled)}
                 style={{
                   width: '20px',
                   height: '20px',
@@ -524,7 +524,7 @@ export function MobileBookingBar({
       </div>
 
       {/* Spacer to prevent content from being hidden behind fixed bar */}
-      <div style={{ height: mobileBookingExpanded ? '0' : '140px' }} />
+      <div style={{ height: isMobileBookingExpanded ? '0' : '140px' }} />
     </>
   );
 }

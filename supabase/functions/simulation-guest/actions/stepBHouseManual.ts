@@ -39,12 +39,12 @@ export async function handleStepB(
   if (leaseId) {
     const { data: lease } = await supabase
       .from('booking_lease')
-      .select('guest_id, listing_id')
+      .select('guest_user_id, listing_id')
       .eq('id', leaseId)
       .single();
 
     if (lease) {
-      guestId = lease.guest_id;
+      guestId = lease.guest_user_id;
       listingId = lease.listing_id;
     }
   }

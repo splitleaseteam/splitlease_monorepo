@@ -44,7 +44,7 @@ export function useSimulationGuestMobilePageLogic() {
   // ============================================================================
   // AUTH (via useAuthenticatedUser hook)
   // ============================================================================
-  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+  const { user: authUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser({
     requiredRole: 'guest',
     redirectOnFail: '/'
   });

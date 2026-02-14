@@ -211,7 +211,7 @@ export interface SectionStatus {
 }
 
 // Form State
-export interface FormState {
+export interface ListingFormState {
   data: ListingFormData;
   currentSection: number;
   errors: ValidationError[];

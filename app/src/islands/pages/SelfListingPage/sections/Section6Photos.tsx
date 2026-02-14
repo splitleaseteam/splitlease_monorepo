@@ -177,7 +177,7 @@ export const Section6Photos: React.FC<Section6Props> = ({
     }
   };
 
-  const removePhoto = async (id: string) => {
+  const handleRemovePhoto = async (id: string) => {
     const photoToRemove = data.photos.find((photo) => photo.id === id);
 
     // Delete from Supabase storage if it has a storage path
@@ -288,7 +288,7 @@ export const Section6Photos: React.FC<Section6Props> = ({
 
   const isUploading = uploadingCount > 0;
 
-  const openMobileUpload = () => {
+  const handleOpenMobileUpload = () => {
     // This would typically trigger a QR code or deep link to continue on mobile
     alert('Mobile upload feature would open here with a QR code or deep link');
   };
@@ -322,7 +322,7 @@ export const Section6Photos: React.FC<Section6Props> = ({
           <button
             type="button"
             className="btn-secondary"
-            onClick={openMobileUpload}
+            onClick={handleOpenMobileUpload}
             disabled={isUploading}
           >
             Do you want to continue on mobile?
@@ -365,7 +365,7 @@ export const Section6Photos: React.FC<Section6Props> = ({
                 <div className="photo-controls">
                   <button
                     type="button"
-                    onClick={() => removePhoto(photo.id)}
+                    onClick={() => handleRemovePhoto(photo.id)}
                     className="btn-delete"
                     title="Remove photo"
                   >

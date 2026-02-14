@@ -579,7 +579,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     });
   }, [executeSave, showToast]);
 
-  const toggleSection = useCallback((section) => {
+  const handleToggleSection = useCallback((section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
@@ -859,7 +859,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
   /**
    * Remove a photo from the list
    */
-  const removePhoto = useCallback(async (index) => {
+  const handleRemovePhoto = useCallback(async (index) => {
     const currentPhotos = Array.isArray(formData.photos_with_urls_captions_and_sort_order_json)
       ? formData.photos_with_urls_captions_and_sort_order_json
       : [];
@@ -873,7 +873,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
       onSave(updated);
       showToast('Photo removed', 'Changes saved');
     } catch (error) {
-      console.error('[removePhoto] Error:', error);
+      console.error('[handleRemovePhoto] Error:', error);
       showToast('Error removing photo', 'Please try again', 'error');
       // Revert on error
       handleInputChange('photos_with_urls_captions_and_sort_order_json', currentPhotos);
@@ -1026,7 +1026,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     handleInputChange,
     handleCheckboxAutosave,
     handleSave,
-    toggleSection,
+    handleToggleSection,
     loadCommonRules,
     loadCommonSafetyFeatures,
     loadCommonInUnitAmenities,
@@ -1036,7 +1036,7 @@ export function useEditListingDetailsLogic({ listing, editSection, focusField, o
     generateAIDescription,
     addPhotoUrl,
     handlePhotoUpload,
-    removePhoto,
+    handleRemovePhoto,
     handlePhotoDragStart,
     handlePhotoDragOver,
     handlePhotoDragLeave,

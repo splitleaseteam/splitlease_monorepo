@@ -317,7 +317,7 @@ function normalizeProposal(proposal, guest, host, listing) {
  */
 export function useProposalManagePageLogic() {
   // Auth hook - any role (internal admin page)
-  const { user: authUser, loading: authLoading, isAuthenticated: hookIsAuthenticated } = useAuthenticatedUser({ requiredRole: 'any' });
+  const { user: authUser, isLoading: authLoading, isAuthenticated: hookIsAuthenticated } = useAuthenticatedUser({ requiredRole: 'any' });
 
   // ============================================================================
   // AUTH STATE

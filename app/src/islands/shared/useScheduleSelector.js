@@ -35,7 +35,7 @@ export const useScheduleSelector = ({
 }) => {
   // Core selection state
   const [selectedDays, setSelectedDays] = useState(initialSelectedDays);
-  const [errorState, setErrorState] = useState({
+  const [errorInfo, setErrorInfo] = useState({
     hasError: false,
     errorType: null,
     errorMessage: ''
@@ -185,7 +185,7 @@ export const useScheduleSelector = ({
 
       if (isMaxNightsError && !maxNightsWarningShown) {
         // Show warning once, then allow future selections
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'maximum_nights_warning',
           errorMessage: validation.error || 'Cannot select this day'
@@ -200,7 +200,7 @@ export const useScheduleSelector = ({
         return true;
       } else {
         // Other errors - show normally
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'availability',
           errorMessage: validation.error || 'Cannot select this day'
@@ -236,7 +236,7 @@ export const useScheduleSelector = ({
     }
 
     setSelectedDays(newSelection);
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' });
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' });
     setRecalculateState(true);
 
     return true;
@@ -254,7 +254,7 @@ export const useScheduleSelector = ({
 
     // Check absolute minimum first (always enforce)
     if (remainingNights < ABSOLUTE_MIN_NIGHTS) {
-      setErrorState({
+      setErrorInfo({
         hasError: true,
         errorType: 'absolute_minimum',
         errorMessage: `Minimum ${ABSOLUTE_MIN_NIGHTS} nights (${ABSOLUTE_MIN_NIGHTS + 1} days) required`
@@ -270,7 +270,7 @@ export const useScheduleSelector = ({
 
       if (isMinNightsError && !minNightsWarningShown) {
         // Show warning once, then allow future removals
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'minimum_nights_warning',
           errorMessage: validation.error || 'Cannot remove this day'
@@ -285,7 +285,7 @@ export const useScheduleSelector = ({
         return true;
       } else {
         // Other errors (like contiguity) - show normally
-        setErrorState({
+        setErrorInfo({
           hasError: true,
           errorType: 'validation',
           errorMessage: validation.error || 'Cannot remove this day'
@@ -296,7 +296,7 @@ export const useScheduleSelector = ({
 
     const newSelection = selectedDays.filter(d => d.dayOfWeek !== day.dayOfWeek);
     setSelectedDays(newSelection);
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' });
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' });
     setRecalculateState(true);
 
     return true;
@@ -316,7 +316,7 @@ export const useScheduleSelector = ({
   // Clear selection
   const clearSelection = useCallback(() => {
     setSelectedDays([]);
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' });
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' });
     setRecalculateState(true);
     setMaxNightsWarningShown(false);
     setMinNightsWarningShown(false);
@@ -324,7 +324,7 @@ export const useScheduleSelector = ({
 
   // Clear error
   const clearError = useCallback(() => {
-    setErrorState({ hasError: false, errorType: null, errorMessage: '' });
+    setErrorInfo({ hasError: false, errorType: null, errorMessage: '' });
   }, []);
 
   // Set clickable state
@@ -354,7 +354,7 @@ export const useScheduleSelector = ({
     endNight: endNightNumber,
     nightsCount,
     priceBreakdown,
-    errorState,
+    errorInfo,
     isClickable,
     isContiguous: isSelectionContiguous,
     acceptableSchedule,

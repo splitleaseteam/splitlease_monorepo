@@ -103,15 +103,15 @@ export default function ThreadHeader({
           className={getVMButtonClass()}
           onClick={handleVMClick}
           disabled={vmStateInfo?.buttonDisabled}
-          aria-label={vmStateInfo?.buttonText || 'Request Virtual Meeting'}
-          title={vmStateInfo?.buttonText || 'Request Virtual Meeting'}
+          aria-label={vmStateInfo?.buttonLabel || 'Request Virtual Meeting'}
+          title={vmStateInfo?.buttonLabel || 'Request Virtual Meeting'}
         >
           {/* Video Icon */}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="2" y="5" width="14" height="14" rx="2" />
             <path d="M16 9.5l4-2.5v10l-4-2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span>{vmStateInfo?.buttonText || 'Request Meeting'}</span>
+          <span>{vmStateInfo?.buttonLabel || 'Request Meeting'}</span>
         </button>
 
         {/* Toggle Right Panel - Only on desktop */}

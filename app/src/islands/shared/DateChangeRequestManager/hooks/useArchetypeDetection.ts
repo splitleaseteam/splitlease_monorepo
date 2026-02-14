@@ -38,7 +38,7 @@ export interface UseArchetypeDetectionReturn {
   /** Human-readable label */
   label: string | null;
   /** Loading state */
-  loading: boolean;
+  isLoading: boolean;
   /** Error state */
   error: Error | null;
   /** Manually refetch archetype */
@@ -78,7 +78,7 @@ export function useArchetypeDetection({
     confidence: number | null;
     reason: string | null;
     label: string | null;
-    loading: boolean;
+    isLoading: boolean;
     error: Error | null;
     detectionResult: ArchetypeDetectionResult | null;
   }>({
@@ -86,7 +86,7 @@ export function useArchetypeDetection({
     confidence: null,
     reason: null,
     label: null,
-    loading: false,
+    isLoading: false,
     error: null,
     detectionResult: null,
   });
@@ -96,7 +96,7 @@ export function useArchetypeDetection({
    */
   const detectArchetype = useCallback(async () => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       // STEP 1: Fetch booking history
       const bookingResponse = await fetch(
@@ -151,7 +151,7 @@ export function useArchetypeDetection({
         confidence: result.confidence,
         reason: result.reason,
         label,
-        loading: false,
+        isLoading: false,
         error: null,
         detectionResult: result,
       });
@@ -170,7 +170,7 @@ export function useArchetypeDetection({
 
       setState((prev) => ({
         ...prev,
-        loading: false,
+        isLoading: false,
         error,
       }));
 
@@ -220,7 +220,7 @@ export function useArchetypeDetectionMock(
     confidence: 0.87,
     reason: 'Average transaction value of $1850, High willingness to pay for convenience, Prefer buyouts (70% of time)',
     label: 'Premium Booker',
-    loading: false,
+    isLoading: false,
     error: null,
     refetch: async () => {
       console.log('[Mock] Refetch called');

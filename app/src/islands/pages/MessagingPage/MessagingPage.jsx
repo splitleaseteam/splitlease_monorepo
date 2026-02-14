@@ -24,7 +24,7 @@ import ThreadSidebar from './components/ThreadSidebar.jsx';
 import MessageThread from './components/MessageThread.jsx';
 import MessageInput from './components/MessageInput.jsx';
 import RightPanel from './components/RightPanel.jsx';
-import CreateProposalFlowV2 from '../../shared/CreateProposalFlowV2.jsx';
+import CreateProposalFlow from '../../shared/CreateProposalFlow.jsx';
 import VirtualMeetingManager from '../../shared/VirtualMeetingManager/VirtualMeetingManager.jsx';
 
 // Mobile breakpoint (matches CSS)
@@ -401,8 +401,8 @@ export default function MessagingPage() {
       </main>
 
       {/* Create Proposal Modal */}
-      {activeModal === 'CreateProposalFlowV2' && proposalModalData && (
-        <CreateProposalFlowV2
+      {activeModal === 'CreateProposalFlow' && proposalModalData && (
+        <CreateProposalFlow
           listing={proposalModalData.listing}
           moveInDate={proposalModalData.moveInDate}
           daysSelected={proposalModalData.daysSelected}

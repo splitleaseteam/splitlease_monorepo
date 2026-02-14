@@ -109,7 +109,7 @@ class AnalyticsService {
   /**
    * Track archetype detection event
    *
-   * @param {string} archetype - BIG_SPENDER, HIGH_FLEX, AVERAGE
+   * @param {string} archetype - BIG_SPENDER, BUDGET_CONSCIOUS, BALANCED
    * @param {number} confidence - Confidence score (0-1)
    * @param {Object} metadata - Additional archetype metadata
    */

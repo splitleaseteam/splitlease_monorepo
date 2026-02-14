@@ -46,7 +46,7 @@ export function ProposalsPageShell({
   headerContent,
   renderContent,
 }) {
-  const { user: rawUser, loading, isAuthenticated } = useAuthenticatedUser({
+  const { user: rawUser, isLoading, isAuthenticated } = useAuthenticatedUser({
     requiredRole: role,
     redirectOnFail: '/',
   });
@@ -63,7 +63,7 @@ export function ProposalsPageShell({
     : null;
 
   // Auth checking or not authenticated
-  if (loading || !isAuthenticated) {
+  if (isLoading || !isAuthenticated) {
     return (
       <>
         <Header />

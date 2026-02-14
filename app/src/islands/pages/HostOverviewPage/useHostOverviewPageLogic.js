@@ -57,7 +57,7 @@ export function useHostOverviewPageLogic() {
   // ============================================================================
   // AUTH (consolidated hook)
   // ============================================================================
-  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+  const { user: authUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser({
     requireHost: true,
     redirectOnFail: '/'
   });

@@ -8,6 +8,7 @@
 
 import { useMemo } from 'react';
 import type { TransactionType } from '../types';
+import { calculateUrgencyMultiplier, getUrgencyLevel } from '../../UrgencyCountdown/utils/urgencyCalculations';
 
 /**
  * Hook parameters
@@ -130,40 +131,6 @@ export function useTransactionPricing({
   }, [basePrice, pricePercentage, daysUntilCheckIn, marketDemand, transactionType]);
 
   return pricing;
-}
-
-/**
- * Calculate urgency multiplier based on days until check-in
- *
- * Linear model:
- * - 0-3 days: 1.5x (critical)
- * - 4-7 days: 1.25x (high)
- * - 8-14 days: 1.1x (medium)
- * - 15+ days: 1.0x (low/none)
- *
- * @param daysUntilCheckIn - Days until check-in
- * @returns Urgency multiplier (1.0 or higher)
- */
-function calculateUrgencyMultiplier(daysUntilCheckIn: number): number {
-  if (daysUntilCheckIn <= 3) return 1.5;
-  if (daysUntilCheckIn <= 7) return 1.25;
-  if (daysUntilCheckIn <= 14) return 1.1;
-  return 1.0;
-}
-
-/**
- * Get urgency level category
- *
- * @param daysUntilCheckIn - Days until check-in
- * @returns Urgency level
- */
-function getUrgencyLevel(
-  daysUntilCheckIn: number
-): 'critical' | 'high' | 'medium' | 'low' {
-  if (daysUntilCheckIn <= 3) return 'critical';
-  if (daysUntilCheckIn <= 7) return 'high';
-  if (daysUntilCheckIn <= 14) return 'medium';
-  return 'low';
 }
 
 /**

@@ -153,7 +153,7 @@ export function useHostProposalsPageLogic({ skipAuth = false } = {}) {
   // ============================================================================
   // AUTH - consolidated hook handles authentication, role check, and redirect
   // ============================================================================
-  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser(
+  const { user: authUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser(
     skipAuth ? {} : { requireHost: true, redirectOnFail: '/' }
   );
 

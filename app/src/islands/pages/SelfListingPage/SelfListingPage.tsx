@@ -219,7 +219,7 @@ export const SelfListingPage: React.FC = () => {
   console.log('🏠 SelfListingPage: Component mounting');
 
   // Auth hook - no role enforcement here (logged-out users allowed, guests redirected below)
-  const { user: authUser, loading: authLoading, isAuthenticated } = useAuthenticatedUser();
+  const { user: authUser, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser();
 
   // Use the local store for all form data management
   const {

@@ -270,7 +270,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (boroughIds.length > 0) {
     const { data: boroughsData, error: boroughError } = await supabase
-      .schema('reference_table').from('zat_geo_borough_toplevel')
+      .from('zat_geo_borough_toplevel')
       .select('id, display_borough')
       .in('id', boroughIds);
 
@@ -282,7 +282,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
 
   if (hoodIds.length > 0) {
     const { data: hoodsData, error: hoodError } = await supabase
-      .schema('reference_table').from('zat_geo_hood_mediumlevel')
+      .from('zat_geo_hood_mediumlevel')
       .select('id, display')
       .in('id', hoodIds);
 
@@ -296,7 +296,7 @@ export async function fetchProposalsByIds(proposalIds, currentUserId = null) {
   let houseRules = [];
   if (allHouseRuleIds.length > 0) {
     const { data: houseRulesData, error: houseRulesError } = await supabase
-      .schema('reference_table').from('zat_features_houserule')
+      .from('zat_features_houserule')
       .select('id, name')
       .in('id', allHouseRuleIds);
 

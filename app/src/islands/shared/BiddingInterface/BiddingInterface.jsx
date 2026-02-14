@@ -18,9 +18,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useBiddingRealtime } from '../../../hooks/useBiddingRealtime.js';
-import { canUserBid } from '../../../logic/bidding/rules/canUserBid.js';
-import { isBidValid } from '../../../logic/bidding/rules/isBidValid.js';
-import { calculateLoserCompensation } from '../../../logic/bidding/calculators/calculateCompensation.js';
+import {
+  canUserBid,
+  validateBid as isBidValid,
+  calculateLoserCompensation,
+} from '@splitlease/bidding-logic';
 import CountdownTimer from './CountdownTimer.jsx';
 import BiddingHistory from './BiddingHistory.jsx';
 import './BiddingInterface.css';
@@ -41,14 +43,12 @@ function formatCurrency(amount) {
  * @param {Object} props
  * @param {string} props.sessionId - Bidding session ID
  * @param {string} props.currentUserId - Current user's Bubble ID
- * @param {Date} props.targetNight - Night being competed for
  * @param {Function} [props.onClose] - Close callback
  * @param {Function} [props.onSessionEnd] - Session end callback
  */
 export default function BiddingInterface({
   sessionId,
   currentUserId,
-  _targetNight,
   onClose,
   onSessionEnd
 }) {
@@ -92,7 +92,12 @@ export default function BiddingInterface({
     if (!bidAmount || !session) return null;
     const amount = parseFloat(bidAmount);
     if (isNaN(amount)) return null;
-    return isBidValid({ proposedBid: amount, session, userId: currentUserId });
+    return isBidValid({
+      proposedBid: amount,
+      session,
+      userId: currentUserId,
+      bidHistory: session.biddingHistory || [],
+    });
   }, [bidAmount, session, currentUserId]);
 
   // Auto-set suggested bid on mount

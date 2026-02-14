@@ -33,7 +33,7 @@ export default function ProposalDetailsModal({ proposal, listing, onClose }) {
     setLoadingRules(true);
     try {
       const { data, error } = await supabase
-        .schema('reference_table').from('zat_features_houserule')
+        .from('zat_features_houserule')
         .select('id, name, icon')
         .in('id', proposal.house_rules_reference_ids_json);
 

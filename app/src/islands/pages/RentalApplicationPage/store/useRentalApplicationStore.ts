@@ -11,7 +11,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   rentalApplicationLocalStore,
-  type StoreState,
+  type RentalApplicationStoreState,
   type RentalApplicationFormData,
   type Occupant,
   type VerificationStatus,
@@ -60,7 +60,7 @@ interface UseRentalApplicationStoreReturn {
  * @param userId - Required user ID to scope localStorage keys (prevents data leaks between users)
  */
 export function useRentalApplicationStore({ userId }: UseRentalApplicationStoreProps): UseRentalApplicationStoreReturn {
-  const [state, setState] = useState<StoreState>(() => rentalApplicationLocalStore.getState());
+  const [state, setState] = useState<RentalApplicationStoreState>(() => rentalApplicationLocalStore.getState());
   const previousUserIdRef = useRef<string | null>(null);
 
   // Subscribe to store updates and initialize with userId

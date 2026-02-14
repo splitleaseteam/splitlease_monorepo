@@ -43,7 +43,7 @@ export const Step7Photos: React.FC<Step7Props> = ({
     updateFormData({ photos: [...formData.photos, ...newPhotos] });
   };
 
-  const removePhoto = (id: string) => {
+  const handleRemovePhoto = (id: string) => {
     updateFormData({ photos: formData.photos.filter(p => p.id !== id) });
   };
 
@@ -107,7 +107,7 @@ export const Step7Photos: React.FC<Step7Props> = ({
                 <div className="photo-controls">
                   <button
                     type="button"
-                    onClick={() => removePhoto(photo.id)}
+                    onClick={() => handleRemovePhoto(photo.id)}
                     className="btn-delete"
                     title="Remove photo"
                   >

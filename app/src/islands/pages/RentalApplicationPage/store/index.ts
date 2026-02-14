@@ -6,7 +6,7 @@
 
 export {
   rentalApplicationLocalStore,
-  type StoreState,
+  type RentalApplicationStoreState,
   type RentalApplicationFormData,
   type Occupant,
   type VerificationStatus,

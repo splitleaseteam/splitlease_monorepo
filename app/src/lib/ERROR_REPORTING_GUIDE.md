@@ -205,7 +205,7 @@ from structured error reporting:
 - `islands/pages/ViewSplitLeasePage/` -- listing detail page
 - `islands/pages/GuestProposalsPage/` / `useGuestProposalsPageLogic.js`
 - `islands/pages/HostProposalsPage/` / `useHostProposalsPageLogic.js`
-- `islands/pages/AccountProfilePage/` / `useAccountProfileStrengthVerificationAndEditLogic.js`
+- `islands/pages/AccountProfilePage/` / `useAccountProfilePageLogic.js`
 - `islands/pages/ListingDashboardPage/` / `useListingDashboardPageLogic.js`
 - `islands/pages/SelfListingPage/` -- multi-step listing creation
 

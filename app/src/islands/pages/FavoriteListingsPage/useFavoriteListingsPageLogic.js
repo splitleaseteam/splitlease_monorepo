@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { clearProposalDraft } from '../../shared/CreateProposalFlowV2.jsx';
+import { clearProposalDraft } from '../../shared/CreateProposalFlow.jsx';
 import { getFavoritedListingIds, removeFromFavorites } from './favoritesApi';
 
 import { checkAuthStatus, validateTokenAndFetchUser, getSessionId } from '../../../lib/auth/tokenValidation.js';
@@ -60,7 +60,7 @@ async function fetchInformationalTexts() {
 
 export function useFavoriteListingsPageLogic() {
   // GOLD STANDARD AUTH PATTERN - Use consolidated hook
-  const { user: authenticatedUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser();
+  const { user: authenticatedUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser();
 
   // State management
   const [listings, setListings] = useState([]);
@@ -215,7 +215,7 @@ export function useFavoriteListingsPageLogic() {
       lowest_nightly_price_for_map_display: dbListing.lowest_nightly_price_for_map_display,
       standardized_min_nightly_price_for_search_filter: dbListing.standardized_min_nightly_price_for_search_filter,
 
-      // Pricing fields for CreateProposalFlowV2 / DaysSelectionSection
+      // Pricing fields for CreateProposalFlow / DaysSelectionSection
       'nightly_rate_2_nights': dbListing.nightly_rate_for_2_night_stay,
       'nightly_rate_3_nights': dbListing.nightly_rate_for_3_night_stay,
       'nightly_rate_4_nights': dbListing.nightly_rate_for_4_night_stay,
@@ -659,7 +659,7 @@ export function useFavoriteListingsPageLogic() {
   };
 
   // Submit proposal to backend
-  const submitProposal = async (proposalData) => {
+  const handleSubmitProposal = async (proposalData) => {
     setIsSubmittingProposal(true);
 
     try {
@@ -769,7 +769,7 @@ export function useFavoriteListingsPageLogic() {
       return;
     }
 
-    await submitProposal(proposalData);
+    await handleSubmitProposal(proposalData);
   };
 
   // Auth handlers
@@ -837,7 +837,7 @@ export function useFavoriteListingsPageLogic() {
     // If there's a pending proposal, submit it now
     if (pendingProposalData) {
       console.log('Submitting pending proposal after auth...');
-      await submitProposal(pendingProposalData);
+      await handleSubmitProposal(pendingProposalData);
     }
   };
 

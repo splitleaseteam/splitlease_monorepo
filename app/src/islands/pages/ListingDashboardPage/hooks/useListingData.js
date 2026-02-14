@@ -207,7 +207,7 @@ async function fetchLookupTables() {
 
     // Fetch safety features
     const { data: safety } = await supabase
-      .schema('reference_table').from('zat_features_safetyfeature')
+      .from('zat_features_safetyfeature')
       .select('id, name, icon');
     if (safety) {
       safety.forEach((s) => {
@@ -217,7 +217,7 @@ async function fetchLookupTables() {
 
     // Fetch house rules
     const { data: rules } = await supabase
-      .schema('reference_table').from('zat_features_houserule')
+      .from('zat_features_houserule')
       .select('id, name, icon');
     if (rules) {
       rules.forEach((r) => {

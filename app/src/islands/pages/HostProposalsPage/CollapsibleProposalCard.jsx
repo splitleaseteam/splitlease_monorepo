@@ -9,7 +9,7 @@
  *
  * Part of the Host Proposals V7 redesign.
  */
-import ProposalCardHeader from './ProposalCardHeader.jsx';
+import HostProposalCardHeader from './HostProposalCardHeader.jsx';
 import ProposalCardBody from './ProposalCardBody.jsx';
 import { getCardVariant } from './types.js';
 
@@ -43,7 +43,7 @@ export function CollapsibleProposalCard({
       data-proposal-id={proposalId}
       role="listitem"
     >
-      <ProposalCardHeader
+      <HostProposalCardHeader
         proposal={proposal}
         isExpanded={isExpanded}
         onToggle={onToggle}

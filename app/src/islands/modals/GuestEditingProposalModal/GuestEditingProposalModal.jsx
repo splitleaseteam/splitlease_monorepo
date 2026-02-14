@@ -31,7 +31,7 @@ import PristineDocumentView from './PristineDocumentView.jsx'
 import ReservationPriceBreakdown from './ReservationPriceBreakdown.jsx'
 import ModalButtons from './ModalButtons.jsx'
 import useGuestEditingProposalValidation from './useGuestEditingProposalValidation.js'
-import '../GuestEditingProposalModal.css'
+import './GuestEditingProposalModal.css'
 
 export default function GuestEditingProposalModal({
   proposal,

@@ -16,7 +16,7 @@ import DayIndicator from './DayIndicator.jsx';
 import { getStatusTagInfo, getNightsAsDayNames, getCheckInOutFromDays } from './types.js';
 import { formatCurrency, formatDate, formatDateTime } from './formatters.js';
 import { PROPOSAL_STATUSES, getStatusConfig, isTerminalStatus } from '../../../logic/constants/proposalStatuses.js';
-import { getVMButtonText, getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
+import { getVMButtonLabel, getVMStateInfo, VM_STATES } from '../../../logic/rules/proposals/virtualMeetingRules.js';
 
 /**
  * Get host-appropriate status message based on proposal status
@@ -444,7 +444,7 @@ export default function ProposalDetailsModal({
           {(() => {
             // Get VM state info for button text and style
             const vmStateInfo = getVMStateInfo(virtualMeeting, currentUserId);
-            const vmButtonText = vmStateInfo.buttonText;
+            const vmButtonLabel = vmStateInfo.buttonLabel;
             const vmButtonDisabled = vmStateInfo.buttonDisabled;
             const vmState = vmStateInfo.state;
 
@@ -508,7 +508,7 @@ export default function ProposalDetailsModal({
                       onClick={() => onChooseVirtualMeeting?.(proposal)}
                       disabled={vmButtonDisabled}
                     >
-                      {vmButtonText}
+                      {vmButtonLabel}
                     </button>
                   </div>
                 )}

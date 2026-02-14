@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { useViewSplitLeaseLogic } from './ViewSplitLeasePage/useViewSplitLeaseLogic';
 import Header from '../shared/Header';
 import Footer from '../shared/Footer';
-import CreateProposalFlowV2 from '../shared/CreateProposalFlowV2';
+import CreateProposalFlow from '../shared/CreateProposalFlow';
 import ContactHostMessaging from '../shared/ContactHostMessaging';
 import SignUpLoginModal from '../shared/AuthSignupLoginOAuthResetFlowModal';
 import ProposalSuccessModal from '../modals/ProposalSuccessModal';
@@ -66,7 +66,7 @@ export default function ViewSplitLeasePage() {
 
     const {
         // Loading & Data
-        loading,
+        isLoading,
         error,
         listing,
         zatConfig,
@@ -149,7 +149,7 @@ export default function ViewSplitLeasePage() {
     // UI-ONLY HANDLERS
     // ==========================================================================
 
-    const toggleSection = (sectionName) => {
+    const handleToggleSection = (sectionName) => {
         setExpandedSections(prev => ({
             ...prev,
             [sectionName]: !prev[sectionName]
@@ -167,7 +167,7 @@ export default function ViewSplitLeasePage() {
     // RENDER
     // ==========================================================================
 
-    if (loading) return <LoadingState />;
+    if (isLoading) return <LoadingState />;
     if (error) return <ErrorState message={error} />;
     if (!listing) return <ErrorState message="Listing not found" />;
 
@@ -202,14 +202,14 @@ export default function ViewSplitLeasePage() {
                     <DescriptionSection
                         description={listing.listing_description}
                         isExpanded={expandedSections.description}
-                        onToggle={() => toggleSection('description')}
+                        onToggle={() => handleToggleSection('description')}
                     />
 
                     <AmenitiesGrid
                         amenities={listing.amenitiesInUnit}
                         safetyFeatures={listing.safetyFeatures}
                         isExpanded={expandedSections.amenities}
-                        onToggle={() => toggleSection('amenities')}
+                        onToggle={() => handleToggleSection('amenities')}
                     />
 
                     <div id="map-section">
@@ -254,7 +254,7 @@ export default function ViewSplitLeasePage() {
 
             {/* Modals */}
             {isProposalModalOpen && (
-                <CreateProposalFlowV2
+                <CreateProposalFlow
                     listing={listing}
                     moveInDate={moveInDate}
                     daysSelected={selectedDayObjects}

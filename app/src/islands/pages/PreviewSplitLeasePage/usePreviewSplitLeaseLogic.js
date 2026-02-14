@@ -25,7 +25,7 @@ import { createDay } from '../../../lib/scheduleSelector/dayHelpers.js';
 
 export function usePreviewSplitLeaseLogic() {
   // Auth hook - host role required for preview page
-  const { user: authUser, loading: authLoading } = useAuthenticatedUser({ requiredRole: 'host' });
+  const { user: authUser, isLoading: authLoading } = useAuthenticatedUser({ requiredRole: 'host' });
 
   // Core state
   const [loading, setLoading] = useState(true);
@@ -277,7 +277,7 @@ export function usePreviewSplitLeaseLogic() {
     setShowPhotoModal(true);
   };
 
-  const toggleSection = (section) => {
+  const handleToggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
@@ -444,7 +444,7 @@ export function usePreviewSplitLeaseLogic() {
 
     // Sections
     expandedSections,
-    toggleSection,
+    handleToggleSection,
     handleLocationClick,
 
     // Map

@@ -3,6 +3,8 @@
  * Implements the 4 conditional logic rules from Bubble
  */
 
+import { formatDateDisplay } from '../../../lib/formatting/formatDates.js';
+
 /**
  * Bathroom display mapping based on Bubble option set
  */
@@ -120,19 +122,13 @@ export const formatLocation = (borough, hood, city) => {
 };
 
 /**
- * Format date for display
+ * Format date for display (e.g., "Jan 15, 2024")
+ * Delegates to canonical formatDateDisplay with format='medium'.
  * @param {string} dateString - ISO date string
- * @returns {string} Formatted date (e.g., "Jan 15, 2024")
+ * @returns {string} Formatted date
  */
 export const formatDate = (dateString) => {
-  if (!dateString) return '';
-
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return formatDateDisplay(dateString, { format: 'medium' });
 };
 
 /**

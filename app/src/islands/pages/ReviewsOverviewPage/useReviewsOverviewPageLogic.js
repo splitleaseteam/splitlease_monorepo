@@ -89,7 +89,7 @@ export function useReviewsOverviewPageLogic() {
   const {
     user: authUser,
     userId: authUserId,
-    loading: authLoading,
+    isLoading: authLoading,
     isAuthenticated
   } = useAuthenticatedUser({ redirectOnFail: '/' });
 

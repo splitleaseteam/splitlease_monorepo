@@ -2,7 +2,7 @@
 
 ```
 Generated: 2026-02-13
-Total Functions: 46
+Total Functions: 45
 Runtime: Deno 2 with JSR imports
 Architecture: FP (Functional Programming) with Result types
 ```
@@ -350,7 +350,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ---
 
-### Admin Functions (12)
+### Admin Functions (11)
 
 #### 28. leases-admin
 **Purpose**: Admin dashboard for lease management
@@ -495,18 +495,9 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ---
 
-#### 39. verify-users
-**Purpose**: User verification management
-
-| Action | Description |
-|--------|-------------|
-| CRUD | Standard CRUD operations |
-
----
-
 ### Document Functions (1)
 
-#### 40. lease-documents
+#### 39. lease-documents
 **Purpose**: Generate DOCX lease documents to Google Drive
 
 | Action | Auth Required | Description |
@@ -525,7 +516,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ### Payment Functions (1)
 
-#### 41. stripe-webhook
+#### 40. stripe-webhook
 **Purpose**: Stripe webhook handler
 
 | Event | Description |
@@ -540,7 +531,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ### Pricing Functions (1)
 
-#### 42. identity-verification-submit
+#### 41. identity-verification-submit
 **Purpose**: User identity document submission
 
 | Action | Auth Required | Description |
@@ -552,7 +543,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ### Simulation Functions (2)
 
-#### 43. simulation-guest
+#### 42. simulation-guest
 **Purpose**: Guest-side usability simulation flow
 
 | Action | Auth Required | Description |
@@ -561,7 +552,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ---
 
-#### 44. simulation-host
+#### 43. simulation-host
 **Purpose**: Host-side usability simulation flow
 
 | Action | Auth Required | Description |
@@ -572,7 +563,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ### Utility Functions (2)
 
-#### 45. qr-codes
+#### 44. qr-codes
 **Purpose**: QR code management
 
 | Action | Auth Required | Description |
@@ -581,7 +572,7 @@ Removed from `supabase/functions/` (dead or zero-invocation nice-to-have):
 
 ---
 
-#### 46. quick-match
+#### 45. quick-match
 **Purpose**: Quick matching algorithm for listings
 
 | Action | Auth Required | Description |

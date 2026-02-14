@@ -68,8 +68,8 @@ function calculateArchetypeScores(
   signals: ArchetypeSignals
 ): ArchetypeScoreBreakdown {
   let bigSpenderScore = 0;
-  let highFlexScore = 0;
-  let averageScore = 0;
+  let budgetConsciousScore = 0;
+  let balancedScore = 0;
 
   // ========================================
   // ECONOMIC SIGNALS (40% weight)
@@ -79,27 +79,27 @@ function calculateArchetypeScores(
   if (signals.avgTransactionValue > 1000) {
     bigSpenderScore += 30;
   } else if (signals.avgTransactionValue < 300) {
-    highFlexScore += 20;
+    budgetConsciousScore += 20;
   } else {
-    averageScore += 15;
+    balancedScore += 15;
   }
 
   // Willingness to pay
   if (signals.willingnessToPay > 0.7) {
     bigSpenderScore += 25;
   } else if (signals.willingnessToPay < 0.4) {
-    highFlexScore += 25;
+    budgetConsciousScore += 25;
   } else {
-    averageScore += 15;
+    balancedScore += 15;
   }
 
   // Price rejection rate
   if (signals.priceRejectionRate < 0.3) {
     bigSpenderScore += 15;
   } else if (signals.priceRejectionRate > 0.6) {
-    highFlexScore += 20;
+    budgetConsciousScore += 20;
   } else {
-    averageScore += 10;
+    balancedScore += 10;
   }
 
   // ========================================
@@ -110,27 +110,27 @@ function calculateArchetypeScores(
   if (signals.avgResponseTimeHours > 3) {
     bigSpenderScore += 15;
   } else if (signals.avgResponseTimeHours < 2) {
-    highFlexScore += 25;
+    budgetConsciousScore += 25;
   } else {
-    averageScore += 10;
+    balancedScore += 10;
   }
 
   // Acceptance rate (lower = pickier = big spender)
   if (signals.acceptanceRate < 0.5) {
     bigSpenderScore += 15;
   } else if (signals.acceptanceRate > 0.7) {
-    highFlexScore += 20;
+    budgetConsciousScore += 20;
   } else {
-    averageScore += 10;
+    balancedScore += 10;
   }
 
   // Request frequency (higher = more flexibility needs)
   if (signals.requestFrequencyPerMonth > 2) {
     bigSpenderScore += 10;
   } else if (signals.requestFrequencyPerMonth < 1) {
-    averageScore += 10;
+    balancedScore += 10;
   } else {
-    highFlexScore += 15;
+    budgetConsciousScore += 15;
   }
 
   // ========================================
@@ -141,27 +141,27 @@ function calculateArchetypeScores(
   if (signals.flexibilityScore < 40) {
     bigSpenderScore += 20;
   } else if (signals.flexibilityScore > 70) {
-    highFlexScore += 30;
+    budgetConsciousScore += 30;
   } else {
-    averageScore += 15;
+    balancedScore += 15;
   }
 
   // Accommodation history
   if (signals.accommodationHistory > 10) {
-    highFlexScore += 15;
+    budgetConsciousScore += 15;
   } else if (signals.accommodationHistory < 3) {
     bigSpenderScore += 10;
   } else {
-    averageScore += 10;
+    balancedScore += 10;
   }
 
   // Reciprocity ratio (lower = takes more than gives = big spender)
   if (signals.reciprocityRatio < 0.5) {
     bigSpenderScore += 10;
   } else if (signals.reciprocityRatio > 1.5) {
-    highFlexScore += 15;
+    budgetConsciousScore += 15;
   } else {
-    averageScore += 10;
+    balancedScore += 10;
   }
 
   // ========================================
@@ -173,25 +173,25 @@ function calculateArchetypeScores(
   }
 
   if (signals.alternatingPreference > 0.5) {
-    highFlexScore += 10;
+    budgetConsciousScore += 10;
   }
 
   if (signals.sharedNightPreference > 0.4) {
-    averageScore += 10;
+    balancedScore += 10;
   }
 
   // Normalize to 0-1 range
-  const total = bigSpenderScore + highFlexScore + averageScore;
+  const total = bigSpenderScore + budgetConsciousScore + balancedScore;
   const normalized = {
     big_spender: total > 0 ? bigSpenderScore / 100 : 0.33,
-    high_flexibility: total > 0 ? highFlexScore / 100 : 0.33,
-    average_user: total > 0 ? averageScore / 100 : 0.34,
+    budget_conscious: total > 0 ? budgetConsciousScore / 100 : 0.33,
+    balanced: total > 0 ? balancedScore / 100 : 0.34,
   };
 
   return {
     bigSpenderScore,
-    highFlexScore,
-    averageScore,
+    budgetConsciousScore,
+    balancedScore,
     normalized,
   };
 }
@@ -224,7 +224,7 @@ function generateArchetypeReason(
     if (signals.fullWeekPreference > 0.6) {
       reasons.push(`Prefer full week (${(signals.fullWeekPreference * 100).toFixed(0)}% of time)`);
     }
-  } else if (archetype === 'high_flexibility') {
+  } else if (archetype === 'budget_conscious') {
     if (signals.flexibilityScore > 70) {
       reasons.push(`High flexibility score (${signals.flexibilityScore}/100)`);
     }
@@ -386,8 +386,8 @@ function buildSignalsFromHistory(
 export function getArchetypeLabel(archetype: ArchetypeType): string {
   const labels: Record<ArchetypeType, string> = {
     big_spender: 'Premium Booker',
-    high_flexibility: 'Flexible Scheduler',
-    average_user: 'Standard User',
+    budget_conscious: 'Budget Conscious',
+    balanced: 'Balanced',
   };
 
   return labels[archetype] || 'Standard User';
@@ -402,9 +402,9 @@ export function getArchetypeLabel(archetype: ArchetypeType): string {
 export function getArchetypeDescription(archetype: ArchetypeType): string {
   const descriptions: Record<ArchetypeType, string> = {
     big_spender: 'Users who typically pay premium for guaranteed access and convenience',
-    high_flexibility: 'Users who prefer fair exchanges and are accommodating with dates',
-    average_user: 'Standard users with balanced preferences across all transaction types',
+    budget_conscious: 'Users who prefer fair exchanges and are accommodating with dates',
+    balanced: 'Standard users with balanced preferences across all transaction types',
   };
 
-  return descriptions[archetype] || descriptions.average_user;
+  return descriptions[archetype] || descriptions.balanced;
 }

@@ -34,7 +34,7 @@ export const Section7Review: React.FC<Section7Props> = ({
     return commonFeatures;
   });
 
-  const toggleSection = (sectionKey: string) => {
+  const handleToggleSection = (sectionKey: string) => {
     setExpandedSections(prev => ({
       ...prev,
       [sectionKey]: !prev[sectionKey]
@@ -50,7 +50,7 @@ export const Section7Review: React.FC<Section7Props> = ({
     }
   };
 
-  const toggleSafetyFeature = (feature: string) => {
+  const handleToggleSafetyFeature = (feature: string) => {
     const currentFeatures = reviewData.safetyFeatures || [];
     const updated = currentFeatures.includes(feature)
       ? currentFeatures.filter((f) => f !== feature)
@@ -97,7 +97,7 @@ export const Section7Review: React.FC<Section7Props> = ({
                     <input
                       type="checkbox"
                       checked={(reviewData.safetyFeatures || []).includes(feature)}
-                      onChange={() => toggleSafetyFeature(feature)}
+                      onChange={() => handleToggleSafetyFeature(feature)}
                     />
                     <span>{feature}</span>
                   </label>
@@ -161,7 +161,7 @@ export const Section7Review: React.FC<Section7Props> = ({
       <div className="review-summary">
         {/* Space Snapshot Summary */}
         <div className={`summary-card collapsible ${expandedSections['space'] ? 'expanded' : ''}`}>
-          <div className="summary-card-header" onClick={() => toggleSection('space')}>
+          <div className="summary-card-header" onClick={() => handleToggleSection('space')}>
             <h3>📍 Space Details</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">{formData.spaceSnapshot.typeOfSpace} in {formData.spaceSnapshot.address.city || 'NYC'}</span>
@@ -182,7 +182,7 @@ export const Section7Review: React.FC<Section7Props> = ({
 
         {/* Features Summary */}
         <div className={`summary-card collapsible ${expandedSections['features'] ? 'expanded' : ''}`}>
-          <div className="summary-card-header" onClick={() => toggleSection('features')}>
+          <div className="summary-card-header" onClick={() => handleToggleSection('features')}>
             <h3>✨ Features</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">{formData.features.amenitiesInsideUnit.length + formData.features.amenitiesOutsideUnit.length} amenities</span>
@@ -201,7 +201,7 @@ export const Section7Review: React.FC<Section7Props> = ({
 
         {/* Lease Style Summary */}
         <div className={`summary-card collapsible ${expandedSections['lease'] ? 'expanded' : ''}`}>
-          <div className="summary-card-header" onClick={() => toggleSection('lease')}>
+          <div className="summary-card-header" onClick={() => handleToggleSection('lease')}>
             <h3>📅 Lease Style</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">{formData.leaseStyles.rentalType} rental</span>
@@ -230,7 +230,7 @@ export const Section7Review: React.FC<Section7Props> = ({
 
         {/* Pricing Summary */}
         <div className={`summary-card collapsible ${expandedSections['pricing'] ? 'expanded' : ''}`}>
-          <div className="summary-card-header" onClick={() => toggleSection('pricing')}>
+          <div className="summary-card-header" onClick={() => handleToggleSection('pricing')}>
             <h3>💰 Pricing</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">
@@ -264,7 +264,7 @@ export const Section7Review: React.FC<Section7Props> = ({
 
         {/* Rules Summary */}
         <div className={`summary-card collapsible ${expandedSections['rules'] ? 'expanded' : ''}`}>
-          <div className="summary-card-header" onClick={() => toggleSection('rules')}>
+          <div className="summary-card-header" onClick={() => handleToggleSection('rules')}>
             <h3>📋 Rules</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">{formData.rules.houseRules.length} rules, {formData.rules.cancellationPolicy}</span>
@@ -285,7 +285,7 @@ export const Section7Review: React.FC<Section7Props> = ({
 
         {/* Photos Summary */}
         <div className={`summary-card collapsible ${expandedSections['photos'] ? 'expanded' : ''}`}>
-          <div className="summary-card-header" onClick={() => toggleSection('photos')}>
+          <div className="summary-card-header" onClick={() => handleToggleSection('photos')}>
             <h3>📷 Photos</h3>
             <div className="summary-card-header-right">
               <span className="summary-brief">{formData.photos.photos.length} photos uploaded</span>

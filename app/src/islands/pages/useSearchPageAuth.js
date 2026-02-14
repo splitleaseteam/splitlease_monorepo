@@ -36,7 +36,7 @@ export function useSearchPageAuth() {
   const {
     user: authenticatedUser,
     userId: authUserId,
-    loading: authLoading,
+    isLoading: authLoading,
     isAuthenticated
   } = useAuthenticatedUser()
 

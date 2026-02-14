@@ -508,7 +508,7 @@ export function useSearchPageUI({ logic, auth }) {
     setSelectedListingForProposal(null);
   }, []);
 
-  const submitProposal = useCallback(async (proposalData) => {
+  const handleSubmitProposal = useCallback(async (proposalData) => {
     setIsSubmittingProposal(true);
 
     try {
@@ -539,7 +539,7 @@ export function useSearchPageUI({ logic, auth }) {
         throw new Error(result.error);
       }
 
-      const { clearProposalDraft } = await import('../shared/CreateProposalFlowV2.jsx');
+      const { clearProposalDraft } = await import('../shared/CreateProposalFlow.jsx');
       clearProposalDraft(proposalData.listingId);
       setIsCreateProposalModalOpen(false);
       setPendingProposalData(null);
@@ -573,18 +573,18 @@ export function useSearchPageUI({ logic, auth }) {
       return;
     }
 
-    await submitProposal(proposalData);
-  }, [submitProposal]);
+    await handleSubmitProposal(proposalData);
+  }, [handleSubmitProposal]);
 
   const handleAuthSuccessForProposal = useCallback(async (authResult) => {
     setShowAuthModalForProposal(false);
 
     if (pendingProposalData) {
       setTimeout(async () => {
-        await submitProposal(pendingProposalData);
+        await handleSubmitProposal(pendingProposalData);
       }, 500);
     }
-  }, [pendingProposalData, submitProposal]);
+  }, [pendingProposalData, handleSubmitProposal]);
 
   // ==========================================================================
   // SHARED PROPS (convenience objects for render)

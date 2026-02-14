@@ -3,7 +3,7 @@
  *
  * Extracted from SearchPage.jsx to reduce main file size.
  * Contains: ContactHostMessaging, InformationalText, AiSignupMarketReport,
- * SignUpLoginModal (general + proposal auth), CreateProposalFlowV2, ProposalSuccessModal.
+ * SignUpLoginModal (general + proposal auth), CreateProposalFlow, ProposalSuccessModal.
  */
 import { lazy, Suspense } from 'react';
 import InformationalText from '../../../shared/InformationalText.jsx';
@@ -13,7 +13,7 @@ import { transformListingForProposal } from '../../../../lib/proposalService.js'
 
 const SignUpLoginModal = lazy(() => import('../../../shared/AuthSignupLoginOAuthResetFlowModal'));
 const AiSignupMarketReport = lazy(() => import('../../../shared/AiSignupMarketReport/AiSignupMarketReport.jsx'));
-const CreateProposalFlowV2 = lazy(() => import('../../../shared/CreateProposalFlowV2.jsx'));
+const CreateProposalFlow = lazy(() => import('../../../shared/CreateProposalFlow.jsx'));
 const ContactHostMessaging = lazy(() => import('../../../shared/ContactHostMessaging.jsx'));
 
 export default function SearchModals({
@@ -117,7 +117,7 @@ export default function SearchModals({
       {isCreateProposalModalOpen && selectedListingForProposal && (
         <ErrorBoundary>
           <Suspense fallback={<div className="modal-loading">Loading...</div>}>
-            <CreateProposalFlowV2
+            <CreateProposalFlow
               listing={transformListingForProposal(selectedListingForProposal)}
               moveInDate={moveInDateForProposal}
               daysSelected={selectedDayObjectsForProposal}

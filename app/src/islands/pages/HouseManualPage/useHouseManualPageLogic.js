@@ -27,7 +27,7 @@ export function useHouseManualPageLogic() {
   // ============================================================================
 
   // Authentication (via consolidated hook - resolves Bubble legacy ID correctly)
-  const { user: authUser, userId: authUserId, loading: authLoading, isAuthenticated } = useAuthenticatedUser({
+  const { user: authUser, userId: authUserId, isLoading: authLoading, isAuthenticated } = useAuthenticatedUser({
     redirectOnFail: '/?login=true'
   });
   const [user, setUser] = useState(null);

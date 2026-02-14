@@ -208,7 +208,7 @@ export default function useVisitReviewerHouseManualLogic({
   // Section Handlers
   // ─────────────────────────────────────────────────────────────
 
-  const toggleSection = useCallback((sectionId) => {
+  const handleToggleSection = useCallback((sectionId) => {
     setExpandedSections((prev) => ({
       ...prev,
       [sectionId]: !prev[sectionId],
@@ -395,7 +395,7 @@ export default function useVisitReviewerHouseManualLogic({
 
     // Section handlers
     expandedSections,
-    toggleSection,
+    handleToggleSection,
     expandAllSections,
     collapseAllSections,
     isSectionExpanded,

@@ -1,5 +1,5 @@
 // Option Set Types
-export interface RentalType {
+export interface RentalTypeOption {
   id: string;
   display: string;
 }
@@ -14,12 +14,12 @@ export interface TypeOfSpace {
   label: string;
 }
 
-export interface ParkingType {
+export interface ParkingTypeOption {
   id: string;
   label: string;
 }
 
-export interface KitchenType {
+export interface KitchenTypeOption {
   id: string;
   display: string;
 }
@@ -45,8 +45,8 @@ export interface Location {
 export interface Features {
   id: string;
   typeOfSpace: TypeOfSpace;
-  parkingType: ParkingType;
-  kitchenType: KitchenType;
+  parkingType: ParkingTypeOption;
+  kitchenType: KitchenTypeOption;
   qtyGuests: number;
   bedrooms?: number;
   bathrooms?: number;
@@ -107,7 +107,7 @@ export interface Listing {
   id: string;
   location: Location;
   features: Features;
-  rentalType: RentalType;
+  rentalType: RentalTypeOption;
   preferredGender: PreferredGender;
   houseManual?: HouseManual;
   hostRestrictions?: HostRestrictions;

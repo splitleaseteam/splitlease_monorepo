@@ -21,7 +21,7 @@ const STORAGE_KEYS = {
 } as const;
 
 // Store state type
-interface StoreState {
+interface ListingFormStoreState {
   data: ListingFormData;
   lastSaved: Date | null;
   isDirty: boolean;
@@ -33,8 +33,8 @@ interface StoreState {
  * Local memory store for self-listing form data
  */
 class ListingLocalStore {
-  private state: StoreState;
-  private listeners: Set<(state: StoreState) => void>;
+  private state: ListingFormStoreState;
+  private listeners: Set<(state: ListingFormStoreState) => void>;
   private autoSaveTimer: ReturnType<typeof setTimeout> | null;
   private readonly AUTO_SAVE_DELAY = 1000; // 1 second debounce
 
@@ -53,7 +53,7 @@ class ListingLocalStore {
   /**
    * Initialize the store - load from localStorage if available
    */
-  initialize(): StoreState {
+  initialize(): ListingFormStoreState {
     try {
       const savedDraft = localStorage.getItem(STORAGE_KEYS.DRAFT);
       const lastSaved = localStorage.getItem(STORAGE_KEYS.LAST_SAVED);
@@ -89,7 +89,7 @@ class ListingLocalStore {
   /**
    * Get current state
    */
-  getState(): StoreState {
+  getState(): ListingFormStoreState {
     return { ...this.state };
   }
 
@@ -483,7 +483,7 @@ class ListingLocalStore {
   /**
    * Subscribe to store updates
    */
-  subscribe(listener: (state: StoreState) => void): () => void {
+  subscribe(listener: (state: ListingFormStoreState) => void): () => void {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
@@ -521,4 +521,4 @@ class ListingLocalStore {
 export const listingLocalStore = new ListingLocalStore();
 
 // Export types for use in components
-export type { StoreState };
+export type { ListingFormStoreState };

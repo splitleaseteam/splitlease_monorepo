@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useScheduleSelector } from './useScheduleSelector.js';
 import { DayButton } from './DayButton.jsx';
-import { ErrorOverlay } from './ErrorOverlay.jsx';
+import { ErrorModal } from './ErrorModal.jsx';
 import { PriceDisplay } from './PriceDisplay.jsx';
 import '../../styles/listing-schedule-selector.css';
 
@@ -12,7 +12,6 @@ import '../../styles/listing-schedule-selector.css';
  * @param {boolean} limitToFiveNights - Whether to limit selection to 5 nights
  * @param {number} reservationSpan - Number of weeks for the reservation (default: 13)
  * @param {Object} zatConfig - ZAT price configuration object
- * @param {Function} onScheduleSave - Callback when schedule is saved
  * @param {Function} onSelectionChange - Callback when selection changes (fires immediately)
  * @param {Function} onPriceChange - Callback when price changes (fires immediately)
  * @param {boolean} showPricing - Whether to show pricing information
@@ -23,7 +22,6 @@ export default function ListingScheduleSelector({
   limitToFiveNights = false,
   reservationSpan = 13,
   zatConfig = null,
-  _onScheduleSave,
   onSelectionChange,
   onPriceChange,
   showPricing = true
@@ -33,7 +31,7 @@ export default function ListingScheduleSelector({
     allDays,
     nightsCount,
     priceBreakdown,
-    errorState,
+    errorInfo,
     isClickable,
     isContiguous,
     acceptableSchedule,
@@ -116,7 +114,7 @@ export default function ListingScheduleSelector({
         <PriceDisplay priceBreakdown={priceBreakdown} />
       )}
 
-      <ErrorOverlay errorState={errorState} onClose={clearError} />
+      <ErrorModal errorInfo={errorInfo} onClose={clearError} />
     </div>
   );
 }
