@@ -2,7 +2,7 @@
 
 A modern, high-performance multi-page web application for flexible shared accommodations with weekly scheduling. Built with React 18 + Vite Islands Architecture, Supabase Edge Functions (Deno), and Cloudflare Pages.
 
-**Repository**: https://github.com/splitleasesharath/splitlease
+**Repository**: https://github.com/splitleaseteam/splitlease
 **Branch**: main
 
 ---

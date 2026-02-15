@@ -39,7 +39,7 @@ ROLLBACK;  -- or COMMIT; if satisfied
 ```sql
 -- Check how many rows will be deleted
 SELECT COUNT(*) FROM review WHERE created_at >= '2026-02-01';
-SELECT COUNT(*) FROM bidding_sessions WHERE created_at >= '2026-02-01';
+SELECT COUNT(*) FROM proposal WHERE created_at >= '2026-02-01';
 -- ... repeat for other tables
 ```
 
@@ -103,7 +103,7 @@ The script deletes data in 10 rounds, respecting FK constraints:
 1. **CASCADE children** - Auto-deleted via FK CASCADE
 2. **Transactional data** - document_change_request, qr_codes, review
 3. **Booking & Lease** - lease_nights, bookings_stays, bookings_leases
-4. **Bidding & Pricing** - urgency_pricing_cache, bidding_sessions
+4. **Pricing** - urgency_pricing_cache
 5. **Proposal & Property** - proposal, visits, listing, properties
 6. **User-related** - recommendation_logs, admin_audit_log, user_archetypes
 7. **Core documents** - documentssent
@@ -170,14 +170,14 @@ supabase db execute --remote -f supabase/scripts/reset_test_data.sql
    ```sql
    -- Check for review_rating_detail without parent
    SELECT COUNT(*) FROM review_rating_detail rrd
-   WHERE NOT EXISTS (SELECT 1 FROM review r WHERE r._id = rrd.review_id);
+   WHERE NOT EXISTS (SELECT 1 FROM review r WHERE r.id = rrd.review_id);
    ```
 
 2. **Check FK integrity**
    ```sql
    -- Should return 0
    SELECT COUNT(*) FROM review r
-   WHERE NOT EXISTS (SELECT 1 FROM public."user" u WHERE u._id = r.reviewer_id);
+   WHERE NOT EXISTS (SELECT 1 FROM public."user" u WHERE u.id = r.reviewer_id);
    ```
 
 3. **Review row counts again**
